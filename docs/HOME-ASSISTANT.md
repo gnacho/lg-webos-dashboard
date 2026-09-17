@@ -8,6 +8,17 @@ Entity reference and example automations.
 
 Once connected to your MQTT broker, Home Assistant automatically discovers **up to 71 native entities** under a single unified device:
 
+### Entity Selection
+
+You can choose which entity categories are published from the **MQTT** tab in the dashboard (`/?tab=mqtt`), or fine-tune individual entities. When a category or entity is disabled, `tvweb` publishes an empty discovery payload so Home Assistant unregisters the entity immediately, without leaving orphaned unavailable entities.
+
+Categories:
+* **Controls & Media** (`controls`): Power, volume, mute, playback buttons, apps, and input sources.
+* **OLED Care** (`oled`): Panel on-time, pixel refresher countdowns, and burn-in protections.
+* **Video & HDMI Signal** (`video`): Active picture mode, dynamic range, refresh rate, VRR, ALLM, and link mode.
+* **System & Telemetry** (`system`): CPU, RAM, swap, SoC temperature, network rates, and storage health.
+* **Diagnostics & Settings** (`diagnostics`): Standby light, logo light, sleep timer, ad blocker, and update status.
+
 ### Controls & Switches
 | Domain | Entity ID | Name | Description |
 | :--- | :--- | :--- | :--- |

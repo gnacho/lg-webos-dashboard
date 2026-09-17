@@ -17,7 +17,15 @@
     "password": "",
     "topicPrefix": "lgtv",
     "discoveryPrefix": "homeassistant",
-    "telemetryIntervalMs": 10000
+    "telemetryIntervalMs": 10000,
+    "entities": {
+      "controls": true,
+      "oled": true,
+      "video": true,
+      "system": true,
+      "diagnostics": true,
+      "disabled": []
+    }
   },
   "device": {
     "id": "lg_tv",

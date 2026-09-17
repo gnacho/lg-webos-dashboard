@@ -69,7 +69,15 @@ var CONFIG = {
     password: '',
     topicPrefix: 'lgtv',
     discoveryPrefix: 'homeassistant',
-    telemetryIntervalMs: 10000
+    telemetryIntervalMs: 10000,
+    entities: {
+      controls: true,
+      oled: true,
+      video: true,
+      system: true,
+      diagnostics: true,
+      disabled: []
+    }
   },
 
   device: {
@@ -133,6 +141,15 @@ function loadConfig() {
           } else {
             CONFIG[k] = userConf[k];
           }
+        }
+        if (CONFIG.mqtt) {
+          var me = CONFIG.mqtt.entities;
+          if (!me || typeof me !== 'object') me = CONFIG.mqtt.entities = {};
+          var cats = ['controls', 'oled', 'video', 'system', 'diagnostics'];
+          for (var c = 0; c < cats.length; c++) {
+            if (typeof me[cats[c]] !== 'boolean') me[cats[c]] = true;
+          }
+          if (!Array.isArray(me.disabled)) me.disabled = [];
         }
         /*
          * The file holds broker credentials in plaintext. Default webOS perms
@@ -4241,6 +4258,111 @@ function badTopic(v) {
   return !v || /[#+\s]/.test(v) || v.charAt(0) === '/' || v.charAt(v.length - 1) === '/';
 }
 
+var HA_CATEGORIES = [
+  { id: 'controls', name: 'Controls & Media', desc: 'Power, volume, mute, playback buttons, apps, and input sources.' },
+  { id: 'oled', name: 'OLED Care', desc: 'Panel on-time, pixel refresher countdowns, and burn-in protections.' },
+  { id: 'video', name: 'Video & HDMI Signal', desc: 'Active picture mode, dynamic range, refresh rate, VRR, ALLM, and link mode.' },
+  { id: 'system', name: 'System & Telemetry', desc: 'CPU, RAM, swap, SoC temperature, network rates, and storage health.' },
+  { id: 'diagnostics', name: 'Diagnostics & Settings', desc: 'Remote battery, audio format, standby LED, sleep timer, and ad blocker.' }
+];
+
+var HA_ENTITIES = [
+  // Controls & Media
+  { id: 'display_panel', type: 'switch', name: 'Display Panel', cat: 'controls' },
+  { id: 'mute', type: 'switch', name: 'Mute', cat: 'controls' },
+  { id: 'volume', type: 'number', name: 'Volume', cat: 'controls' },
+  { id: 'input_source', type: 'select', name: 'Input Source', cat: 'controls' },
+  { id: 'screen_notification', type: 'text', name: 'Screen Notification', cat: 'controls' },
+  { id: 'picture_mode', type: 'select', name: 'Picture Mode (Select)', cat: 'controls' },
+  { id: 'sound_output', type: 'select', name: 'Sound Output', cat: 'controls' },
+  { id: 'app', type: 'select', name: 'Application', cat: 'controls' },
+  { id: 'active_app', type: 'sensor', name: 'Active App', cat: 'controls' },
+  { id: 'play_state', type: 'sensor', name: 'Player State', cat: 'controls' },
+  { id: 'play', type: 'button', name: 'Play', cat: 'controls' },
+  { id: 'pause', type: 'button', name: 'Pause', cat: 'controls' },
+  { id: 'play_pause', type: 'button', name: 'Play / Pause', cat: 'controls' },
+  { id: 'stop', type: 'button', name: 'Stop', cat: 'controls' },
+  { id: 'screensaver', type: 'button', name: 'Screen Saver', cat: 'controls' },
+  { id: 'screen_saver_active', type: 'binary_sensor', name: 'Screen Saver Active', cat: 'controls' },
+  { id: 'screensaver_mode', type: 'select', name: 'Screen Saver Mode', cat: 'controls' },
+  { id: 'restart', type: 'button', name: 'Restart', cat: 'controls' },
+  { id: 'power_off', type: 'button', name: 'Power Off', cat: 'controls' },
+
+  // OLED Care
+  { id: 'oled_panel_hours', type: 'sensor', name: 'OLED Panel Hours', cat: 'oled' },
+  { id: 'oled_hours_since_compensation', type: 'sensor', name: 'Hours Since Compensation', cat: 'oled' },
+  { id: 'oled_hours_until_compensation', type: 'sensor', name: 'Hours Until Compensation', cat: 'oled' },
+  { id: 'oled_hours_since_refresher', type: 'sensor', name: 'Hours Since Pixel Refresher', cat: 'oled' },
+  { id: 'oled_hours_until_refresher', type: 'sensor', name: 'Hours Until Pixel Refresher', cat: 'oled' },
+  { id: 'oled_compensation_status', type: 'sensor', name: 'Compensation Status', cat: 'oled' },
+  { id: 'oled_refresher_status', type: 'sensor', name: 'Pixel Refresher Status', cat: 'oled' },
+  { id: 'oled_screen_shift', type: 'switch', name: 'Screen Shift', cat: 'oled' },
+  { id: 'oled_logo_dimming', type: 'select', name: 'Logo Luminance Adjustment', cat: 'oled' },
+  { id: 'oled_short_cycles', type: 'sensor', name: 'Compensation Cycles Completed', cat: 'oled' },
+  { id: 'oled_refresher_cycles', type: 'sensor', name: 'Pixel Refresher Cycles Completed', cat: 'oled' },
+  { id: 'oled_failure_alerts', type: 'sensor', name: 'Panel Maintenance Alerts', cat: 'oled' },
+  { id: 'oled_asbl_dimmer', type: 'binary_sensor', name: 'ASBL Dimming Active', cat: 'oled' },
+  { id: 'pixel_refresher_schedule', type: 'switch', name: 'Pixel Refresher on Next Standby', cat: 'oled' },
+  { id: 'oled_cell_type', type: 'sensor', name: 'OLED Cell Type', cat: 'oled' },
+  { id: 'tcon_firmware', type: 'sensor', name: 'T-Con Firmware', cat: 'oled' },
+
+  // Video & HDMI Signal
+  { id: 'dynamic_range', type: 'sensor', name: 'Dynamic Range', cat: 'video' },
+  { id: 'picture_mode', type: 'sensor', name: 'Picture Mode', cat: 'video' },
+  { id: 'oled_light', type: 'sensor', name: 'OLED Light', cat: 'video' },
+  { id: 'video_signal', type: 'sensor', name: 'Video Signal', cat: 'video' },
+  { id: 'hdmi_link_mode', type: 'sensor', name: 'HDMI Link Mode', cat: 'video' },
+  { id: 'hdmi_chroma', type: 'sensor', name: 'HDMI Chroma', cat: 'video' },
+  { id: 'hdmi_hdcp', type: 'sensor', name: 'HDMI HDCP Version', cat: 'video' },
+  { id: 'hdmi_cable_errors', type: 'sensor', name: 'HDMI Cable Physical Errors', cat: 'video' },
+  { id: 'hdmi_allm', type: 'binary_sensor', name: 'HDMI ALLM', cat: 'video' },
+  { id: 'hdmi_vrr', type: 'binary_sensor', name: 'HDMI VRR', cat: 'video' },
+  { id: 'video_colorimetry', type: 'sensor', name: 'Colorimetry', cat: 'video' },
+  { id: 'panel_dimming', type: 'sensor', name: 'Panel Dimming', cat: 'video' },
+  { id: 'ambient_light', type: 'sensor', name: 'Ambient Light', cat: 'video' },
+
+  // System & Telemetry
+  { id: 'soc_temperature', type: 'sensor', name: 'SoC Temperature', cat: 'system' },
+  { id: 'cpu_load', type: 'sensor', name: 'CPU Usage', cat: 'system' },
+  { id: 'memory_usage', type: 'sensor', name: 'Memory Usage', cat: 'system' },
+  { id: 'swap_usage', type: 'sensor', name: 'Swap Usage', cat: 'system' },
+  { id: 'wifi_signal', type: 'sensor', name: 'Wi-Fi Signal', cat: 'system' },
+  { id: 'download_rate', type: 'sensor', name: 'Download Rate', cat: 'system' },
+  { id: 'upload_rate', type: 'sensor', name: 'Upload Rate', cat: 'system' },
+  { id: 'flash_health', type: 'sensor', name: 'Flash Storage Health', cat: 'system' },
+  { id: 'flash_wear', type: 'sensor', name: 'Flash Wear Level', cat: 'system' },
+  { id: 'soc_current', type: 'sensor', name: 'SoC Current', cat: 'system' },
+  { id: 'soc_architecture', type: 'sensor', name: 'SoC Architecture', cat: 'system' },
+  { id: 'gpu_clock', type: 'sensor', name: 'GPU Clock', cat: 'system' },
+  { id: 'app_storage_free', type: 'sensor', name: 'App Storage Available', cat: 'system' },
+  { id: 'mac_address', type: 'sensor', name: 'MAC Address', cat: 'system' },
+  { id: 'uptime', type: 'sensor', name: 'Uptime', cat: 'system' },
+
+  // Diagnostics & Settings
+  { id: 'audio_output', type: 'sensor', name: 'Audio Output', cat: 'diagnostics' },
+  { id: 'remote_battery', type: 'sensor', name: 'Magic Remote Battery', cat: 'diagnostics' },
+  { id: 'sleep_timer', type: 'select', name: 'Sleep Timer', cat: 'diagnostics' },
+  { id: 'standby_light', type: 'switch', name: 'Standby Light', cat: 'diagnostics' },
+  { id: 'logo_light', type: 'switch', name: 'Logo Light', cat: 'diagnostics' },
+  { id: 'ad_blocker', type: 'switch', name: 'Ad Blocker', cat: 'diagnostics' },
+  { id: 'tvweb_version', type: 'sensor', name: 'tvweb Version', cat: 'diagnostics' },
+  { id: 'server_update', type: 'update', name: 'Server Update', cat: 'diagnostics' }
+];
+
+var ENTITY_CATEGORIES = {};
+for (var i = 0; i < HA_ENTITIES.length; i++) {
+  var _ent = HA_ENTITIES[i];
+  ENTITY_CATEGORIES[_ent.type + '.' + _ent.id] = _ent.cat;
+  if (!ENTITY_CATEGORIES[_ent.id]) {
+    ENTITY_CATEGORIES[_ent.id] = _ent.cat;
+  }
+}
+
+function entityCategory(e) {
+  if (!e) return 'diagnostics';
+  return ENTITY_CATEGORIES[e.type + '.' + e.id] || ENTITY_CATEGORIES[e.id] || 'diagnostics';
+}
+
 function validateSettings(j) {
   var m = (j && j.mqtt) || {};
   var d = (j && j.device) || {};
@@ -4276,6 +4398,16 @@ function validateSettings(j) {
   var iv = parseInt(m.telemetryIntervalMs, 10);
   if (!(iv >= 1000 && iv <= 600000)) e.push('telemetry interval must be between 1000 and 600000 ms');
   else out.mqtt.telemetryIntervalMs = iv;
+
+  out.mqtt.entities = {};
+  var me = (m && m.entities) || {};
+  for (var c = 0; c < HA_CATEGORIES.length; c++) {
+    var cat = HA_CATEGORIES[c].id;
+    out.mqtt.entities[cat] = typeof me[cat] === 'boolean' ? me[cat] : true;
+  }
+  out.mqtt.entities.disabled = Array.isArray(me.disabled) ? me.disabled.filter(function (id) {
+    return typeof id === 'string' && /^[a-z0-9_.]{1,64}$/.test(id);
+  }) : [];
 
   /*
    * The device id keys every discovery topic and every entity id in Home
@@ -4478,7 +4610,17 @@ var server = http.createServer(function (req, res) {
         passwordSet: !!mc.password,
         topicPrefix: mc.topicPrefix || 'lgtv',
         discoveryPrefix: mc.discoveryPrefix || 'homeassistant',
-        telemetryIntervalMs: mc.telemetryIntervalMs || 10000
+        telemetryIntervalMs: mc.telemetryIntervalMs || 10000,
+        entities: {
+          controls: !mc.entities || mc.entities.controls !== false,
+          oled: !mc.entities || mc.entities.oled !== false,
+          video: !mc.entities || mc.entities.video !== false,
+          system: !mc.entities || mc.entities.system !== false,
+          diagnostics: !mc.entities || mc.entities.diagnostics !== false,
+          disabled: (mc.entities && Array.isArray(mc.entities.disabled)) ? mc.entities.disabled : []
+        },
+        categories: HA_CATEGORIES,
+        entityCatalogue: HA_ENTITIES
       },
       device: {
         id: (CONFIG.device && CONFIG.device.id) || '',
@@ -5917,6 +6059,23 @@ function setupHomeAssistant() {
       console.log('mqtt: not an OLED panel, withheld ' +
                   withhold(function (e) { return OLED_ONLY[e.id] === 1; }) +
                   ' panel entities');
+    }
+
+    /*
+     * Entity customisation. Drop any entity whose category has been turned off
+     * in settings, or which is explicitly named in the disabled list.
+     * Withheld rather than omitted so Home Assistant unregisters the entity.
+     */
+    var userEnts = (CONFIG.mqtt && CONFIG.mqtt.entities) || {};
+    var userWithheld = withhold(function (e) {
+      var cat = entityCategory(e);
+      if (userEnts[cat] === false) return true;
+      var dis = userEnts.disabled;
+      if (dis && (dis.indexOf(e.id) !== -1 || dis.indexOf(e.type + '.' + e.id) !== -1)) return true;
+      return false;
+    });
+    if (userWithheld > 0) {
+      console.log('mqtt: user configuration withheld ' + userWithheld + ' entities');
     }
 
     for (var i = 0; i < entities.length; i++) {
