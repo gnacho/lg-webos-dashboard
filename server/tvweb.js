@@ -26,6 +26,11 @@ var privacy = require('./lib/privacy');
 var oled = require('./lib/oled');
 var screensavers = require('./lib/screensavers');
 var telemetry = require('./lib/telemetry');
+var stateModule = require('./lib/state');
+var mqttStateModule = require('./lib/mqtt-state');
+var notifications = require('./lib/notifications');
+var lunaTransport = require('./lib/luna');
+var luna = lunaTransport.call;
 var zeroBuffer = MiniMQTT.zeroBuffer;
 
 /*
@@ -226,28 +231,9 @@ function num(v, dflt) {
   var n = parseInt(v, 10);
   return isNaN(n) ? dflt : n;
 }
-
 var TOAST_SOURCE = 'com.webos.app.home';
 
-/* luna-send wrapper via execFile directly, avoiding /bin/sh and shell child leaks.
- * -w 2000 tells luna-send itself to time out after 2 seconds.
- * timeout: 3500 ensures Node kills the child process if it ever stalls.
- * appId, where given, becomes -a: a few services check the caller's registered
- * bus identity rather than anything in the payload, and reject everyone else
- * with "Unknown Source".
- */
-function luna(uri, payload, cb, appId) {
-  var args = appId ? ['-a', appId] : [];
-  args = args.concat(['-n', '1', '-w', '2000', '-f', 'luna://' + uri, JSON.stringify(payload || {})]);
-  execFile('/usr/bin/luna-send', args, { timeout: 3500 }, function (err, stdout) {
-    var parsed = null;
-    if (!err && stdout) {
-      try { parsed = JSON.parse(stdout); } catch (e) {}
-    }
-    if (cb) cb(parsed, String(stdout || ''));
-  });
-}
-
+/*
 /*
  * Cache for luna reads whose answers do not change between dashboard ticks.
  * Every luna() call is a fork+exec, and telemetry made ten of them per
@@ -414,6 +400,18 @@ telemetry.init({
   isScreenSaver: isScreenSaver
 });
 
+var liveState = stateModule.init({
+  inputNameMap: telemetry.inputNameMap,
+  mapPowerState: mapPowerState,
+  formatSoundOutput: ha.formatSoundOutput,
+  clearCache: function () {
+    telemetry.clearCache();
+    clearLunaCache();
+  }
+});
+
+var notificationState = notifications.init({ luna: luna });
+
 // ---------------------------------------------------------------- controls
 var INPUTS = ha.INPUTS;
 
@@ -437,9 +435,10 @@ var RCU_KEYS = {
   ok: 28,
   back: 412
 };
-
 var SLEEP_TIMER_VALUES = ['off', '10', '30', '60', '90', '120'];
+var ENERGY_SAVING_VALUES = ['auto', 'off', 'min', 'med', 'max', 'screen_off'];
 
+// What the dashboard reports
 // What the settings service accepts for logoLuminanceAdjust, per
 // getSystemSettingValues on a B8. "strong" is the strongest, not an on/off.
 var LOGO_DIMMING_VALUES = ['off', 'light', 'strong'];
@@ -522,6 +521,16 @@ function doControl(action, value, cb) {
           cb({ ok: !!(r && r.returnValue) });
         });
       });
+
+    case 'energySaving':
+      var energySaving = String(value || '').trim().toLowerCase();
+      if (ENERGY_SAVING_VALUES.indexOf(energySaving) === -1) {
+        return cb({ ok: false, error: 'energy saving must be one of ' + ENERGY_SAVING_VALUES.join(', ') });
+      }
+      return luna('com.webos.service.settings/setSystemSettings', {
+        category: 'picture',
+        settings: { energySaving: energySaving, energySavingModified: 'true' }
+      }, function (r) { cb({ ok: !!(r && r.returnValue) }); });
 
     case 'sound_output':
     case 'soundOutput':
@@ -1357,6 +1366,13 @@ function setupHomeAssistant() {
   MQTT_STATUS.tls = useTls;
   mqttStatus('connecting', '');
 
+  var stateMqtt = mqttStateModule.init({
+    client: mqttClient,
+    prefix: pfx,
+    legacyScreenTopic: stateScreenTopic
+  });
+  stateMqtt.attach(liveState.state);
+
   function publishDiscovery() {
     ha.clearRetired(function (topic, payload, retain) {
       mqttClient.publish(topic, payload, retain);
@@ -1435,19 +1451,9 @@ function setupHomeAssistant() {
     if (!mqttClient.connected) return;
     mqttClient.publish(statusTopic, 'online', true);
     telemetry.collectStats(function(s) {
+      liveState.reconcile(s);
       mqttClient.publish(telemetryTopic, JSON.stringify(s), false);
       MQTT_STATUS.lastPublish = Date.now();
-      /*
-       * Reconcile the panel switch against what the TV actually reports.
-       * It used to be published only when the command arrived over MQTT, so
-       * blanking the panel from the dashboard, the remote, or the TV's own
-       * menus left Home Assistant asserting the opposite indefinitely.
-       * Driving it from powerState makes it self-correcting whatever the
-       * change came from.
-       */
-      if (s.powerState && typeof s.powerState.screenOn === 'boolean') {
-        mqttClient.publish(stateScreenTopic, s.powerState.screenOn ? 'ON' : 'OFF', true);
-      }
       /*
        * The picture modes a set will accept change with the source's dynamic
        * range, and a select whose options cannot be applied is worse than no
@@ -1485,9 +1491,9 @@ function setupHomeAssistant() {
     console.log('mqtt: connected to ' + CONFIG.mqtt.host + ':' + mqttClient.opts.port +
                 (useTls ? ' (tls)' : ' (plaintext)'));
     mqttClient.publish(statusTopic, 'online', true);
-    // Deliberately not asserting a screen state here: publishTelemetry below
-    // sets it from what the TV reports. Publishing a retained 'ON' on every
-    // reconnect meant a restart silently flipped Home Assistant back to on.
+    // Republish the in-memory state because broker retention is not assumed.
+    stateMqtt.publishSnapshot();
+    // Do not assert a guessed screen state before the TV reports one.
     // Resolve the panel type first: publishDiscovery filters on it, and on a
     // first connect it would otherwise still be undetermined.
     // The app select's options come from listApps, which on a first connect
@@ -1511,11 +1517,7 @@ function setupHomeAssistant() {
 
     if (action === 'screen') {
       var turnOff = (val.toUpperCase() === 'OFF');
-      doControl(turnOff ? 'screenOff' : 'screenOn', null, function(r) {
-        if (r && r.ok) {
-          mqttClient.publish(stateScreenTopic, turnOff ? 'OFF' : 'ON', true);
-        }
-      });
+      doControl(turnOff ? 'screenOff' : 'screenOn', null, function() {});
       return;
     }
 
@@ -1634,6 +1636,8 @@ function setupHomeAssistant() {
   var intervalMs = CONFIG.mqtt.telemetryIntervalMs || 10000;
   setInterval(publishTelemetry, intervalMs);
 
+  liveState.start();
+  notificationState.start();
   mqttClient.connect();
 }
 

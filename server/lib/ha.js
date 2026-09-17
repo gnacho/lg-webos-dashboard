@@ -35,6 +35,7 @@ var HA_ENTITIES = [
   { id: 'input_source', type: 'select', name: 'Input Source', cat: 'controls' },
   { id: 'screen_notification', type: 'text', name: 'Screen Notification', cat: 'controls' },
   { id: 'picture_mode', type: 'select', name: 'Picture Mode (Select)', cat: 'controls' },
+  { id: 'energy_saving', type: 'select', name: 'Energy Saving Step', cat: 'controls' },
   { id: 'sound_output', type: 'select', name: 'Sound Output', cat: 'controls' },
   { id: 'app', type: 'select', name: 'Application', cat: 'controls' },
   { id: 'active_app', type: 'sensor', name: 'Active App', cat: 'controls' },
@@ -176,6 +177,7 @@ function buildEntities(opts) {
   var cmdVolTopic = opts.cmdVolTopic || (pfx + '/command/volume');
   var cmdInputTopic = opts.cmdInputTopic || (pfx + '/command/input');
   var cmdToastTopic = opts.cmdToastTopic || (pfx + '/command/toast');
+  var energySavingTopic = opts.energySavingTopic || (pfx + '/state/picture/energySaving');
   var updateTopic = opts.updateTopic || (pfx + '/update');
   var installedApps = opts.installedApps || [];
   var lastPicModes = opts.pictureModes || [];
@@ -747,6 +749,16 @@ function buildEntities(opts) {
             ? lastPicModes.map(function (m) { return m.value; })
             : ['expert1', 'expert2', 'cinema', 'game', 'standard', 'eco', 'sports'],
           icon: 'mdi:image-filter-black-white'
+        }
+      },
+      {
+        type: 'select', id: 'energy_saving',
+        payload: {
+          name: 'Energy Saving Step',
+          command_topic: pfx + '/command/energySaving',
+          state_topic: energySavingTopic,
+          options: ['auto', 'off', 'min', 'med', 'max', 'screen_off'],
+          icon: 'mdi:brightness-auto'
         }
       },
       {

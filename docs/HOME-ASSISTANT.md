@@ -6,7 +6,7 @@ Entity reference and example automations.
 
 ## Entities
 
-Once connected to your MQTT broker, Home Assistant automatically discovers **up to 71 native entities** under a single unified device:
+Once connected to your MQTT broker, Home Assistant automatically discovers **up to 72 native entities** under a single unified device:
 
 ### Entity Selection
 
@@ -32,6 +32,7 @@ Categories:
 | `select` | `select.lg_tv_input_source` | Input Source | HDMI 1–4, Live TV |
 | `select` | `select.lg_tv_app` | Launch App | Installed apps (YouTube, Netflix, Prime Video, Spotify, etc.) |
 | `select` | `select.lg_tv_picture_mode` | Picture Mode | Switch profiles (ISF Dark/Bright, Cinema, Game, Standard) |
+| `select` | `select.lg_tv_energy_saving` | Energy Saving Step | Auto, Off, Minimum, Medium, Maximum, Screen off |
 | `select` | `select.lg_tv_sound_output` | Sound Output | Switch outputs (TV Speaker, HDMI ARC, Optical, Headphone) |
 | `select` | `select.lg_tv_sleep_timer` | Sleep Timer | Off, 10, 30, 60, 90, 120 minutes |
 | `button` | `button.lg_tv_play` | Play | Resume media playback |
