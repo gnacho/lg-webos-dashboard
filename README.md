@@ -2,14 +2,14 @@
 
 A server that runs **on** a rooted LG webOS TV. It serves a live dashboard to
 any browser on the network, and will optionally bridge the TV into Home
-Assistant over MQTT as a single auto-discovered device with up to 72 entities.
+Assistant over MQTT as a single auto-discovered device.
 
 The dashboard needs nothing but the TV. Home Assistant control over MQTT is
 optional, and set up in [step 4](#4-home-assistant--mqtt-optional).
 
 There are no dependencies. This is ES5 on the Node 0.12 runtime that is on the TV.
 
----f
+---
 
 ## What it's for
 
@@ -25,8 +25,8 @@ There are no dependencies. This is ES5 on the Node 0.12 runtime that is on the T
 3. **Replacing the screen saver.** A clock, a starfield, fireworks, or the
    TV's own readings, each dim or bright, in place of LG's.
 
-4. **Integrating the TV into Home Assistant.** Optional, over MQTT: up to 72
-   entities arrive as a single auto-discovered device &mdash; no YAML, no LG
+4. **Integrating the TV into Home Assistant.** Optional, over MQTT: the set
+   arrives as a single auto-discovered device &mdash; no YAML, no LG
    account &mdash; so the TV can be automated and its telemetry recorded
    alongside everything else in the house.
    [Step 4](#4-home-assistant--mqtt-optional) explains what MQTT is.
@@ -53,14 +53,14 @@ There are no dependencies. This is ES5 on the Node 0.12 runtime that is on the T
 ## Web dashboard
 
 <p align="center">
-  <a href="docs/screenshots/dashboard.png"><img src="docs/screenshots/dashboard.png" alt="Metrics tab: SoC temperature, system readouts, storage and display panel counters, dark theme (OLED65B8SLC)" width="440"></a>
+  <a href="docs/screenshots/dashboard.png"><img src="docs/screenshots/dashboard.png" alt="System tab: SoC temperature, system readouts, storage and HDMI ports, dark theme (OLED65B8SLC)" width="440"></a>
   &nbsp;
-  <a href="docs/screenshots/dashboard-light.png"><img src="docs/screenshots/dashboard-light.png" alt="Control tab: panel, source, volume, playback, picture, sound, apps and power, light theme (OLED65B8SLC)" width="440"></a>
+  <a href="docs/screenshots/dashboard-light.png"><img src="docs/screenshots/dashboard-light.png" alt="Control tab: panel, source, volume, playback, sleep timer, front lights and power, light theme (OLED65B8SLC)" width="440"></a>
 </p>
 
 ## Home Assistant (auto-discovered device via MQTT)
 
-Up to 72 native entities arrive over MQTT Discovery as a single unified device
+The TV arrives over MQTT Discovery as a single unified device
 <p align="center">
   <a href="https://github.com/user-attachments/assets/1d76b1a2-68d9-42a4-a497-b107d706b235"><img width="800" alt="Home Assistant MQTT entities" src="https://github.com/user-attachments/assets/1d76b1a2-68d9-42a4-a497-b107d706b235" /></a>
 </p>
@@ -201,8 +201,8 @@ panel. A firmware update restores the LG default.
 
 ### Home Assistant bridge
 
-The **MQTT** tab, `/?tab=mqtt`. Publishes the TV to an MQTT broker, where up to
-72 entities arrive in Home Assistant as a single auto-discovered device. The tab
+The **MQTT** tab, `/?tab=mqtt`. Publishes the TV to an MQTT broker, where it
+arrives in Home Assistant as a single auto-discovered device. The tab
 holds the broker address, credentials, topic prefix and device identity, with
 the bridge's connection state and last publish time beside them.
 [Step 4](#4-home-assistant--mqtt-optional) covers the setup.
@@ -299,8 +299,9 @@ on its own.
 No configuration is needed for this part. Without a config file the dashboard
 runs on port 8080, the controls are live, MQTT is off, and power off / reboot
 are disabled. Nothing is sent anywhere: the server talks to the TV and to
-whoever opens the page, and reaches the internet only if the release check under
-[Updating](#updating) is switched on.
+whoever opens the page, and reaches the internet only to look for a new release -
+when the dashboard's Server tab is opened, or daily if
+[checking automatically](#checking-automatically) is switched on.
 
 That is a complete install &mdash; step 4 is optional.
 
@@ -352,7 +353,7 @@ Nothing else is needed. Home Assistant picks up the device within a few seconds
 of the bridge connecting.
 
 <p align="center">
-  <a href="docs/screenshots/mqtt.png"><img src="docs/screenshots/mqtt.png" alt="MQTT tab: bridge status and switch beside the broker, topic and device fields" width="700"></a>
+  <a href="docs/screenshots/mqtt.png"><img src="docs/screenshots/mqtt.png" alt="MQTT tab: bridge status and switch beside the broker and device fields, with the entity categories published to Home Assistant" width="700"></a>
 </p>
 
 The panel reports whether the bridge is connected to the broker and how long ago
@@ -449,9 +450,9 @@ ssh root@<tv-ip> /var/lib/tvweb/tvwebctl status    # start | stop | restart | st
 How depends on the install. One with a **Server** tab in its dashboard updates
 itself; an older one is updated by deploying again, after which it has the tab.
 
-**With the Server tab.** **Check now** looks for a newer release, **Install**
-puts it on and restarts the server, and **Roll back** returns to the version it
-replaced. Home Assistant offers the same install while the
+**With the Server tab.** Opening it looks for a newer release, and **Check now**
+looks again. **Install** puts it on and restarts the server, and **Roll back**
+returns to the version it replaced. Home Assistant offers the same install while the
 [daily check](#checking-automatically) is on. Over ssh:
 
 ```bash
@@ -499,7 +500,7 @@ cp -r /var/lib/tvweb/.previous/. /var/lib/tvweb/
 
 ### Checking automatically
 
-Off by default, because it is the only thing here that reaches off the LAN.
+Off by default, because it reaches off the LAN without anyone asking.
 **Check daily** in the Server tab switches it on, as does `config.json`:
 
 ```json
@@ -548,7 +549,7 @@ Full detail, including the MQTT ACL guidance and optional TLS, is in
 ## Documentation
 
 * [docs/SECURITY.md](docs/SECURITY.md) &mdash; threat model, SSH migration, MQTT hardening
-* [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md) &mdash; up to 72 entities, universal media player, example automations
+* [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md) &mdash; the entity reference, universal media player, example automations
 * [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md) &mdash; architecture, `/proc/lg` reference, platform quirks
 
 ---
