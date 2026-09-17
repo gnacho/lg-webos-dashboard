@@ -988,7 +988,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
        report "not running" while acr2 is alive, which read as a contradiction
        when the two sat in one list. -->
   <div class="pv-list">
-    <div class="pv-grp"><div class="pv-g"><span>Recognition</span></div><div id="pv-live"></div></div>
+    <div class="pv-grp"><div class="pv-g"><span>Watching &amp; listening</span></div><div id="pv-live"></div></div>
     <div class="pv-grp"><div class="pv-g"><span>Diagnostics services</span></div><div id="pv-daemons"></div></div>
   </div>
   <div class="pv-note" id="pv-running-note"></div>
@@ -2028,6 +2028,24 @@ function pvConsentPill(f, writable) {
          `data-next="${f.enabled ? '0' : '1'}">${f.enabled ? 'On' : 'Off'}</button>`;
 }
 
+/*
+ * The set's own microphone, which is not the one in the remote: that one needs
+ * a button held down, while this one is there for the system at any time.
+ * Blocking it leaves the driver alone - nothing can open the device.
+ */
+function micRow(mic) {
+  if (!mic.present) {
+    return pvRow('Microphone', 'The TV\'s own microphone, separate from the remote\'s.',
+                 '<span class="pill good">Not fitted</span>');
+  }
+  const state = mic.blocked ? 'Blocked' : 'Available';
+  const cls = mic.blocked ? 'good' : 'warn';
+  const pill = mic.writable
+    ? `<button class="pill ${cls}" data-mic="${mic.blocked ? '0' : '1'}">${state}</button>`
+    : `<span class="pill ${cls}">${state}</span>`;
+  return pvRow('Microphone', 'The TV\'s own microphone, separate from the remote\'s.', pill);
+}
+
 function pvRow(name, detail, pillHtml) {
   return `<div class="pv-row"><div><div class="n">${name}</div>` +
          `<div class="d">${detail}</div></div><div>${pillHtml}</div></div>`;
@@ -2052,7 +2070,8 @@ async function loadPrivacy() {
       pvRow('Content recognition', 'LG calls this ACR. It works out what is on screen.',
           `<span class="pill ${a.active ? 'warn' : 'good'}">${a.active ? 'Running' : 'Not running'}</span>`) +
       pvRow('Screen capturing', 'Sampling frames from the screen for recognition.',
-          `<span class="pill ${a.capturing ? 'warn' : 'good'}">${a.capturing ? 'Capturing' : 'Stopped'}</span>`);
+          `<span class="pill ${a.capturing ? 'warn' : 'good'}">${a.capturing ? 'Capturing' : 'Stopped'}</span>`) +
+      micRow(d.microphone || {});
 
     // advertising id
     const ad = d.advertisingId || {};
@@ -2220,6 +2239,15 @@ q('pv-consent').addEventListener('click', async (ev) => {
   btn.textContent = '...';
   const r = await c('consent', { key: btn.dataset.key, enabled: btn.dataset.next === '1' });
   if (!r || !r.ok) { btn.disabled = false; loadPrivacy(); return; }
+  loadPrivacy();
+});
+
+q('pv-live').addEventListener('click', async (ev) => {
+  const btn = ev.target.closest('button.pill[data-mic]');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = '...';
+  await c('microphone', btn.dataset.mic === '1');
   loadPrivacy();
 });
 

@@ -131,6 +131,11 @@ collection services are alive &mdash; the two the service bus starts on demand
 are marked as such, and the two upstart supervises can be switched off for
 good.
 
+Sets that have a microphone of their own - separate from the one in the remote,
+and available to the system at any time - can have it blocked from here. The
+device is left alone and nothing can open it, including apps in their own
+sandboxes, and it comes back the moment it is switched off again.
+
 Most of those agreements can be switched off from here, and the advertising ID
 can be reset and its cookies cleared. The TV keeps two records &mdash; the
 agreements, and the flags derived from them &mdash; and a change writes both, so

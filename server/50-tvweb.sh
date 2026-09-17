@@ -17,6 +17,14 @@ export PATH="/bin:/sbin:/usr/bin:/usr/sbin:$PATH"
 # Hold down the LG daemons switched off in the dashboard. Done in the delayed
 # block below, after upstart has had its go at starting them.
 
+# Re-block the microphone if it was blocked: /dev is rebuilt at boot, so the
+# bind mount over the device node does not survive one.
+if [ -f /var/lib/tvweb/mic_blocked ]; then
+  while read -r micdev; do
+    [ -n "$micdev" ] && [ -e "$micdev" ] && mount --bind /dev/null "$micdev" 2>/dev/null || true
+  done < /var/lib/tvweb/mic_blocked
+fi
+
 # Restore adblock bind-mount if enabled
 if [ -f /var/lib/tvweb/adblock_enabled ] && [ -f /var/lib/tvweb/adblock_hosts ]; then
   mount --bind /var/lib/tvweb/adblock_hosts /etc/hosts 2>/dev/null || true

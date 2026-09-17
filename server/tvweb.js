@@ -712,6 +712,9 @@ function doControl(action, value, cb) {
     case 'refresherCancel':
       return oled.requestClearPanelNoise('cancel_schedule', cb);
 
+    case 'microphone':
+      return privacy.setMicBlocked(value === true || value === 'block' || value === 'blocked', cb);
+
     case 'updateCheck':
       // 'open' is the dashboard's Server tab being shown. Its result is kept for
       // two minutes, so switching between tabs does not reach GitHub each time.
