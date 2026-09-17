@@ -114,12 +114,31 @@ var CONSENT_NAMES = {
   allAllowed:          'Select All'
 };
 
+/*
+ * The fourth field is what the process is actually called. webOS 9 does the
+ * recognition work under `contentminer` and ships no acr2 at all, so a row
+ * keyed on one name alone reported "not running" on a set where it was.
+ */
 var PRIVACY_DAEMONS = {
-  acr2:       ['Content recognition service', 'Identifies what is on screen', 'bus'],
+  acr2:       ['Content recognition service', 'Identifies what is on screen', 'bus', ['acr2', 'contentminer']],
   admanager:  ['Advertising service', 'Fetches and displays ads on the TV', 'bus'],
   uploadd:    ['Diagnostics uploader', 'Sends diagnostic data to LG', 'upstart'],
   rdxd:       ['Diagnostics collector', 'Gathers crash and diagnostic reports', 'upstart']
 };
+
+/*
+ * The set's own microphone, as the sound card names it: on a C2 that is card 1
+ * device 0, "WoV PDM Mic" - wake on voice, the far-field mic that is there for
+ * the system whether or not anything is listening. The other capture devices on
+ * that card are speaker feedback and mixing paths rather than room microphones,
+ * and the Magic Remote's mic arrives over HID, not ALSA, so neither is touched.
+ *
+ * Blocking is a bind mount of /dev/null over the device node: the driver is left
+ * alone and the consumer simply cannot open it. /dev is rebuilt at boot, so the
+ * paths are kept in a file the boot hook re-applies.
+ */
+var MIC_FLAG_FILE = '/var/lib/tvweb/mic_blocked';
+var MIC_NAME = /mic\b|\bwov\b|\bpdm\b/i;
 
 var SERVICES_FILE = '/var/lib/tvweb/services_stopped';
 var SERVICE_CONTROLLABLE = { uploadd: true, rdxd: true };
@@ -452,6 +471,50 @@ function upstartJobs(cb) {
   });
 }
 
+function micDevices() {
+  var pcm = rd('/proc/asound/pcm');
+  if (!pcm) return [];
+  var lines = pcm.split('\n'), out = [];
+  for (var i = 0; i < lines.length; i++) {
+    // "01-00: WoV PDM Mic snd-soc-dummy-dai-0 :  : capture 1"
+    var m = /^(\d+)-(\d+):\s*([^:]*?)\s*:.*capture/i.exec(lines[i]);
+    if (!m || !MIC_NAME.test(m[3])) continue;
+    out.push({
+      name: m[3].replace(/\s+snd-soc.*$/, ''),
+      dev: '/dev/snd/pcmC' + Number(m[1]) + 'D' + Number(m[2]) + 'c'
+    });
+  }
+  return out;
+}
+
+function micBlocked(devs) {
+  if (!devs.length) return false;
+  var mounts = rd('/proc/mounts') || '';
+  for (var i = 0; i < devs.length; i++) {
+    if (mounts.indexOf(' ' + devs[i].dev + ' ') === -1) return false;
+  }
+  return true;
+}
+
+function setMicBlocked(block, cb) {
+  var devs = micDevices();
+  if (!devs.length) return cb({ ok: false, error: 'this TV reports no microphone' });
+  var i = 0;
+  (function next() {
+    if (i >= devs.length) {
+      try {
+        if (block) fs.writeFileSync(MIC_FLAG_FILE, devs.map(function (d) { return d.dev; }).join('\n') + '\n', 'utf8');
+        else if (fs.existsSync(MIC_FLAG_FILE)) fs.unlinkSync(MIC_FLAG_FILE);
+      } catch (e) { /* the mount is what matters; the file only survives a boot */ }
+      clearCache();
+      return cb({ ok: true, blocked: micBlocked(micDevices()) });
+    }
+    var dev = devs[i++];
+    var args = block ? ['--bind', '/dev/null', dev.dev] : [dev.dev];
+    execFile(block ? '/bin/mount' : '/bin/umount', args, { timeout: 4000 }, function () { next(); });
+  })();
+}
+
 function setServiceEnabled(name, enable, cb) {
   execFile('/sbin/initctl', [enable ? 'start' : 'stop', name], { timeout: 6000 }, function () {
     upstartJobs(function (jobs) {
@@ -486,7 +549,9 @@ function runningDaemons(cb) {
           name: name,
           label: d[0],
           detail: d[1],
-          running: txt.indexOf('/usr/sbin/' + name) !== -1,
+          running: (d[3] || [name]).some(function (proc) {
+            return txt.indexOf('/usr/sbin/' + proc) !== -1;
+          }),
           onDemand: onDemand,
           job: jobs[name] || null,
           stoppable: !onDemand && !!SERVICE_CONTROLLABLE[name] && !!jobs[name],
@@ -504,6 +569,14 @@ function collectPrivacy(cb) {
 
   var out = { ok: true, consent: readConsentFlags(), consentWritable: config.allowControl,
               consentGroups: CONSENT_GROUPS };
+
+  var micDevs = micDevices();
+  out.microphone = {
+    present: micDevs.length > 0,
+    blocked: micBlocked(micDevs),
+    name: micDevs.length ? micDevs[0].name : null,
+    writable: config.allowControl
+  };
 
   runningDaemons(function (daemons) {
     out.daemons = daemons;
@@ -634,6 +707,8 @@ module.exports = {
   collectPrivacy: collectPrivacy,
   setConsent: setConsent,
   setServiceEnabled: setServiceEnabled,
+  micDevices: micDevices,
+  setMicBlocked: setMicBlocked,
   readConsentFlags: readConsentFlags,
   clearCache: clearCache,
   ADBLOCK_ADS: ADBLOCK_ADS,
