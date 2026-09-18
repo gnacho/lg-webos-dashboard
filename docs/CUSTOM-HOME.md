@@ -1,10 +1,67 @@
-# Custom home screen — design
+# Custom home screen — design (shelved)
 
 A plan for replacing LG's home screen with a plain launcher: the inputs and the
 apps on the TV, in one scrollable list, in the dashboard's typography, with a
-switch back to the stock home. Not built yet. This records what was proven on
-the hardware, the mechanism, and a tiered plan from a minimal version to a
-customisable one.
+switch back to the stock home.
+
+**Status: investigated on hardware, not built, and shelved.** The display swap
+works — our scene can render in place of LG's home — but it could not be made
+reliable or predictable on webOS 9, because the home app is managed by system
+snapshot machinery too deep to control from where we sit. A home screen we
+cannot deterministically show and cleanly revert is not shippable, so the
+feature is dropped. The [Outcome](#outcome-why-it-was-shelved) records exactly
+what failed; the rest is kept as an accurate account of the mechanism and data
+sources, so the finding is not re-discovered from scratch.
+
+## Outcome: why it was shelved
+
+Tested on a C2 (webOS 9.2.2), read-only probes plus reversible swaps, recovering
+the set with reboots. Four findings, together disqualifying:
+
+1. **The display swap works — once.** A scene we bind-mounted over
+   `com.webos.app.home` rendered full screen as the home. This is what made it
+   look promising.
+2. **The boot hook runs too late to matter.** The Homebrew Channel's
+   `init.d` hook fires at ~26 s into boot; the home app is already running and
+   already snapshotted by ~5 s. Mounting our files at that point does not get
+   our scene loaded — the running home is the stock one, restored from its
+   snapshot.
+3. **The snapshot machinery defeats a controlled swap.** The home is a frozen
+   CRIU image owned by `sam` (`/usr/sbin/sam`, via `libcriu`), driven by
+   `preload-manager.service`, over a deeper `libsnapshot-boot` /
+   `snapshot-boot-*` layer. CRIU restores the process by its **original PID**, so
+   killing and relaunching brings the frozen scene back rather than reading disk.
+   Bind-mounting a preload config with the home removed from the snapshot
+   allow-list does not help at runtime, because the daemon already holds the
+   stock config in memory.
+4. **Even a forced cold start showed the wrong scene.** Restarting
+   `preload-manager.service`, clearing the checkpoint and relaunching produced a
+   genuinely new process — and it still displayed a *stale scene from an earlier
+   test* instead of the file then on disk. The home's state could not be
+   deterministically controlled. Only removing every staged file and rebooting
+   gave a clean, predictable result — which is fine for recovery but useless as
+   a feature.
+
+The boot-time-swap idea (accept a reboot to switch modes, mount before the home
+starts) does not rescue it: (2) shows there is no hook point early enough, and
+(3)/(4) show the snapshot layer wins even when the mount is in place. Making this
+work would mean managing `sam`'s CRIU checkpoints and the `snapshot-boot`
+services directly — deep, undocumented, per-firmware system internals, for a
+feature that replaces something the owner depends on daily. Not a good trade.
+
+### If it is ever revisited
+
+- A capable path would have to intervene before `sam` snapshots the home
+  (< 5 s), or drive the snapshot services to rebuild from our files
+  deterministically. Neither was found from a Homebrew-rooted userspace.
+- The lesser alternative that avoids the whole problem is a launcher shipped as
+  its **own** app the owner opens, not a replacement of the Home key. It is
+  reliable because it never touches the snapshot machinery — but it does not
+  achieve the goal of replacing the interruptive full-screen home, so it was not
+  pursued.
+
+What follows is the mechanism and data-source research, accurate and still
+useful if the snapshot obstacle is ever solved.
 
 ## Scope
 
