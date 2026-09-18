@@ -7,8 +7,6 @@ Assistant over MQTT as a single auto-discovered device.
 The dashboard needs nothing but the TV. Home Assistant control over MQTT is
 optional, and set up in [step 4](#4-home-assistant--mqtt-optional).
 
-There are no dependencies. This is ES5 on the Node 0.12 runtime that is on the TV.
-
 ---
 
 ## What it's for
