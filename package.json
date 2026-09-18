@@ -1,6 +1,6 @@
 {
   "name": "lg-webos-mqtt",
-  "version": "0.37.1",
+  "version": "0.37.2",
   "private": true,
   "description": "Home Assistant MQTT bridge and dashboard for LG webOS TVs",
   "devDependencies": {
