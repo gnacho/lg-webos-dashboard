@@ -1,9 +1,9 @@
 # LG webOS TV Dashboard & Home Assistant Bridge
 
 A server that runs directly **on** a rooted LG webOS TV. It serves a live browser
-dashboard for remote control, OLED panel care, privacy toggles, and hardware
-telemetry. Also an optional MQTT bridge that automatically exposes the TV as
-a unified Home Assistant device.
+dashboard for remote control, OLED panel care, privacy toggles, service menu access, and hardware
+telemetry. An optional MQTT bridge will also expose the TV as
+a unified Home Assistant device for smart home control.
 
 The dashboard runs standalone on the TV with zero external dependencies. Home
 Assistant integration is completely optional and covered in
