@@ -3,7 +3,7 @@
 A server that runs directly **on** a rooted LG webOS TV. It serves a live browser
 dashboard for remote control, OLED panel care, privacy toggles, service menu access, and hardware
 telemetry. An optional MQTT bridge will also expose the TV as
-a unified Home Assistant device for smart home control.
+a unified [Home Assistant](https://www.home-assistant.io/) device for smart home control.
 
 The dashboard runs standalone on the TV with zero external dependencies.
 
