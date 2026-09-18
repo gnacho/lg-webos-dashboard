@@ -2,7 +2,7 @@
 
 A server that runs directly **on** a rooted LG webOS TV. It serves a live browser
 dashboard for remote control, OLED panel care, privacy toggles, and hardware
-telemetry &mdash; with an optional MQTT bridge that automatically exposes the TV as
+telemetry. Also an optional MQTT bridge that automatically exposes the TV as
 a unified Home Assistant device.
 
 The dashboard runs standalone on the TV with zero external dependencies. Home
@@ -34,9 +34,9 @@ Assistant integration is completely optional and covered in
 3. **[Replacing the screen saver](#screen-savers).** A clock, a starfield, fireworks, or the
    TV's own readings, each dim or bright, in place of LG's.
 
-4. **[Integrating the TV into Home Assistant](#home-assistant-bridge).** Optional, over MQTT: the TV
-   arrives as a single auto-discovered device &mdash; no YAML, no LG
-   account &mdash; so the TV can be automated and its telemetry recorded
+4. **[Integrating the TV into Home Assistant](#home-assistant-bridge).** Using MQTT: the TV
+   arrives as a single auto-discovered device (no YAML, no LG
+   account) so the TV can be automated and its telemetry recorded
    alongside everything else in the house.
    [Home Assistant & MQTT](#home-assistant--mqtt-optional) explains what MQTT is.
 
@@ -49,12 +49,12 @@ Assistant integration is completely optional and covered in
 
 7. **[Controlling the OLED burn-in protections](#oled-wear-and-burn-in-protection).** What each one does and a switch
    for it: screen shift and logo dimming on any OLED, and on TVs that expose
-   them, ASBL and Global Stress Reduction &mdash; the two normally reachable only
-   from the TV's service menu, with a service remote and a PIN.
+   them, ASBL and Global Stress Reduction (normally reachable only
+   from the TV's service menu, with a service remote and a PIN)
 
 8. **[Opening the service menu, and unlocking it where it is locked](#service-menu-access).** LG's own
-   engineering menu, put on the TV screen from a browser &mdash; no service
-   remote. Newer firmware shows a cut-down version of it until it is unlocked,
+   engineering menu, put on the TV screen from a browser which means no service
+   remote is needed. Newer firmware shows a cut-down version of it until it is unlocked,
    which the dashboard can do as well.
 
 ---
