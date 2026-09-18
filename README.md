@@ -5,9 +5,7 @@ dashboard for remote control, OLED panel care, privacy toggles, service menu acc
 telemetry. An optional MQTT bridge will also expose the TV as
 a unified Home Assistant device for smart home control.
 
-The dashboard runs standalone on the TV with zero external dependencies. Home
-Assistant integration is completely optional and covered in
-[Home Assistant & MQTT](#home-assistant--mqtt-optional).
+The dashboard runs standalone on the TV with zero external dependencies.
 
 ### Compatibility at a glance
 
