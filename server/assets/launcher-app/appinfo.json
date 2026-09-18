@@ -5,9 +5,9 @@
   "type": "web",
   "main": "index.html",
   "title": "tvweb Launcher",
-  "bgColor": "#000000",
+  "icon": "assets/icon80.png",
+  "largeIcon": "assets/icon130.png",
   "iconColor": "#1ec15f",
-  "transparent": false,
-  "handlesRelaunch": true,
-  "trustLevel": "default"
+  "bgColor": "#000000",
+  "appDescription": "Inputs and apps in one list"
 }
