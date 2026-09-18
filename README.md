@@ -86,10 +86,7 @@ A custom Home Assistant dashboard for an LG TV:
 ## Features
 
 Each has a tab of its own in the dashboard, and a deep link to it. OLED Care
-appears on OLED TVs only. Fonts and assets are served by the TV, so the page
-works with no internet access, and a high-contrast light theme with dark text
-sits alongside the default true-black OLED one &mdash; masthead toggle (☾ / ☀)
-or `/?theme=light`.
+appears on OLED TVs only. The page works with no internet access, and has a dark/light mode toggle (via the UI or `/?theme=light`)
 
 ### Remote control
 
@@ -99,12 +96,12 @@ the things the remote does not do easily.
 * A D-pad &mdash; arrows, OK, Back and Home &mdash; to navigate the TV's own
   interface.
 * Volume, mute, input select, and media playback &mdash; play, pause, stop,
-  skip &mdash; through native remote key injection.
+  skip
 * App launching, picture presets and sound output routing. The presets on offer
   are the ones the TV will accept for whatever is playing: a Dolby Vision source
   has its own presets.
 * Screen blanking, sleep timer, standby LED, on-screen notifications, and power
-  and restart &mdash; from here or from Home Assistant.
+  and restart (from here or from Home Assistant)
 
 ### Telemetry and diagnostics
 
@@ -115,18 +112,16 @@ of, most of which is absent from its own settings menu.
   swap, Wi-Fi RSSI and network throughput.
 * eMMC flash wear with JEDEC health translation, and free space on the app
   partition.
-* HDMI link state per port straight off the receiver &mdash; resolution, refresh
-  rate, colour depth, pixel clock &mdash; and, where `/proc/lg/hdmi20` exists,
-  HDMI 2.1 diagnostics: link rate, chroma format, HDCP version, cable error
-  counter, ALLM, VRR, QMS and colorimetry.
+* HDMI link state per port, refresh
+  rate, colour depth, pixel clock, and HDMI 2.1 diagnostics where supported (link rate, chroma format, HDCP version, cable error
+  counter, ALLM, VRR, QMS and colorimetry)
 * Dolby Vision / HDR / SDR detection, picture mode, OLED light level, the raw
   HDMI signal (`3840x2160 @ 120Hz`), audio output routing, and the running app
   with friendly input names (`Apple TV (HDMI2)`).
 * Magic Remote battery and model; webOS and firmware version, SoC architecture,
   OLED cell ID and TCON firmware where the platform exposes them.
 * On demand: what is resident in memory, and which processes are using the
-  processor right now &mdash; measured over a short window rather than read from
-  the lifetime average `ps` reports.
+  processor right now
 
 <p align="center">
   <img width="432" alt="System tab: processor, memory, swap, network and current draw readouts" src="https://github.com/user-attachments/assets/2e6cfe5a-c905-426e-8b4d-8f52d4f31c11" />
