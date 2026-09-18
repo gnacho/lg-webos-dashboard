@@ -26,6 +26,33 @@ effort:
 The dashboard already hides the OLED Care tab on non-OLED sets; the Home tab is
 hidden the same way on anything without a replaceable `com.webos.app.home`.
 
+### Which versions — capability, not version number
+
+The feature is gated on what the TV *is*, not on its webOS number. A version
+cutoff is both too strict, excluding sets that would work, and too loose,
+trusting a number on a set LG may have restructured. Three layers, safest
+first:
+
+1. **Capability check.** The home is the native QML app this design handles:
+   `com.webos.app.home` present, `appinfo.json` `type: native` with a `home`
+   window type, and a `qml/main.qml` to replace. Any of these missing — an
+   older webOS 4 set, or a future one that reworked the home — and the feature
+   is hidden. This is what keeps an untested newer version safe by default: if
+   it changed the structure, it simply is not offered.
+2. **Confirmed models.** Sets actually verified (recorded in the code and the
+   tested-sets table) get the plain enable.
+3. **Capable but unconfirmed** — a newer set that kept the structure but has not
+   been tested. Offered, but not made the boot-persistent default until a
+   **self-test** passes: a temporary swap with a guaranteed auto-revert that
+   confirms our scene renders (compositor capture) before committing. If it does
+   not render, the feature refuses and reverts. The dashboard says the model is
+   not yet verified and that turning it off never needs the TV, only a browser.
+
+The self-test's auto-revert is the safety floor: the temporary swap schedules
+its own revert on the TV, so even if the dashboard or the network drops
+mid-test, the set returns to the stock home on its own.
+
+
 ## How the stock home works
 
 Established by reading `/etc/palm/*` and the app's own files on the C2:
