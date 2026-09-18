@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920,initial-scale=1">
+<title>tvweb launcher</title>
+<style>
+/* A plain launcher for the TV: the inputs and apps in one list, driven by the
+   remote. Outfit for the names (the spectacle face), Manrope for small labels,
+   on true black. Sized for 1080p viewed from the sofa. */
+@font-face{font-family:'Outfit';src:url('/assets/fonts/Outfit.ttf') format('truetype');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Manrope';src:url('/assets/fonts/Manrope.ttf') format('truetype');font-weight:200 800;font-display:swap}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;overflow:hidden}
+body{font-family:'Manrope',sans-serif;color:#fff;
+  /* the remote drives it; hide the cursor */ cursor:none}
+
+#stage{height:100vh;display:flex;flex-direction:column;padding:6vh 0 6vh 8vw}
+
+header{display:flex;align-items:baseline;gap:1.2vw;margin-bottom:4vh;
+  opacity:.9;flex:0 0 auto}
+#clock{font-family:'Outfit';font-weight:200;font-size:5.2vh;letter-spacing:.01em;line-height:1}
+#mark{font-family:'Manrope';font-weight:600;font-size:1.5vh;letter-spacing:.34em;
+  text-transform:uppercase;color:rgba(255,255,255,.42)}
+
+/* The list. Only the selected row is full white and full size; the rest recede,
+   so the eye lands on the choice, not the chrome. */
+#list{flex:1 1 auto;overflow:hidden;position:relative}
+#rows{position:absolute;left:0;right:0;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.row{display:flex;align-items:center;gap:2.4vw;height:11vh;
+  opacity:.34;transition:opacity .22s ease,transform .22s ease;transform-origin:left center}
+.row.sel{opacity:1;transform:scale(1.06)}
+.ic{width:7vh;height:7vh;flex:0 0 auto;border-radius:1.2vh;background:#141414;
+  background-size:cover;background-position:center;display:flex;align-items:center;
+  justify-content:center;font-family:'Outfit';font-weight:400;font-size:3vh;color:#fff;overflow:hidden}
+.meta{display:flex;flex-direction:column;gap:.6vh;min-width:0}
+.title{font-family:'Outfit';font-weight:200;font-size:6vh;line-height:1;letter-spacing:.005em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}
+.sel .title{font-weight:300}
+.tag{font-family:'Manrope';font-weight:600;font-size:1.4vh;letter-spacing:.24em;
+  text-transform:uppercase;color:rgba(255,255,255,.5)}
+.tag.off{color:rgba(255,255,255,.28)}
+
+#msg{position:absolute;top:50%;left:8vw;transform:translateY(-50%);
+  font-family:'Outfit';font-weight:200;font-size:4vh;color:rgba(255,255,255,.5)}
+
+/* An arrow hint when there is more above or below. */
+.more{position:absolute;left:8vw;font-family:'Manrope';font-size:3vh;color:rgba(255,255,255,.3);
+  opacity:0;transition:opacity .2s}
+.more.on{opacity:1}
+#moreUp{top:1vh}
+#moreDown{bottom:1vh}
+</style>
+</head>
+<body>
+<div id="stage">
+  <header>
+    <div id="clock">--:--</div>
+    <div id="mark">tvweb</div>
+  </header>
+  <div id="list">
+    <div id="msg">Loading&hellip;</div>
+    <div class="more" id="moreUp">&#9650;</div>
+    <div id="rows"></div>
+    <div class="more" id="moreDown">&#9660;</div>
+  </div>
+</div>
+<script>
+var items = [], sel = 0, ROW_VH = 11, busy = false;
+
+function api(p){ return p; }  // same origin (our server)
+
+function tick(){
+  var d = new Date();
+  var h = d.getHours(), m = d.getMinutes();
+  document.getElementById('clock').textContent =
+    (h<10?'0':'')+h + ':' + (m<10?'0':'')+m;
+}
+setInterval(tick, 10000); tick();
+
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+function iconHtml(it){
+  if (it.icon) return '<div class="ic" style="background-image:url(\'' + esc(it.icon) + '\')"></div>';
+  var letter = (it.title || '?').charAt(0).toUpperCase();
+  var bg = it.iconColor && /^#/.test(it.iconColor) ? it.iconColor : '#141414';
+  return '<div class="ic" style="background:' + esc(bg) + '">' + esc(letter) + '</div>';
+}
+
+function render(){
+  var rows = document.getElementById('rows');
+  rows.innerHTML = items.map(function(it, i){
+    var tag = it.kind === 'input'
+      ? '<span class="tag' + (it.connected ? '' : ' off') + '">Input' + (it.connected ? '' : ' &middot; no signal') + '</span>'
+      : '<span class="tag">App</span>';
+    return '<div class="row' + (i===sel?' sel':'') + '" data-i="' + i + '">' +
+             iconHtml(it) +
+             '<div class="meta">' + tag + '<div class="title">' + esc(it.title) + '</div></div>' +
+           '</div>';
+  }).join('');
+  position();
+}
+
+// Keep the selected row vertically centred in the list area.
+function position(){
+  var list = document.getElementById('list');
+  var rowPx = window.innerHeight * ROW_VH / 100;
+  var centre = list.clientHeight/2 - rowPx/2;
+  document.getElementById('rows').style.transform = 'translateY(' + (centre - sel*rowPx) + 'px)';
+  document.getElementById('moreUp').className = 'more' + (sel>0 ? ' on' : '');
+  document.getElementById('moreDown').className = 'more' + (sel<items.length-1 ? ' on' : '');
+  var rowsEl = document.getElementById('rows').children;
+  for (var i=0;i<rowsEl.length;i++) rowsEl[i].className = 'row' + (i===sel?' sel':'');
+}
+
+function move(d){
+  if (!items.length) return;
+  sel = Math.max(0, Math.min(items.length-1, sel+d));
+  position();
+}
+
+function launch(){
+  if (busy || !items.length) return;
+  busy = true;
+  var it = items[sel];
+  fetch(api('/api/control'), {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'launchApp', value: it.id })
+  }).then(function(){ setTimeout(function(){ busy=false; }, 800); })
+    .catch(function(){ busy=false; });
+}
+
+document.addEventListener('keydown', function(e){
+  var k = e.key;
+  if (e.keyCode === 38 || k === 'ArrowUp')        { move(-1); e.preventDefault(); }
+  else if (e.keyCode === 40 || k === 'ArrowDown') { move(1);  e.preventDefault(); }
+  else if (e.keyCode === 13 || k === 'Enter')     { launch(); e.preventDefault(); }
+  // Back (461 on webOS) is left to the system, which exits the app.
+});
+window.addEventListener('resize', position);
+
+function load(){
+  fetch(api('/api/launchpoints'), {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error('bad data');
+      var ins = (d.inputs||[]).slice().sort(function(a,b){ return (b.connected?1:0)-(a.connected?1:0); });
+      items = ins.concat(d.apps||[]);
+      document.getElementById('msg').style.display = items.length ? 'none' : 'block';
+      if (!items.length) document.getElementById('msg').textContent = 'Nothing to show';
+      sel = 0; render();
+    })
+    .catch(function(){
+      document.getElementById('msg').textContent = 'Could not reach the TV server';
+    });
+}
+load();
+</script>
+</body>
+</html>
