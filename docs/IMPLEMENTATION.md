@@ -127,6 +127,7 @@ to a dedicated service and changed filesystem file paths:
 | **Off-RS completed cycles** | &mdash; | `/mnt/lg/cmn_data/pnwash/completedOffRsCount` | integer count |
 | **JB refresher cycles** | &mdash; | `/mnt/lg/cmn_data/pnwash/completedJbCount` | integer count |
 | **Compensation failures** | &mdash; | `/mnt/lg/cmn_data/pnwash/failAlertCount` | integer count |
+| **GSR stress events** | &mdash; | `com.webos.service.oledepl/getGlobalStressReduction` (`stressCount`) | integer count |
 | **Panel silicon info** | &mdash; | `com.webos.service.panelcontroller/getOledCellInfo` / `getOledTconInfo` | Cell ID & TCON FPGA FW |
 
 On older TVs, the interval file reading `24` means four hours, matching LG's documented

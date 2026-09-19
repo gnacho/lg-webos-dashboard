@@ -43,7 +43,7 @@ The dashboard runs standalone on the TV with zero external dependencies.
 
 6. **[Observing OLED panel wear](#oled-wear-and-burn-in-protection).** Cumulative panel hours, compensation cycle
    progress, Pixel Refresher countdown with scheduling, completed cycle counters
-   and failure alerts.
+   and refresher failure alerts.
 
 7. **[Controlling the OLED burn-in protections](#oled-wear-and-burn-in-protection).** What each one does and a switch
    for it: screen shift and logo dimming on any OLED, and on TVs that expose
@@ -155,7 +155,10 @@ The **OLED Care** tab, `/?tab=oledcare`, on OLED TVs. The panel's own wear
 figures beside what each burn-in protection does and a switch for it.
 
 * Cumulative panel hours, panel maintenance and Pixel Refresher countdowns with
-  scheduling, completed cycle counters and failure alerts.
+  scheduling, completed cycle counters and refresher failure alerts.
+* GSR stress events on supported panels &mdash; counts how many times static
+  elements (such as logos, HUDs, or news tickers) triggered active panel dimming
+  to prevent burn-in.
 * Screen shift and logo dimming on any OLED.
 * Temporal peak control (ASBL) and global stress reduction on supported models
   (the two normally reachable only from the TV's service menu, with a service
