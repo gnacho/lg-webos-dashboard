@@ -56,6 +56,12 @@ fi
     done < /var/lib/tvweb/services_stopped
   fi
 
+  # Re-apply the launcher-as-Home choice made in the dashboard. The compositor is
+  # up by now, so this reloads it once; the script self-guards and never loops.
+  if [ -f /var/lib/tvweb/home/enabled ]; then
+    sh /var/lib/tvweb/assets/launcher-app/home-mode.sh boot >/dev/null 2>&1 || true
+  fi
+
   if [ -x /var/lib/tvweb/tvwebctl ]; then
     /var/lib/tvweb/tvwebctl start
   else

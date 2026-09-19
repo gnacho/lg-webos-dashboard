@@ -44,7 +44,8 @@ SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=6 -o StrictHostKeyChecking=accept-n
 STAGE=/var/lib/tvweb/.deploy     # on the TV; beside the install so moves are renames
 
 FILES="tvweb.js tvwebctl assets/ui.html assets/launcher.html assets/launcher-app/appinfo.json assets/launcher-app/index.html assets/launcher-app/packageinfo.json \
-assets/launcher-app/install-app.sh assets/launcher-app/assets/icon80.png assets/launcher-app/assets/icon130.png \
+assets/launcher-app/install-app.sh assets/launcher-app/home-mode.sh \
+assets/launcher-app/assets/icon80.png assets/launcher-app/assets/icon130.png \
 assets/fonts/Outfit.ttf assets/fonts/Manrope.ttf \
 assets/fonts/OFL-Outfit.txt assets/fonts/OFL-Manrope.txt \
 assets/screensavers/clock.qml assets/screensavers/fireworks.qml \

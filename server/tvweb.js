@@ -666,6 +666,14 @@ function doControl(action, value, cb) {
         cb(r);
       });
 
+    // Point the Home key at the tvweb launcher, or put the stock home back. The
+    // switch reloads the compositor, so the screen blinks; the reply carries the
+    // new state back to the dashboard.
+    case 'launcherHome':
+      var lhOn = (value === true || value === 'on' || value === 'ON'
+                  || value === 'true' || value === 1 || value === '1');
+      return homeMode(lhOn ? 'enable' : 'disable', function (r) { cb(r); });
+
     case 'toast':
       /* Both the payload's sourceId and luna-send's -a have to name an app the
          bus already knows; "tvweb" is rejected as an Unknown Source. */
@@ -776,6 +784,24 @@ function assetPath(rel) {
     catch (e) {}
   }
   return null;
+}
+
+/*
+ * The launcher-as-Home switch. The work - a bind-mount over the compositor's key
+ * handler and a compositor restart - belongs in shell, so it lives in a script
+ * beside the launcher app. Its result is printed as a JSON line, which is read
+ * back here. Absent script (an older deploy) reports unsupported rather than
+ * erroring, so the dashboard simply hides the switch.
+ */
+function homeMode(cmd, cb) {
+  var script = assetPath('launcher-app/home-mode.sh');
+  if (!script) return cb({ ok: true, supported: false, enabled: false, active: false });
+  execFile('/bin/sh', [script, cmd], { timeout: 30000 }, function (err, stdout) {
+    var out = String(stdout || '').trim();
+    var last = out.split('\n').pop();   // the script prints its JSON result last
+    try { return cb(JSON.parse(last)); }
+    catch (e) { return cb({ ok: !err, error: err ? err.message : 'unreadable result' }); }
+  });
 }
 
 /*
@@ -1131,6 +1157,12 @@ var server = http.createServer(function (req, res) {
   // cannot read file://) can show real artwork. Only paths under the app dirs.
   if (pathname === '/api/icon') {
     return serveIcon(u.query.path, res);
+  }
+
+  // Whether the launcher is the Home target, whether the switch is even
+  // available on this TV, and whether it is applied right now.
+  if (pathname === '/api/launcher') {
+    return homeMode('status', function (r) { send(res, 200, JSON.stringify(r)); });
   }
 
   if (pathname === '/api/servicemenu') {
