@@ -20,8 +20,15 @@ STAGE="$DIR/systemUi.js"
 FLAG="$DIR/enabled"
 LAUNCHER=com.tvweb.launcher
 
-supported() { [ -f "$KF" ] && command -v luna-send >/dev/null 2>&1; }
-active()    { grep -q "launch(\"$LAUNCHER\"" "$KF" 2>/dev/null; }
+# Supported only where our exact edit applies: the key handler exists and holds
+# the launch call we rewrite (the stock home one, or our launcher one when already
+# on). Older TVs draw the home from the compositor with no such handler here, so
+# this is false and the dashboard hides the switch.
+supported() {
+  [ -f "$KF" ] && command -v luna-send >/dev/null 2>&1 &&
+    grep -qE 'applicationManager\.launch\("com\.(webos\.app\.home|tvweb\.launcher)"' "$KF" 2>/dev/null
+}
+active() { grep -q "launch(\"$LAUNCHER\"" "$KF" 2>/dev/null; }
 
 mount_reload() {   # bind the staged handler over the stock one and reload the compositor
   mount --bind "$STAGE" "$KF" 2>/dev/null || return 1
