@@ -9,9 +9,9 @@
 # touching LG's home app.
 #
 # Only the developer install service takes an unsigned app; the retail one
-# rejects it. That service answers on webOS 9 sets. Where it is absent or the
-# install does not complete - as on older sets - this exits without failing, and
-# the served launcher page stays the way in.
+# rejects it. That service answers on webOS 9. Where it is absent or the install
+# does not complete - as on older webOS - this exits without failing, and the
+# served launcher page stays the way in.
 
 ID=com.tvweb.launcher
 VER=1.0.0

@@ -127,7 +127,7 @@ sleep 4
 "\$D/tvwebctl" status
 tail -6 "\$D/tvweb.log"
 # Best effort: add the launcher to the home screen. Self-guards and never fails
-# the install where the set does not support it.
+# the install where the TV does not support it.
 sh "\$D/assets/launcher-app/install-app.sh" 2>&1 || true
 EOF
 }
