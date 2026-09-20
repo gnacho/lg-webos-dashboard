@@ -962,7 +962,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <details class="pv-d" id="disc-system-tiles">
     <summary>Hide home screen system apps <span class="cur" id="apps-tiles-summary"></span></summary>
-    <div class="pv-sub">Non-removable LG system apps (Gallery, Music, Sports, Always Ready, Alexa, etc.). Toggle to customize visibility on the TV's home launcher ribbon.</div>
+    <div class="pv-sub">Hide built-in LG apps (Gallery, Music, Sports, Always Ready, Alexa, etc.) from the TV's home launcher ribbon.</div>
     <div class="btns" style="margin-top:14px;max-width:520px">
       <button type="button" id="tile-hiding-off" onclick="setTileHiding(false)">Off (Stock)</button>
       <button type="button" id="tile-hiding-on" onclick="setTileHiding(true)">On (Custom)</button>
@@ -2586,15 +2586,16 @@ function renderApps() {
 
   if (hiddenCount) {
     if (!tileHidingEnabled) {
-      hiddenCount.textContent = 'Disabled (stock TV behavior)';
+      hiddenCount.style.display = 'none';
     } else {
-      hiddenCount.textContent = numHidden > 0 ? numHidden + ' hidden of ' + tiles.length + ' apps' : 'Enabled · all ' + tiles.length + ' apps visible';
+      hiddenCount.style.display = '';
+      hiddenCount.textContent = numHidden > 0 ? numHidden + ' hidden of ' + tiles.length + ' apps' : 'All ' + tiles.length + ' apps visible';
     }
   }
 
   if (tilesSummary) {
     if (!tileHidingEnabled) {
-      tilesSummary.textContent = 'Disabled';
+      tilesSummary.textContent = 'Off';
     } else {
       tilesSummary.textContent = numHidden > 0 ? numHidden + ' hidden' : tiles.length + ' apps';
     }
@@ -2602,7 +2603,7 @@ function renderApps() {
 
   if (tilesList) {
     if (!tileHidingEnabled) {
-      tilesList.innerHTML = '<div class="sub" style="padding:16px 0">System app hiding is currently disabled. Toggle on above to customize home screen app visibility.</div>';
+      tilesList.innerHTML = '<div class="sub" style="padding:16px 0">All built-in apps are visible (stock behavior). Select <b>On (Custom)</b> above to hide apps from the home launcher.</div>';
     } else if (tiles.length === 0) {
       tilesList.innerHTML = '<div class="sub" style="padding:16px 0">No eligible system apps found.</div>';
     } else {
