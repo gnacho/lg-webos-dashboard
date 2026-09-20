@@ -36,7 +36,7 @@ The dashboard runs standalone on the TV with zero external dependencies.
    uninstall store downloads and sideloaded apps to reclaim internal flash storage,
    and hide non-removable built-in LG system tiles (Gallery, Music, Sports, Always
    Ready, Camera, User Guide, etc.) from the home launcher ribbon. Fully reversible
-   at any time without touching rootfs partitions.
+   at any time.
 
 4. **[Replacing the screen saver](#screen-savers).** A clock, a starfield, fireworks, or the
    TV's own readings, each dim or bright, in place of LG's.
@@ -145,7 +145,7 @@ of, most of which is absent from its own settings menu.
 The **Apps** tab, `/?tab=apps`. Manage installed applications and tidy the TV's home screen ribbon.
 
 * **Installed applications:** Store downloads and sideloaded packages with version and vendor details, and a one-click uninstall action to permanently delete apps and free up internal eMMC flash storage.
-* **Home screen system tiles:** Hide non-removable LG system tiles (Gallery, Music, Sports, Always Ready, Camera, User Guide, Device Connector, Alexa, Google Assistant, etc.) from the home launcher ribbon. Operates non-destructively via reversible `appinfo.json` bind-mounts, surviving reboots without modifying rootfs partitions.
+* **Home screen system tiles:** Hide non-removable LG system tiles (Gallery, Music, Sports, Always Ready, Camera, User Guide, Device Connector, Alexa, Google Assistant, etc.) from the home launcher ribbon. Operates non-destructively via reversible `appinfo.json` bind-mounts.
 * **Restore all:** A single action restores all system tiles to their default visible state instantly.
 * **Strict system safeguards:** Core TV services (`Live TV`, `Settings`, `Launcher`, input switchers, and the dashboard itself) are strictly protected and can never be hidden or uninstalled.
 * **Available on TV and Web:** Manage apps from any browser or directly on the TV using the remote control in the on-TV dashboard app.
