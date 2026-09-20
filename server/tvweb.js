@@ -661,6 +661,12 @@ function doControl(action, value, cb) {
       return luna('com.webos.service.settings/setSystemSettings', lightPayload,
                   function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
 
+    case 'quickBoot':
+      var qbOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
+      return luna('com.webos.service.settings/setSystemSettings',
+                  { category: 'option', settings: { quickStartMode: qbOn ? 'on' : 'off' } },
+                  function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
+
     case 'serviceMenuLock':
       return oled.setServiceMenuLock(!!(value && value.locked), cb);
 
