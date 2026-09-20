@@ -586,6 +586,32 @@ function sysRows(d) {
              hint: 'The version of this dashboard server. Press OK to open the Updates tab.' });
   }
 
+  if (d.quickBoot !== undefined || (d.lights && d.lights.standby !== undefined)) {
+    r.push(head('Settings'));
+    if (d.quickBoot !== undefined) {
+      r.push({
+        label: 'Quick Boot',
+        value: d.quickBoot ? 'On' : 'Off',
+        cls: 'act',
+        act: 'quickBoot',
+        on: !!d.quickBoot,
+        press: 'Press OK to turn ' + (d.quickBoot ? 'off' : 'on'),
+        hint: 'Quick Start+ puts the TV into instant standby so it wakes in <2s instead of performing a ~25s cold boot.'
+      });
+    }
+    if (d.lights && d.lights.standby !== undefined) {
+      r.push({
+        label: 'Standby LED',
+        value: d.lights.standby ? 'On' : 'Off',
+        cls: 'act',
+        act: 'standbyLight',
+        on: !!d.lights.standby,
+        press: 'Press OK to turn ' + (d.lights.standby ? 'off' : 'on'),
+        hint: 'Controls whether the front standby LED stays lit when the TV is turned off.'
+      });
+    }
+  }
+
   r.push(head('Appearance'));
   r.push({
     label: 'Theme',
@@ -1240,6 +1266,10 @@ function activate() {
       return send({ action: 'refresherCancel' }, 'Refresher cancelled');
     case 'saver':
       return send({ action: 'screensaverMode', value: r.key });
+    case 'quickBoot':
+      return send({ action: 'quickBoot', value: !r.on }, r.on ? 'Quick Boot turned off' : 'Quick Boot turned on');
+    case 'standbyLight':
+      return send({ action: 'standbyLight', value: !r.on }, r.on ? 'Standby LED turned off' : 'Standby LED turned on');
     case 'adblock':
       return send({ action: 'toggleAdBlock' });
     case 'acr':

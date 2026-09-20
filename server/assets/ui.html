@@ -862,12 +862,21 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
       </div>
     </details>
 
-    <div class="set"><div class="lbl">Front lights</div>
-      <div class="btns">
-        <button id="lt_standby" onclick="toggleLight('standbyLight')">Standby LED</button>
-        <button id="lt_logo" onclick="toggleLight('logoLight')" hidden>Logo light</button>
+    <details class="disc" id="disc-advanced">
+      <summary>Advanced <span class="cur" id="adv-cur"></span></summary>
+      <div class="set" id="row-quickboot"><div class="lbl">Boot mode</div>
+        <div class="btns">
+          <button id="btn_quickboot" onclick="toggleQuickBoot()">Quick Boot</button>
+        </div>
+        <div class="sub">Wakes in &lt;2s via instant standby instead of a full ~25s cold boot.</div>
       </div>
-    </div>
+      <div class="set"><div class="lbl">Front lights</div>
+        <div class="btns">
+          <button id="lt_standby" onclick="toggleLight('standbyLight')">Standby LED</button>
+          <button id="lt_logo" onclick="toggleLight('logoLight')" hidden>Logo light</button>
+        </div>
+      </div>
+    </details>
 
     <div class="set"><div class="lbl">Screen notification</div>
       <form class="toast-form" onsubmit="event.preventDefault();sendToast();">
@@ -1434,6 +1443,14 @@ async function tick() {
       if (q('lt_logo')) {
         q('lt_logo').hidden = !lights.hasLogo;
         q('lt_logo').classList.toggle('on', !!lights.logo);
+      }
+      if (q('row-quickboot')) q('row-quickboot').hidden = d.quickBoot === undefined;
+      if (q('btn_quickboot')) q('btn_quickboot').classList.toggle('on', !!d.quickBoot);
+      if (q('adv-cur')) {
+        const advParts = [];
+        if (d.quickBoot !== undefined) advParts.push(d.quickBoot ? 'Quick Boot on' : 'Quick Boot off');
+        if (lights.standby !== undefined) advParts.push(lights.standby ? 'Standby LED on' : 'Standby LED off');
+        q('adv-cur').textContent = advParts.join(', ');
       }
       if (q('tl-cur')) {
         q('tl-cur').textContent = st === 'off' ? 'Off' : `${st} min`;
@@ -2056,6 +2073,10 @@ async function c(action, value) {
 function toggleLight(which) {
   const el = q(which === 'standbyLight' ? 'lt_standby' : 'lt_logo');
   c(which, el && el.classList.contains('on') ? 'off' : 'on');
+}
+function toggleQuickBoot() {
+  const el = q('btn_quickboot');
+  c('quickBoot', el && el.classList.contains('on') ? 'off' : 'on');
 }
 
 function toggleMute() { c('mute', !muted); }

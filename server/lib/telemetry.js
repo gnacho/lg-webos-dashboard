@@ -1010,7 +1010,7 @@ function collectStats(cb) {
     out.sleepTimer = (tm && tm.settings && tm.settings.sleepTimer) || 'off';
 
   lunaCachedFn('com.webos.service.settings/getSystemSettings',
-       { category: 'option', keys: ['standByLight', 'logoLight', 'powerOnLight'] }, 60000, function (op) {
+       { category: 'option', keys: ['standByLight', 'logoLight', 'powerOnLight', 'quickStartMode'] }, 60000, function (op) {
     var os = (op && op.settings) || {};
     out.lights = {
       standby: os.standByLight === 'on',
@@ -1018,6 +1018,9 @@ function collectStats(cb) {
       powerOn: os.powerOnLight === 'on',
       hasLogo: hasLogoLight === true
     };
+    if (os.quickStartMode !== undefined) {
+      out.quickBoot = os.quickStartMode === 'on';
+    }
     out.gpuMhz = gpuClockMhz();
 
   lunaCachedFn('com.palm.connectionmanager/getStatus', {}, 60000, function (cm) {
