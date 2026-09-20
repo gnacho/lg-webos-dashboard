@@ -246,7 +246,7 @@ versions and panel types.
 | 55UH6030-UC | 3.4.3 | &mdash; | LCD | |
 | OLED65B7V-Z | 3.9.3 | 06.10.65 | OLED | No SoC temperature or eMMC wear readings |
 | OLED65C8PUA | 4.4.0 | 05.50.15 | OLED | No `getAdid` on this firmware |
-| OLED65B8SLC | 4.4.3 | 05.50.70 | OLED | Development TV |
+| OLED65B8SLC | 4.4.3 | 05.50.70 | OLED | Everything works. Misses a few metrics found on newer versions |
 | OLED55C9PLA | 4.9.0 | 05.30.40 | OLED | Working fine |
 | OLED65C9AUA | 4.9.x (4.5+) | 05.50.00 | OLED | |
 | OLED55C17LB | 6.x | &mdash; | OLED | HDMI 2.1 diagnostics and remote battery reporting |
