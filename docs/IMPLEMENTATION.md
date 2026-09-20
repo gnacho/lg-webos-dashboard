@@ -287,6 +287,89 @@ reads as a call that succeeded silently. Use `ssh -tt`. Calls made by `tvweb.js`
 on the TV itself are unaffected - this bites when testing by hand, and it is an
 easy way to convince yourself a change worked when nothing ran.
 
+## Shortcut button mapping is owned by LG's servers
+
+Researched and built, then dropped before shipping: it cannot be made to work
+from a cold boot. Kept here because the constraints are expensive to rediscover
+and none of them are visible from the outside.
+
+**Why it was dropped.** Every route needs the compositor to read a changed key
+filter, and the only hook available runs too late. `startup.sh` invokes
+`run-parts /var/lib/webosbrew/init.d` from the Homebrew Channel service, well
+after `surface-manager` has started and read the stock file - measured on a C2,
+the compositor was serving windows at 15s uptime and the hook ran at 35s. A
+bind-mount applied then does nothing until the compositor restarts, and
+restarting it mid-boot tears down the UI and fires a burst of system
+notifications. So the choice is a disruptive restart on every boot, or buttons
+that stay stock until something else restarts the compositor. Neither is worth
+having.
+
+
+The remote's streaming buttons (Netflix, Prime Video, Disney+ …) resolve through
+`mapping_info` in the settings service, `category: "other"`, which
+`/usr/lib/qml/KeyFilters/appLaunch.js` reads at compositor start. Writing it
+works and persists, so it looks like the place to remap a button - but
+`cb_getHotkeyInfo()` treats LG's cloud response as authoritative: it overwrites
+the in-memory table and then writes that back over the settings key. Measured on
+a C2 (webOS 9), a `rakutentv` remap read back correctly and then returned to the
+stock `ui30` after a compositor restart, the payload shrinking 8319 to 7248
+bytes as LG pushed its own list.
+
+Two further details from that file:
+
+* The subscription at `appLaunch.js:615` is registered *without*
+  `"subscribe": true`, so even an unclobbered value is read only at compositor
+  start. Any mapping change needs a `surface-manager` restart regardless.
+* `isActive` on each entry marks the buttons the model and its remote actually
+  have, which is the per-model list to offer and needs no hardcoded table. The
+  button-to-key-constant pairs come out of `getPowerOnReason()` in the same
+  file, so both follow the firmware rather than this repository.
+
+The remap therefore catches the key earlier: `systemUi.js` runs before
+`appLaunch.js`, so a `case WebOS.Key_webOS_<Name>:` added to
+`handleSystemKeys()` that returns `KeyPolicy.Accepted` launches the chosen app
+and the CP-hotkey handler never sees the press. `shortcut-key.sh` bind-mounts a
+patched copy, rebuilt each time from a pristine original so cases cannot
+compound, and refuses to mount anything `node --check` rejects - a key filter
+that does not parse takes the compositor down with it. The mount does not
+survive a reboot, so a power cycle is always the way back; the boot hook
+re-applies it, before the compositor starts where it can, which saves a restart.
+
+Two traps when working on it: validate the staged copy under a name ending
+`.js`, since `node --check` refuses an unknown extension like `.tmp` and the
+check then fails every time; and `/var/log/messages` timestamps are UTC while
+`date` is local, which makes a fresh button press look an hour stale.
+
+### webOS 4 differs in five ways, all of them load-bearing
+
+Verified on an OLED65B8SLC. The feature works there, but nothing about it can be
+assumed from the webOS 9 shape:
+
+| | webOS 9 (C2) | webOS 4 (B8) |
+| :--- | :--- | :--- |
+| Key filters | `/usr/lib/qml/KeyFilters` | `/usr/lib/qt5/qml/KeyFilters` |
+| Button named by | `powerOnReason = "netflix"` | `appId = "netflix"` |
+| Button list | `mapping_info`, filtered on `isActive` | absent — settings returns "no matched result from DB" |
+| Init | systemd, `systemctl restart --no-block` | upstart, `initctl restart` |
+| `node --check` | present | absent (node 0.12) |
+
+The missing `mapping_info` means there is no way to know which buttons the
+remote physically has, so the list falls back to every button the firmware can
+launch — three on the B8, one of them `ivi`, which a UK remote does not carry.
+Assigning a button that is not there simply never fires, so the fallback is
+offered with that said plainly rather than withheld.
+
+Without `--check`, the staged file is validated by compiling it instead:
+`new Function(src)` raises on a syntax error and never runs the body, which
+matters because the body expects QML globals that do not exist in node.
+
+The insertion point is the top of the `switch (key)` in `handleSystemKeys`,
+not above a named case. On webOS 4 several stock cases are a fall-through group
+— `Qt.Key_Super_L` and `Qt.Key_Menu` fall into `WebOS.Key_webOS_Recent` — and a
+case placed inside one would capture the Home and Menu keys with it. The top of
+the switch belongs to no group, and a case ending in `return` cannot be fallen
+into.
+
 ## tvpower reboot does not reboot
 
 `luna://com.webos.service.tvpower/power/reboot` accepts the request, validates

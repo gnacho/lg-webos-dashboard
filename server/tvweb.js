@@ -16,6 +16,7 @@ var url = require('url');
 var net = require('net');
 var tls = require('tls');
 var child_process = require('child_process');
+var os = require('os');
 var path = require('path');
 var execFile = child_process.execFile;
 var zlib = require('zlib');
@@ -594,6 +595,17 @@ function doControl(action, value, cb) {
     case 'resetAdId':
       return privacy.resetAdId(cb);
 
+    case 'acr':
+      var acrOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
+      return luna('com.webos.service.settings/setSystemSettings', {
+        category: 'option',
+        settings: { livePlus: acrOn ? 'on' : 'off' }
+      }, function (r) {
+        privacy.setConsent('acrAllowed', acrOn, function () {
+          cb({ ok: !!(r && r.returnValue) });
+        });
+      });
+
     case 'consent':
       var ckey = (value && value.key) ? String(value.key) : '';
       var cOn = !!(value && (value.enabled === true || value.enabled === 'true'));
@@ -656,6 +668,12 @@ function doControl(action, value, cb) {
     case 'oledProtection':
       var prot = (value && typeof value === 'object') ? value : {};
       return oled.setOledProtection(String(prot.key || ''), !!prot.enabled, cb);
+
+    case 'tvAppInstall':
+      return tvApp('install', cb);
+
+    case 'tvAppRemove':
+      return tvApp('remove', cb);
 
     case 'rcu':
       var rcuName = String(value || '').trim().toLowerCase();
@@ -815,6 +833,53 @@ function assetPath(rel) {
     catch (e) {}
   }
   return null;
+}
+
+/*
+ * The address a phone on the same network can reach this server at. The TV app
+ * only ever sees localhost, so it cannot work this out for itself, and a QR
+ * code of "localhost" would be useless to the person holding the phone.
+ */
+function lanOrigin() {
+  var ifaces = {};
+  try { ifaces = os.networkInterfaces() || {}; } catch (e) { return null; }
+  var best = null;
+  for (var name in ifaces) {
+    if (!ifaces.hasOwnProperty(name)) continue;
+    var list = ifaces[name] || [];
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i];
+      var fam = String(a.family);
+      if (fam !== 'IPv4' && fam !== '4') continue;
+      if (a.internal) continue;
+      // Wired first where a TV has both, otherwise the first that answers.
+      if (!best || /^eth/.test(name)) best = a.address;
+    }
+  }
+  if (!best) return null;
+  return 'http://' + best + ':' + CONFIG.port;
+}
+
+/*
+ * The app that puts this dashboard on the TV's own screen. Installing it is a
+ * packaging job for shell, so it lives in a script beside the app's files and
+ * its result is read back here. An absent script - an older deploy, or a TV
+ * that will not take an unsigned app - reports unsupported, and the dashboard
+ * hides the control rather than offering something that cannot work.
+ */
+function tvApp(action, cb) {
+  var script = assetPath('dashboard-app/install-app.sh');
+  if (!script) return cb({ ok: true, supported: false, installed: false });
+  execFile('/bin/sh', [script, action], { timeout: 90000 }, function (err, stdout) {
+    var out = String(stdout || '').trim();
+    var last = out.split('\n').pop();
+    try { return cb(JSON.parse(last)); }
+    catch (e) {
+      // install prints a sentence rather than JSON, so read its wording.
+      if (action === 'install') return cb({ ok: /added to the home screen/.test(out) });
+      return cb({ ok: !err, error: err ? err.message : 'unreadable result' });
+    }
+  });
 }
 
 /*
@@ -1071,12 +1136,14 @@ var server = http.createServer(function (req, res) {
   if (pathname.indexOf('/assets/') === 0) {
     var file = assetPath(pathname.slice('/assets/'.length));
     if (!file) return send(res, 404, JSON.stringify({ ok: false, error: 'not found' }));
-    var mime = MIME[path.extname(file).toLowerCase()] || 'application/octet-stream';
+    var ext = path.extname(file).toLowerCase();
+    var mime = MIME[ext] || 'application/octet-stream';
+    var cacheHdr = ext === '.html' ? 'no-cache' : 'public, max-age=86400';
     if (ASSET_CACHE[file]) {
       res.writeHead(200, {
         'Content-Type': mime,
         'Content-Length': ASSET_CACHE[file].length,
-        'Cache-Control': 'public, max-age=86400'
+        'Cache-Control': cacheHdr
       });
       return res.end(ASSET_CACHE[file]);
     }
@@ -1086,7 +1153,7 @@ var server = http.createServer(function (req, res) {
       res.writeHead(200, {
         'Content-Type': mime,
         'Content-Length': buf.length,
-        'Cache-Control': 'public, max-age=86400'
+        'Cache-Control': cacheHdr
       });
       res.end(buf);
     });
@@ -1098,7 +1165,8 @@ var server = http.createServer(function (req, res) {
 
   if (pathname === '/api/caps') {
     return send(res, 200, JSON.stringify({
-      ok: true, allowControl: CONFIG.allowControl, allowPower: CONFIG.allowPower
+      ok: true, allowControl: CONFIG.allowControl, allowPower: CONFIG.allowPower,
+      origin: lanOrigin()
     }));
   }
 
@@ -1112,6 +1180,13 @@ var server = http.createServer(function (req, res) {
 
   if (pathname === '/api/servicemenu') {
     return oled.serviceMenuState(function (r) { send(res, 200, JSON.stringify(r)); });
+  }
+
+  if (pathname === '/api/tvapp') {
+    return tvApp('status', function (r) {
+      if (r && r.ok) r.writable = CONFIG.allowControl;
+      send(res, 200, JSON.stringify(r));
+    });
   }
 
   if (pathname === '/api/oledcare') {

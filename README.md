@@ -55,6 +55,10 @@ The dashboard runs standalone on the TV with zero external dependencies.
    remote is needed. Newer firmware shows a cut-down version of it until it is unlocked,
    which the dashboard can do as well.
 
+9. **[Reading all of it on the TV itself](#the-dashboard-on-the-tv).** An optional app on
+   the home screen puts the same readings and controls on the TV, driven by the
+   remote, for when there is no phone or laptop to hand.
+
 ---
 
 ## Screenshots
@@ -203,6 +207,21 @@ A firmware update restores the LG default.
   <a href="docs/screenshots/screensaver-starfield.png"><img src="docs/screenshots/screensaver-starfield.png" alt="Starscape screen saver on OLED: drifting stars and meteor with ion trail" width="700"></a>
 </p>
 
+### The dashboard on the TV
+
+An optional app on the TV's home screen, driven by the remote, for when there is
+no phone or laptop to hand. Left and right move between System, OLED Care,
+Screen Saver, Privacy and Service Menu; up and down move within one; OK
+acts on the selected row. A panel beside the list explains whichever row is
+selected and says whether OK does anything to it.
+
+A first install adds it; updating an existing one leaves the home screen alone.
+It can be added or removed at any time from the **Server** tab, which is also
+where it turns up for anyone who updated in place rather than re-running the
+installer. Removing it changes nothing else, since the dashboard reaches any
+browser on the network regardless. Where a TV will not take the app, the
+control is hidden and everything else works as before.
+
 ### Home Assistant bridge
 
 The **MQTT** tab, `/?tab=mqtt`. Publishes the TV to an MQTT broker, where it
@@ -216,6 +235,7 @@ the bridge's connection state and last publish time beside them.
 The **Server** tab, `/?tab=server`. The installed version, whether a newer
 release is out, and buttons to install it or roll back to the version before.
 **Check daily** looks on its own and lets Home Assistant offer the update.
+It also adds or removes [the app on the TV's home screen](#the-dashboard-on-the-tv).
 [Updating](#updating) covers installs from before the tab existed.
 
 ---
@@ -290,6 +310,13 @@ For example, `./deploy.sh 192.168.1.50`. It takes about ten seconds and finishes
 by checking that the dashboard answers. When it says `done`, open
 **`http://<tv-ip>:8080/`** in a browser. If anything goes wrong, it stops and
 says why.
+
+A first install also adds the dashboard to the TV's home screen as an app, so
+it can be opened on the TV itself with the remote — see
+[The dashboard on the TV](#the-dashboard-on-the-tv). It can be removed again
+from the dashboard at any time. Updating an existing install leaves the home
+screen exactly as it is, so a removed app never comes back on its own.
+`--no-app` skips it on a first install, and `--app` adds it to an existing one.
 
 The server starts again by itself whenever the TV restarts. To try it without
 that, add `--no-persist`, and it runs only until the TV next restarts. Setting
