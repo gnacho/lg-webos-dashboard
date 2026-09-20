@@ -38,40 +38,37 @@ This is a server that runs directly on a rooted LG webOS TV, providing both a li
    endpoints, and a switch for the two diagnostics services that upload to LG.
 
 3. **[App management, debloating and home screen cleanup](#apps-and-home-screen-launcher).** Permanently
-   uninstall store downloads and sideloaded apps to reclaim internal flash storage,
-   disable unnecessary background system services (TV Data Exchanger, Connected Car
-   listeners, USB camera watcher, browser preloaders) to free up RAM and CPU cycles,
-   and hide non-removable built-in LG system apps (Gallery, Music, Sports, Always
-   Ready, Camera, User Guide, etc.) from the home launcher ribbon. Fully reversible
-   at any time.
+   uninstall apps to reclaim internal flash storage,
+   disable unnecessary background system services to free up RAM and CPU cycles,
+   and hide non-removable built-in LG system apps from the home launcher.
 
-4. **[Replacing the screen saver](#screen-savers).** A clock, a starfield, fireworks, or the
+5. **[Replacing the screen saver](#screen-savers).** A clock, a starfield, fireworks, or the
    TV's own readings, each dim or bright, in place of LG's.
 
-5. **[Integrating the TV into Home Assistant](#home-assistant-bridge).** Using MQTT: the TV
+6. **[Integrating the TV into Home Assistant](#home-assistant-bridge).** Using MQTT: the TV
    arrives as a single auto-discovered device (no YAML, no LG
    account) so the TV can be automated and its telemetry recorded
    alongside everything else in the house.
    [Home Assistant & MQTT](#home-assistant--mqtt-optional) explains what MQTT is.
 
-6. **[Seeing what the TV is actually doing](#telemetry-and-diagnostics).** SoC temperature, per-core CPU
+7. **[Seeing what the TV is actually doing](#telemetry-and-diagnostics).** SoC temperature, per-core CPU
    load, memory, swap, current draw, Wi-Fi signal and throughput.
 
-7. **[Observing OLED panel wear](#oled-wear-and-burn-in-protection).** Cumulative panel hours, compensation cycle
+8. **[Observing OLED panel wear](#oled-wear-and-burn-in-protection).** Cumulative panel hours, compensation cycle
    progress, Pixel Refresher countdown with scheduling, completed cycle counters
    and refresher failure alerts.
 
-8. **[Controlling the OLED burn-in protections](#oled-wear-and-burn-in-protection).** What each one does and a switch
+9. **[Controlling the OLED burn-in protections](#oled-wear-and-burn-in-protection).** What each one does and a switch
    for it: screen shift and logo dimming on any OLED, and on TVs that expose
    them, ASBL and Global Stress Reduction (normally reachable only from the TV's
    service menu, with a service remote and a PIN)
 
-9. **[Opening the service menu, and unlocking it where it is locked](#service-menu-access).** LG's own
+10. **[Opening the service menu, and unlocking it where it is locked](#service-menu-access).** LG's own
    engineering menu, put on the TV screen from a browser which means no service
    remote is needed. Newer firmware shows a cut-down version of it until it is unlocked,
    which the dashboard can do as well.
 
-10. **[Reading all of it on the TV itself](#the-dashboard-on-the-tv).** An optional app on
+11. **[Reading all of it on the TV itself](#the-dashboard-on-the-tv).** An optional app on
     the home screen puts the same readings and controls on the TV, driven by the
     remote, for when there is no phone or laptop to hand.
 
