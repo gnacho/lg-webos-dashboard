@@ -550,7 +550,7 @@ function sysRows(d) {
   var r = [];
   r.push(head('Load'));
   if (d.temp !== null && d.temp !== undefined) r.push({ label: 'Temperature', value: withUnit(d.temp, '°C'),
-    hint: 'The main board sensor, not the panel. It climbs with brightness and with what the TV is decoding.' });
+    hint: 'The main processor (SoC) sensor, not the panel. It climbs with video decoding and CPU workload.' });
   if (d.load !== null && d.load !== undefined) r.push({ label: 'CPU load', value: withUnit(d.load, '%'),
     hint: 'Across all cores. Brief peaks while an app opens are normal; a sustained high figure with nothing playing is not.' });
   if (d.mhz) r.push({ label: 'CPU frequency', value: withUnit(d.mhz, 'MHz'),
