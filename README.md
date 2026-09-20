@@ -1,18 +1,21 @@
 # LG webOS TV Dashboard & Home Assistant Bridge
 
+## You bought the TV. You control the TV. You own the glass.
+
 A server that runs directly **on** a rooted LG webOS TV. It serves a live browser
-dashboard for remote control, app management & bloat removal, OLED panel care, privacy toggles, service menu access, and hardware
-telemetry. An optional MQTT bridge will also expose the TV as
-a unified [Home Assistant](https://www.home-assistant.io/) device for smart home control.
+dashboard for remote control, app management and removal, OLED panel care, privacy
+controls, service menu access, and hardware telemetry. An optional MQTT bridge also
+exposes the TV as a unified [Home Assistant](https://www.home-assistant.io/) device
+for local smart home control.
 
 The dashboard runs standalone on the TV with zero external dependencies.
 
 ### Compatibility at a glance
 
-* **webOS**: 3.4 through 25 confirmed (2016–2025 models; other versions likely work as well)
+* **webOS**: 3.4 through 25 confirmed; tested across 2016–2025 models. Other versions likely work as well
 * **Panels**: OLED (full panel wear telemetry and burn-in controls) and LCD (core dashboard, controls, and telemetry; OLED Care tab hides automatically)
-* **Access**: Rooted via [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) (telnet) or SSH &mdash; no external dependencies or internet access needed on the TV
-* **Tested hardware**: 13 models verified so far (UH6030, UH610V, B7, B8, C8, C9, C1, C2, B4, G4, C5) &mdash; other rooted models should work; [see full table](#tested-tvs)
+* **Access**: Rooted via [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel) (telnet) or SSH — no external dependencies or internet access needed on the TV
+* **Tested hardware**: 13 models verified so far (UH6030, UH610V, B7, B8, C8, C9, C1, C2, B4, G4, C5) — other rooted models should work; [see full table](#tested-tvs)
 
 [What it's for](#what-its-for) • [Screenshots](#screenshots) • [Features](#features) • [Installation](#installation) • [Tested TVs](#tested-tvs) • [Home Assistant](#home-assistant--mqtt-optional) • [Managing the server](#managing-the-server) • [Security](#security)
 
@@ -22,18 +25,18 @@ The dashboard runs standalone on the TV with zero external dependencies.
 
 1. **[Controlling the TV without the cloud](#remote-control).** A D-pad to navigate the TV itself, volume, mute, media playback keys (play, pause, stop, skip), app launcher, picture presets, sound output routing, power and reboot.
 
-2. **[Seeing what the TV collects, and switching it off](#privacy-and-data-collection).** Whether LG's
+2. **[Seeing what the TV is configured to collect, and switching it off](#privacy-and-data-collection).** Whether LG's
    content-recognition engine is running and sampling your screen, your
    advertising identifier and whether ad tracking is limited, and every data
    agreement recorded on the TV with most of them switchable from the
    dashboard. Includes an on-TV blocker for LG's ad and telemetry
    endpoints, and a switch for the two diagnostics services that upload to LG.
 
-3. **[Bloat removal and app uninstalls](#apps-and-home-screen-launcher).** Permanently
+3. **[App management and home screen cleanup](#apps-and-home-screen-launcher).** Permanently
    uninstall store downloads and sideloaded apps to reclaim internal flash storage,
-   and hide non-removable built-in LG bloatware tiles (Gallery, Music, Sports, Always
-   Ready, Camera, User Guide, etc.) from the home launcher ribbon. Fully reversible at
-   any time without touching rootfs partitions.
+   and hide non-removable built-in LG system tiles (Gallery, Music, Sports, Always
+   Ready, Camera, User Guide, etc.) from the home launcher ribbon. Fully reversible
+   at any time without touching rootfs partitions.
 
 4. **[Replacing the screen saver](#screen-savers).** A clock, a starfield, fireworks, or the
    TV's own readings, each dim or bright, in place of LG's.
@@ -53,8 +56,8 @@ The dashboard runs standalone on the TV with zero external dependencies.
 
 8. **[Controlling the OLED burn-in protections](#oled-wear-and-burn-in-protection).** What each one does and a switch
    for it: screen shift and logo dimming on any OLED, and on TVs that expose
-   them, ASBL and Global Stress Reduction (normally reachable only
-   from the TV's service menu, with a service remote and a PIN)
+   them, ASBL and Global Stress Reduction (normally reachable only from the TV's
+   service menu, with a service remote and a PIN)
 
 9. **[Opening the service menu, and unlocking it where it is locked](#service-menu-access).** LG's own
    engineering menu, put on the TV screen from a browser which means no service
@@ -103,9 +106,9 @@ appears on OLED TVs only. The page works with no internet access, and has a dark
 The **Control** tab, `/?tab=control`. Drives the TV from a browser, including
 the things the remote does not do easily.
 
-* A D-pad &mdash; arrows, OK, Back and Home &mdash; to navigate the TV's own
+* A D-pad — arrows, OK, Back and Home — to navigate the TV's own
   interface.
-* Volume, mute, input select, and media playback &mdash; play, pause, stop,
+* Volume, mute, input select, and media playback — play, pause, stop,
   skip
 * App launching, picture presets and sound output routing. The presets on offer
   are the ones the TV will accept for whatever is playing: a Dolby Vision source
@@ -142,7 +145,7 @@ of, most of which is absent from its own settings menu.
 The **Apps** tab, `/?tab=apps`. Manage installed applications and tidy the TV's home screen ribbon.
 
 * **Installed applications:** Store downloads and sideloaded packages with version and vendor details, and a one-click uninstall action to permanently delete apps and free up internal eMMC flash storage.
-* **Home screen system tiles:** Hide non-removable LG bloatware tiles (Gallery, Music, Sports, Always Ready, Camera, User Guide, Device Connector, Alexa, Google Assistant, etc.) from the home launcher ribbon. Operates non-destructively via reversible `appinfo.json` bind-mounts, surviving reboots without modifying rootfs partitions.
+* **Home screen system tiles:** Hide non-removable LG system tiles (Gallery, Music, Sports, Always Ready, Camera, User Guide, Device Connector, Alexa, Google Assistant, etc.) from the home launcher ribbon. Operates non-destructively via reversible `appinfo.json` bind-mounts, surviving reboots without modifying rootfs partitions.
 * **Restore all:** A single action restores all system tiles to their default visible state instantly.
 * **Strict system safeguards:** Core TV services (`Live TV`, `Settings`, `Launcher`, input switchers, and the dashboard itself) are strictly protected and can never be hidden or uninstalled.
 * **Available on TV and Web:** Manage apps from any browser or directly on the TV using the remote control in the on-TV dashboard app.
@@ -153,10 +156,10 @@ The **Apps** tab, `/?tab=apps`. Manage installed applications and tidy the TV's 
 
 ### Privacy and data collection
 
-The **Privacy** tab, `/?tab=privacy`. Reports what the TV is actually doing: whether
-the content-recognition engine is running and sampling frames, your advertising ID and
-whether ad tracking is limited, recorded data agreements, and toggles to disable LG's
-background collection and diagnostics services.
+The **Privacy** tab, `/?tab=privacy`. Reports what the TV is configured to do:
+whether the content-recognition engine is running and sampling frames, your advertising ID
+and whether ad tracking is limited, recorded data agreements, and toggles to disable
+LG's background collection and diagnostics services.
 
 Most data agreements can be switched off from here (persisting across reboots), and the
 advertising ID can be reset and its cookies cleared. Acceptance of new terms is left to
@@ -180,7 +183,7 @@ figures beside what each burn-in protection does and a switch for it.
 
 * Cumulative panel hours, panel maintenance and Pixel Refresher countdowns with
   scheduling, completed cycle counters and refresher failure alerts.
-* GSR stress events on supported panels &mdash; counts how many times static
+* GSR stress events on supported panels — counts how many times static
   elements (such as logos, HUDs, or news tickers) triggered active panel dimming
   to prevent burn-in.
 * Screen shift and logo dimming on any OLED.
@@ -199,7 +202,7 @@ figures beside what each burn-in protection does and a switch for it.
 ### Service menu access
 
 The **Service menu** tab, `/?tab=servicemenu`. Opens LG's engineering menu on
-the TV &mdash; EZ Adjust or In Start &mdash; without a service remote; the TV
+the TV — EZ Adjust or In Start — without a service remote; the TV
 still asks for its PIN. Newer firmware shows a cut-down version until it is
 unlocked, and the dashboard can unlock it: the TV has to be switched off and on
 again before that takes effect. TVs old enough not to lock it say so.
@@ -237,8 +240,8 @@ selected and says whether OK does anything to it.
 
 A first install adds it; updating an existing one leaves the home screen alone.
 It can be added or removed at any time from the **Server** tab, which is also
-where it turns up for anyone who updated in place rather than re-running the
-installer. Removing it changes nothing else, since the dashboard reaches any
+where it turns up for anyone who updated in place rather than re-running
+the installer. Removing it changes nothing else, since the dashboard reaches any
 browser on the network regardless. Where a TV will not take the app, the
 control is hidden and everything else works as before.
 
@@ -280,23 +283,23 @@ Tested across the following TVs so far. The Luna
 service names and `/proc/lg` paths this relies on may differ across webOS
 versions and panel types.
 
-| Model | webOS | Firmware | Panel | Notes |
-| :--- | :--- | :--- | :--- | :--- |
-| 43UH610V-ZB | 3.4.3 | 05.70.50 | LCD | No SoC temp, eMMC wear, or OLED metrics by hardware design |
-| 55UH6030-UC | 3.4.3 | &mdash; | LCD | |
-| OLED65B7V-Z | 3.9.3 | 06.10.65 | OLED | No SoC temperature or eMMC wear readings |
-| OLED65C8PUA | 4.4.0 | 05.50.15 | OLED | No `getAdid` on this firmware |
-| OLED65B8SLC | 4.4.3 | 05.50.70 | OLED | Everything works. Misses a few metrics found on newer versions |
-| OLED55C9PLA | 4.9.0 | 05.30.40 | OLED | Working fine |
-| OLED65C9AUA | 4.9.x (4.5+) | 05.50.00 | OLED | |
-| OLED55C17LB | 6.x | &mdash; | OLED | HDMI 2.1 diagnostics and remote battery reporting |
-| OLED55C1PUB | 6.x (6.3+) | 03.53.45 | OLED | SSH install and MQTT bridge confirmed |
-| OLED42C24LA | 9.2.2 (22+) | 23.25.55 | OLED | Rooted with jsbro-autoroot |
-| OLED55B46LA | 24 (9.24.8) | 23.23.30 | OLED | Installed over telnet |
-| OLED55G42LW | 24 | 33.31.68 | OLED | Rooted with slopbro, not the Homebrew Channel |
-| OLED48C55LA | 25 (10.3.1) | 33.31.68 | OLED | Installed over telnet; in-app update to 0.37.2 confirmed |
+| Model       | webOS        | Firmware | Panel | Notes                                                          |
+| :---------- | :----------- | :------- | :---- | :------------------------------------------------------------- |
+| 43UH610V-ZB | 3.4.3        | 05.70.50 | LCD   | No SoC temp, eMMC wear, or OLED metrics by hardware design     |
+| 55UH6030-UC | 3.4.3        | —        | LCD   |                                                                |
+| OLED65B7V-Z | 3.9.3        | 06.10.65 | OLED  | No SoC temperature or eMMC wear readings                       |
+| OLED65C8PUA | 4.4.0        | 05.50.15 | OLED  | No `getAdid` on this firmware                                  |
+| OLED65B8SLC | 4.4.3        | 05.50.70 | OLED  | Everything works. Misses a few metrics found on newer versions |
+| OLED55C9PLA | 4.9.0        | 05.30.40 | OLED  | Working fine                                                   |
+| OLED65C9AUA | 4.9.x (4.5+) | 05.50.00 | OLED  |                                                                |
+| OLED55C17LB | 6.x          | —        | OLED  | HDMI 2.1 diagnostics and remote battery reporting              |
+| OLED55C1PUB | 6.x (6.3+)   | 03.53.45 | OLED  | SSH install and MQTT bridge confirmed                          |
+| OLED42C24LA | 9.2.2 (22+)  | 23.25.55 | OLED  | Rooted with jsbro-autoroot                                     |
+| OLED55B46LA | 24 (9.24.8)  | 23.23.30 | OLED  | Installed over telnet                                          |
+| OLED55G42LW | 24           | 33.31.68 | OLED  | Rooted with slopbro, not the Homebrew Channel                  |
+| OLED48C55LA | 25 (10.3.1)  | 33.31.68 | OLED  | Installed over telnet; in-app update to 0.37.2 confirmed       |
 
-**Tested on another model?** Please [open an issue](https://github.com/rorygallagher2024/lg-webos-dashboard/issues/new) with your TV model, webOS version, and the contents of `/var/lib/tvweb/tvweb.log` &mdash; whether everything worked or something broke &mdash; and we will add a row.
+**Tested on another model?** Please [open an issue](https://github.com/rorygallagher2024/lg-webos-dashboard/issues/new) with your TV model, webOS version, and the contents of `/var/lib/tvweb/tvweb.log` — whether everything worked or something broke — and we will add a row.
 
 ### 1. Get the files
 
@@ -319,7 +322,7 @@ Channel's telnet if not.
 
 ### 3. Install the dashboard
 
-Find the TV's address under Settings &rarr; Network on the TV, or in the
+Find the TV's address under Settings → Network on the TV, or in the
 router's list of devices. Then, from the `server/` directory in your terminal:
 
 ```bash
@@ -349,7 +352,7 @@ whoever opens the page, and reaches the internet only to look for a new release 
 when the dashboard's Server tab is opened, or daily if
 [checking automatically](#checking-automatically) is switched on.
 
-That is a complete install &mdash; Home Assistant integration is optional.
+That is a complete install — Home Assistant integration is optional.
 
 ### Troubleshooting
 
@@ -372,14 +375,14 @@ That is a complete install &mdash; Home Assistant integration is optional.
 ### What these are
 
 **Home Assistant** is open-source home automation software that runs on your own
-hardware &mdash; a Raspberry Pi, a NUC, a container on a NAS. It gathers devices
+hardware — a Raspberry Pi, a NUC, a container on a NAS. It gathers devices
 from different vendors into one place and automates them locally. Communication
 between the TV, your broker, and Home Assistant stays entirely on your local
-network &mdash; no LG account or vendor cloud dependencies required.
+network — no LG account or vendor cloud dependencies required.
 
-**MQTT** is a lightweight messaging protocol: a device publishes state updates
-to a named topic, and any subscriber (such as Home Assistant) instantly receives
-them. It relies on a **broker** &mdash; a small server that relays those messages
+**MQTT** is a lightweight messaging protocol: a device publishes state updates to
+a named topic, and any subscriber (such as Home Assistant) instantly receives
+them. It relies on a **broker** — a small server that relays those messages
 between publishers and subscribers. [Mosquitto](https://mosquitto.org/) is the
 usual one, and Home Assistant ships it as a one-click add-on.
 
@@ -389,7 +392,7 @@ description and creates the device with all its sensors and controls by itself.
 There is no YAML to write.
 
 The bridge needs a broker reachable on the network. Home Assistant is the usual
-reason to run one, but not a requirement &mdash; see
+reason to run one, but not a requirement — see
 [Using MQTT without Home Assistant](#using-mqtt-without-home-assistant).
 
 ### Setting it up from the dashboard
@@ -433,15 +436,16 @@ first.
 ### Which settings live where
 
 The dashboard can change the broker, credentials, topic prefix and device
-identity &mdash; the things that decide *where* telemetry goes.
+identity — the things that decide *where* telemetry goes.
 
 `port`, `host`, `allowControl`, `allowPower` and `token` are file-only. They
 decide *who can reach the server at all*, and a web UI able to widen its own
-exposure would defeat the point of setting them. Edit those in `config.json`
-and redeploy, or edit `/var/lib/tvweb/config.json` on the TV and restart.
+exposure would defeat the point of setting them. Edit those in
+`config.json` and redeploy, or edit `/var/lib/tvweb/config.json` on the TV and
+restart.
 
 `allowPower` ships disabled, because there is no authentication unless `token`
-is set &mdash; a fresh install should not expose "turn the TV off" to the whole
+is set — a fresh install should not expose "turn the TV off" to the whole
 network. Enable it deliberately.
 
 > [!NOTE]
@@ -473,14 +477,14 @@ being flattened by a shared file.
 
 ### Running one half without the other
 
-| | `web.enabled` | `mqtt.enabled` |
-| :--- | :--- | :--- |
-| Dashboard and Home Assistant | `true` | `true` |
-| Dashboard only *(default)* | `true` | `false` |
-| Home Assistant only | `false` | `true` |
+|                              | `web.enabled` | `mqtt.enabled` |
+| :--------------------------- | :------------ | :------------- |
+| Dashboard and Home Assistant | `true`        | `true`         |
+| Dashboard only *(default)*   | `true`        | `false`        |
+| Home Assistant only          | `false`       | `true`         |
 
 With the dashboard disabled the server is an MQTT bridge with no web interface,
-which is the safer shape if everything is driven from Home Assistant &mdash; the
+which is the safer shape if everything is driven from Home Assistant — the
 dashboard is an unauthenticated control endpoint unless `token` is set. Note
 that this also removes the settings UI, so an MQTT-only install is configured by
 file. With both disabled the server exits rather than idling.
@@ -567,7 +571,7 @@ The MQTT settings panel is part of that surface: on a default install, anyone
 who can reach the port can change the broker the TV publishes to, and so
 redirect its telemetry. It is gated by `token` and by `allowControl` like the
 rest of the controls, and it cannot change `port`, `host`, `allowControl`,
-`allowPower` or `token` themselves &mdash; those stay file-only so the UI cannot
+`allowPower` or `token` themselves — those stay file-only so the UI cannot
 widen its own exposure. The stored broker password is never sent to the browser.
 
 Setting a token affects the dashboard only. **Home Assistant is unaffected**,
@@ -578,9 +582,9 @@ Full detail, including the MQTT ACL guidance and optional TLS, is in
 
 ## Documentation
 
-* [docs/SECURITY.md](docs/SECURITY.md) &mdash; threat model, SSH migration, MQTT hardening
-* [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md) &mdash; the entity reference, universal media player, example automations
-* [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md) &mdash; architecture, `/proc/lg` reference, platform quirks
+* [docs/SECURITY.md](docs/SECURITY.md) — threat model, SSH migration, MQTT hardening
+* [docs/HOME-ASSISTANT.md](docs/HOME-ASSISTANT.md) — the entity reference, universal media player, example automations
+* [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md) — architecture, `/proc/lg` reference, platform quirks
 
 ---
 
@@ -588,17 +592,17 @@ Full detail, including the MQTT ACL guidance and optional TLS, is in
 
 **Use this software at your own risk.**
 
-- **Root access and hardware.** This runs custom software with `root`
+* **Root access and hardware.** This runs custom software with `root`
   privileges on an embedded TV OS. It is designed to be lightweight and to
   leave the read-only rootfs untouched, but the authors accept **no
   responsibility** for damage, bootloops, bricked devices, voided warranties,
   data loss or OLED panel issues.
-- **Power and control commands.** Reboot, power off, screen blanking and Pixel
+* **Power and control commands.** Reboot, power off, screen blanking and Pixel
   Refresher scheduling issue low-level `luna-send` calls. Understand what each
   does before using it.
-- **Trademarks.** An independent, unofficial community project, not affiliated
+* **Trademarks.** An independent, unofficial community project, not affiliated
   with or endorsed by LG Electronics. webOS is a trademark of LG Electronics.
-- **Fonts.** Bundles [Outfit](https://github.com/Outfitio/Outfit-Fonts) and
+* **Fonts.** Bundles [Outfit](https://github.com/Outfitio/Outfit-Fonts) and
   [Manrope](https://github.com/sharanda/manrope) under the
   [SIL Open Font License 1.1](https://openfontlicense.org/); licence texts ship
   in `server/assets/fonts/`.
