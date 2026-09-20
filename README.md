@@ -1,20 +1,20 @@
 # LG webOS TV Dashboard & Home Assistant Bridge
 
-> [!IMPORTANT]
-> ## You bought the TV. You control the TV. You own the glass.
+> [!NOTE]
+> ## You bought the TV. 
 >
-> **The philosophy behind this project.**
+> **You control the TV. You own the glass.**
 >
-> Ownership should include meaningful control.
+> The philosophy behind this project is simple: Ownership should include meaningful control.
 > A TV should remain useful and controllable by its owner, rather than
 > being treated primarily as a platform for services, telemetry and vendor-controlled
 > experiences.
 >
-> This project brings control, visibility and automation back to the device itself —
-> locally, transparently, and without requiring a manufacturer cloud service.
+> This project brings control, visibility and automation back to the device.
+> Local, transparent, and without requiring a manufacturer cloud service.
 
-A server that runs directly **on** a rooted LG webOS TV. It serves a live browser
-dashboard for remote control, app management and removal, OLED panel care, privacy
+This is a server and dashboard that runs directly **on** a rooted LG webOS TV. It serves a live browser
+dashboard, for remote control, app management and removal, OLED panel care, privacy
 controls, service menu access, and hardware telemetry. An optional MQTT bridge also
 exposes the TV as a unified [Home Assistant](https://www.home-assistant.io/) device
 for local smart home control.
