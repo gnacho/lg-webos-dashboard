@@ -2,32 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1920,initial-scale=1">
-<title>tvweb dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Dashboard Server</title>
 <style>
 /* The dashboard as it appears on the TV itself, driven by the remote.
    Left/Right flips between sections, Up/Down moves within one, Enter acts on
    the selected row. Outfit for headings (the spectacle face), Manrope for the
    rows, on true black. Sized for 1080p viewed from the sofa, which is why the
    type is large and the palette is opacity steps rather than colour. */
-@font-face{font-family:'Outfit';src:url('/assets/fonts/Outfit.ttf') format('truetype');font-weight:100 900;font-display:swap}
-@font-face{font-family:'Manrope';src:url('/assets/fonts/Manrope.ttf') format('truetype');font-weight:200 800;font-display:swap}
+@font-face{font-family:'Outfit';src:url('/assets/fonts/Outfit-Light.ttf') format('truetype');font-weight:300;font-display:swap}
+@font-face{font-family:'Outfit';src:url('/assets/fonts/Outfit-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Manrope';src:url('/assets/fonts/Manrope-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Manrope';src:url('/assets/fonts/Manrope-SemiBold.ttf') format('truetype');font-weight:600;font-display:swap}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:#000;overflow:hidden}
 body{font-family:'Manrope',sans-serif;color:#fff;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;
   /* the remote drives it; there is no pointer */ cursor:none}
 
 #stage{height:100vh;display:flex;flex-direction:column;padding:5vh 0 5vh 8vw}
 
-#clock{font-family:'Outfit';font-weight:200;font-size:4.4vh;letter-spacing:.01em;
-  line-height:1;opacity:.55;flex:0 0 auto;margin-bottom:3.4vh}
+#clock{font-family:'Outfit';font-weight:300;font-size:4.4vh;letter-spacing:.01em;
+  line-height:1;opacity:.65;flex:0 0 auto;margin-bottom:3.4vh}
 
 #tabs{display:flex;display:-webkit-flex;align-items:baseline;-webkit-align-items:baseline;flex:0 0 auto;margin-bottom:4.4vh;white-space:nowrap}
-.tab{display:inline-block;font-family:'Outfit';font-weight:200;font-size:4.2vh;line-height:1;letter-spacing:.01em;
-  color:rgba(255,255,255,.26);transition:color .22s ease;white-space:nowrap;
+.tab{display:inline-block;font-family:'Outfit';font-weight:300;font-size:4.2vh;line-height:1;letter-spacing:.01em;
+  color:rgba(255,255,255,.50);transition:color .22s ease;white-space:nowrap;
   flex:0 0 auto;-webkit-flex:0 0 auto;padding-right:2.8vw;cursor:pointer}
 .tab:last-child{padding-right:0}
-.tab.on{color:#fff;font-weight:300}
+.tab.on{color:#fff;font-weight:400}
 
 /* Two columns: the rows on the left, an explainer for whichever row is selected
    on the right. A row's label and value never needed the full width, and the
@@ -36,18 +39,18 @@ body{font-family:'Manrope',sans-serif;color:#fff;
 #list{flex:1 1 62%;overflow:hidden;position:relative}
 #rows{position:absolute;left:0;right:0;transition:transform .28s cubic-bezier(.4,0,.2,1)}
 
-#hint{flex:0 0 31%;margin-left:2.6vw;align-self:center;border-left:1px solid rgba(255,255,255,.10);
+#hint{flex:0 0 31%;margin-left:2.6vw;align-self:center;border-left:1px solid rgba(255,255,255,.14);
   padding-left:2.4vw;opacity:0;transition:opacity .22s ease}
 #hint.on{opacity:1}
-.h-title{font-family:'Outfit';font-weight:200;font-size:3.4vh;line-height:1.15;
+.h-title{font-family:'Outfit';font-weight:300;font-size:3.4vh;line-height:1.15;
   letter-spacing:.005em;margin-bottom:1.6vh}
 .h-body{font-family:'Manrope';font-weight:400;font-size:2.1vh;line-height:1.65;
-  color:rgba(255,255,255,.52)}
+  color:rgba(255,255,255,.68)}
 /* What OK does here, or that it does nothing. Green only when there is
    something to press, so the colour itself carries the distinction. */
 .h-act{font-family:'Manrope';font-weight:600;font-size:1.7vh;letter-spacing:.14em;
   text-transform:uppercase;margin-top:2.4vh;color:#1ec15f}
-.h-act.ro{color:rgba(255,255,255,.30)}
+.h-act.ro{color:rgba(255,255,255,.50)}
 
 /* For the few rows that can only be changed in a browser: a code to scan and
    the address under it, so the dashboard can be opened without typing an
@@ -57,7 +60,7 @@ body{font-family:'Manrope',sans-serif;color:#fff;
 .h-qr.on{display:block}
 .h-qr svg{width:15vh;height:15vh;display:block;background:#fff;padding:1vh;border-radius:.6vh}
 .h-url{font-family:'Manrope';font-weight:400;font-size:1.6vh;letter-spacing:.01em;
-  color:rgba(255,255,255,.42);margin-top:1.2vh;word-break:break-all}
+  color:rgba(255,255,255,.55);margin-top:1.2vh;word-break:break-all}
 
 /* A row is a label and its value. Only the selected one is full white and
    slightly enlarged; the rest recede, so the eye lands on the choice. */
@@ -65,19 +68,19 @@ body{font-family:'Manrope',sans-serif;color:#fff;
    underneath one. */
 .row{display:flex;align-items:baseline;justify-content:space-between;height:7.6vh;
   padding-right:3.4vw;
-  opacity:.34;transition:opacity .22s ease,transform .22s ease;
+  opacity:.55;transition:opacity .22s ease,transform .22s ease;
   transform-origin:left center}
 .row:not(.head){cursor:pointer}
 .row.sel{opacity:1;transform:scale(1.03)}
 .lbl{font-family:'Manrope';font-weight:400;font-size:3.1vh;letter-spacing:.01em}
-.val{font-family:'Outfit';font-weight:200;font-size:3.1vh;color:rgba(255,255,255,.5);
+.val{font-family:'Outfit';font-weight:300;font-size:3.1vh;color:rgba(255,255,255,.75);
   text-align:right;white-space:nowrap;padding-left:2vw}
-.row.sel .val{color:rgba(255,255,255,.75)}
+.row.sel .val{font-weight:400;color:rgba(255,255,255,.90)}
 .val.on{color:#1ec15f}
-.val.off{color:rgba(255,255,255,.28)}
+.val.off{color:rgba(255,255,255,.45)}
 .val.bad{color:#e65050}
 .val.warn{color:#ff9800}
-.val.act{color:rgba(255,255,255,.34)}
+.val.act{color:rgba(255,255,255,.50)}
 .row.sel .val.act{color:#1ec15f}
 .row.sel .val.bad{color:#ff6b6b}
 .row.sel .val.warn{color:#ffb74d}
@@ -88,25 +91,25 @@ body{font-family:'Manrope',sans-serif;color:#fff;
 .lbl::before{content:'';display:inline-block;width:.9vh;height:.9vh;
   border-radius:50%;margin-right:1.6vh;vertical-align:middle;
   background:transparent;transition:background .22s ease}
-.row.doable .lbl::before{background:rgba(255,255,255,.34)}
+.row.doable .lbl::before{background:rgba(255,255,255,.45)}
 .row.doable.sel .lbl::before{background:#1ec15f}
 
 /* A heading inside the list - groups rows without being selectable itself. */
 .row.head{height:5.4vh;opacity:1;transform:none}
 .row.head .lbl{font-family:'Manrope';font-weight:600;font-size:1.5vh;letter-spacing:.24em;
-  text-transform:uppercase;color:rgba(255,255,255,.34)}
+  text-transform:uppercase;color:rgba(255,255,255,.55)}
 .row.head .lbl::before{display:none}
 
 #msg{position:absolute;top:50%;left:0;transform:translateY(-50%);
-  font-family:'Outfit';font-weight:200;font-size:4vh;color:rgba(255,255,255,.5)}
+  font-family:'Outfit';font-weight:300;font-size:4vh;color:rgba(255,255,255,.8)}
 #msg .msg-detail{font-family:'Manrope';font-weight:400;font-size:2vh;line-height:1.8;
-  color:rgba(255,255,255,.32);margin-top:2.2vh}
-#msg .msg-url{color:rgba(255,255,255,.45)}
+  color:rgba(255,255,255,.6);margin-top:2.2vh}
+#msg .msg-url{color:rgba(255,255,255,.75)}
 
 /* In the lane the rows leave clear on the right, so neither the labels nor the
    values ever run underneath one. */
 .more{position:absolute;right:0;font-family:'Manrope';font-size:2.4vh;
-  color:rgba(255,255,255,.3);opacity:0;transition:opacity .2s;pointer-events:none}
+  color:rgba(255,255,255,.50);opacity:0;transition:opacity .2s;pointer-events:none}
 .more.on{opacity:1}
 #moreUp{top:0}
 #moreDown{bottom:0}
@@ -114,8 +117,42 @@ body{font-family:'Manrope',sans-serif;color:#fff;
 /* Shown briefly after an action so a press that changes something off-screen
    (opening the service menu, scheduling a refresher) still acknowledges. */
 #flash{position:absolute;right:8vw;bottom:5vh;font-family:'Manrope';font-weight:400;
-  font-size:2.2vh;color:rgba(255,255,255,.6);opacity:0;transition:opacity .3s}
+  font-size:2.2vh;color:rgba(255,255,255,.85);opacity:0;transition:opacity .3s}
 #flash.on{opacity:1}
+
+/* ---- light theme ---- */
+body.light, html.light{background:#f5f5f5;color:#111}
+body.light #clock{color:#000;opacity:.7}
+body.light .tab{color:rgba(0,0,0,.52)}
+body.light .tab.on{color:#000;font-weight:500}
+body.light #hint{border-left-color:rgba(0,0,0,.15)}
+body.light .h-title{color:#000}
+body.light .h-body{color:rgba(0,0,0,.78)}
+body.light .h-act{color:#15803d}
+body.light .h-act.ro{color:rgba(0,0,0,.50)}
+body.light .h-qr svg{border:1px solid rgba(0,0,0,.15)}
+body.light .h-url{color:rgba(0,0,0,.65)}
+body.light .row{opacity:.62}
+body.light .row.sel{opacity:1}
+body.light .row.sel .lbl{color:#000;font-weight:600}
+body.light .val{color:rgba(0,0,0,.70)}
+body.light .row.sel .val{color:rgba(0,0,0,.92)}
+body.light .val.on{color:#15803d}
+body.light .val.off{color:rgba(0,0,0,.48)}
+body.light .val.bad{color:#dc2626}
+body.light .val.warn{color:#b45309}
+body.light .val.act{color:rgba(0,0,0,.52)}
+body.light .row.sel .val.act{color:#15803d}
+body.light .row.sel .val.bad{color:#dc2626}
+body.light .row.sel .val.warn{color:#b45309}
+body.light .row.doable .lbl::before{background:rgba(0,0,0,.38)}
+body.light .row.doable.sel .lbl::before{background:#15803d}
+body.light .row.head .lbl{color:rgba(0,0,0,.62)}
+body.light #msg{color:rgba(0,0,0,.8)}
+body.light #msg .msg-detail{color:rgba(0,0,0,.65)}
+body.light #msg .msg-url{color:rgba(0,0,0,.85)}
+body.light .more{color:rgba(0,0,0,.50)}
+body.light #flash{color:rgba(0,0,0,.88)}
 </style>
 </head>
 <body>
@@ -435,7 +472,8 @@ var TABS = [
   { key: 'oled',    label: 'OLED Care',    url: '/api/oledcare',    build: oledRows },
   { key: 'saver',   label: 'Screen Saver', url: '/api/screensaver', build: saverRows },
   { key: 'privacy', label: 'Privacy',      url: '/api/privacy',     build: privacyRows },
-  { key: 'service', label: 'Service Menu', url: '/api/servicemenu', build: svcRows }
+  { key: 'service', label: 'Service Menu', url: '/api/servicemenu', build: svcRows },
+  { key: 'update',  label: 'Updates',      url: '/api/update',      build: updateRows }
 ];
 
 var tab = 0, sel = 0, busy = false, ROW_VH = 7.6, HEAD_VH = 5.4;
@@ -448,6 +486,22 @@ fetch('/api/caps', { cache: 'no-store' })
   .then(function (d) { lanOrigin = (d && d.origin) || null; renderHint(); })
   .catch(function () {});
 var data = {}, rows = [], timer = null, flashTimer = null;
+var currentTheme = 'dark';
+try {
+  var urlTheme = (location.search.match(/[?&]theme=([^&]+)/) || [])[1];
+  currentTheme = urlTheme || localStorage.getItem('theme') || 'dark';
+} catch (e) { currentTheme = 'dark'; }
+
+function applyTheme(t) {
+  currentTheme = t === 'light' ? 'light' : 'dark';
+  if (document.documentElement) {
+    document.documentElement.className = currentTheme === 'light' ? 'light' : '';
+  }
+  if (document.body) {
+    document.body.className = currentTheme === 'light' ? 'light' : '';
+  }
+}
+applyTheme(currentTheme);
 
 function T() { return TABS[tab]; }
 
@@ -526,6 +580,21 @@ function sysRows(d) {
   if (d.remote && d.remote.battery !== null && d.remote.battery !== undefined)
     r.push({ label: 'Remote battery', value: withUnit(d.remote.battery, '%') });
   if (d.ssid) r.push({ label: 'Wi-Fi', value: d.ssid });
+  if (d.tvwebVersion) {
+    r.push({ label: 'Dashboard Server', value: 'v' + d.tvwebVersion, act: 'gotoUpdate',
+             press: 'Press OK to view updates',
+             hint: 'The version of this dashboard server. Press OK to open the Updates tab.' });
+  }
+
+  r.push(head('Appearance'));
+  r.push({
+    label: 'Theme',
+    value: currentTheme === 'light' ? 'Light' : 'Dark',
+    cls: 'act',
+    act: 'toggleTheme',
+    press: 'Press OK to switch to ' + (currentTheme === 'light' ? 'Dark' : 'Light') + ' theme',
+    hint: 'Switches the dashboard interface between Dark (true black for OLED) and Light theme.'
+  });
   return r;
 }
 
@@ -737,6 +806,114 @@ function svcRows(d) {
   return r;
 }
 
+function updateRows(d) {
+  if (!d || !d.ok) return [];
+  var r = [];
+  r.push(head('Software Updates'));
+
+  var inst = d.installed ? ('v' + d.installed) : '—';
+  r.push({
+    label: 'Installed version',
+    value: inst,
+    hint: 'The version of tvweb currently running on this TV.'
+  });
+
+  if (d.state === 'checking') {
+    r.push({
+      label: 'Latest release',
+      value: 'Checking…',
+      cls: 'warn',
+      hint: 'Checking GitHub for new releases.'
+    });
+  } else if (d.available && d.latest) {
+    r.push({
+      label: 'Latest release',
+      value: 'v' + d.latest,
+      cls: 'on',
+      hint: 'A newer release is available on GitHub (v' + d.latest + ').'
+    });
+    if (d.writable) {
+      r.push({
+        label: 'Install update',
+        value: 'Install v' + d.latest,
+        cls: 'act',
+        act: 'update',
+        targetVer: d.latest,
+        press: 'Press OK to install v' + d.latest,
+        hint: 'Downloads and installs v' + d.latest + ' directly on the TV. Settings, ad blocker, and screen saver are preserved. The TV server restarts automatically.'
+      });
+    }
+  } else if (d.latest) {
+    r.push({
+      label: 'Latest release',
+      value: 'v' + d.latest + ' (Up to date)',
+      cls: 'off',
+      hint: 'You are running the latest release.'
+    });
+  } else if (d.error) {
+    r.push({
+      label: 'Latest release',
+      value: 'Check failed',
+      cls: 'bad',
+      hint: 'Could not check GitHub: ' + d.error
+    });
+  }
+
+  if (d.writable && d.state !== 'checking' && !d.available) {
+    r.push({
+      label: 'Check for updates',
+      value: 'Check now',
+      cls: 'act',
+      act: 'updateCheck',
+      press: 'Press OK to check for updates',
+      hint: 'Queries GitHub releases to check if a new version is available.'
+    });
+  }
+
+  if (d.rollbackTo && d.writable) {
+    r.push(head('Rollback'));
+    r.push({
+      label: 'Roll back version',
+      value: 'Roll back to v' + d.rollbackTo,
+      cls: 'warn',
+      act: 'updateRollback',
+      targetVer: d.rollbackTo,
+      press: 'Press OK to roll back to v' + d.rollbackTo,
+      hint: 'Restores the previous backup version (v' + d.rollbackTo + ') and restarts the server.'
+    });
+  }
+
+  r.push(head('Information'));
+  if (d.checkedMs !== null && d.checkedMs !== undefined) {
+    var mins = Math.floor(d.checkedMs / 60000);
+    var checkedStr = mins < 1 ? 'Just now' : (mins === 1 ? '1 min ago' : mins + ' mins ago');
+    r.push({
+      label: 'Last checked',
+      value: checkedStr,
+      hint: 'When the TV last reached GitHub to check for updates.'
+    });
+  }
+
+  if (d.client) {
+    r.push({
+      label: 'Download client',
+      value: d.client,
+      hint: 'HTTP client used to download updates (' + d.client + ').'
+    });
+  }
+
+  if (!d.writable) {
+    r.push({
+      label: 'Controls disabled',
+      value: 'Read-only',
+      cls: 'off',
+      hint: 'allowControl is false in config.json. Updates cannot be triggered from the TV.'
+    });
+  }
+
+  return r;
+}
+
 // ---- rendering ----
 
 function rowHeight(r) { return (r && r.head ? HEAD_VH : ROW_VH) * window.innerHeight / 100; }
@@ -917,6 +1094,24 @@ function openTab(i, keepSel) {
   render();
   fetchTab(keepSel || !!cached);
   if (T().poll) timer = setInterval(function () { fetchTab(true); }, T().poll);
+  if (T().key === 'update') checkUpdateOnOpen();
+}
+
+function checkUpdateOnOpen() {
+  var d = data.update;
+  if (busy || (d && d.writable === false) || (d && d.attemptedMs !== null && d.attemptedMs < 120000)) return;
+  fetch('/api/control', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'updateCheck', value: 'open' })
+  }).then(function (r) { return r.json().catch(function () { return {}; }); })
+    .then(function (res) {
+      if (T().key === 'update' && res && res.ok) {
+        data.update = res;
+        rows = updateRows(res) || [];
+        render();
+      }
+    }).catch(function () {});
 }
 
 function switchTab(d) {
@@ -926,6 +1121,40 @@ function switchTab(d) {
 }
 
 // ---- actions ----
+
+function awaitRestart(targetVer, doneLabel) {
+  busy = true;
+  var box = document.getElementById('rows'), msg = document.getElementById('msg');
+  box.innerHTML = '';
+  msg.style.display = 'block';
+  msg.innerHTML = 'Installing update\u2026<div class="msg-detail">The TV server is restarting. Please wait\u2026</div>';
+
+  var attempts = 0;
+  var poll = setInterval(function () {
+    attempts++;
+    fetch('/api/update', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) {
+          if (!targetVer || d.installed === targetVer) {
+            clearInterval(poll);
+            busy = false;
+            flash(doneLabel || 'Update complete');
+            setTimeout(function () {
+              location.replace(location.pathname + '?tab=update&t=' + Date.now());
+            }, 1000);
+          }
+        }
+      })
+      .catch(function () {});
+    if (attempts > 80) {
+      clearInterval(poll);
+      busy = false;
+      flash('Restart is taking longer than expected');
+      fetchTab(true);
+    }
+  }, 1500);
+}
 
 function send(body, note) {
   busy = true;
@@ -1021,6 +1250,117 @@ function activate() {
       return send({ action: 'serviceMenuLock', value: { locked: !r.on } });
     case 'menu':
       return send({ action: 'serviceMenuOpen', value: { menu: r.key } }, 'Opening…');
+    case 'gotoUpdate':
+      for (var ti = 0; ti < TABS.length; ti++) {
+        if (TABS[ti].key === 'update') { openTab(ti); break; }
+      }
+      return;
+    case 'toggleTheme':
+      var nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+      applyTheme(nextTheme);
+      try { localStorage.setItem('theme', nextTheme); } catch (e) {}
+      flash('Theme: ' + (nextTheme === 'light' ? 'Light' : 'Dark'));
+      if (T().key === 'system') {
+        rows = sysRows(data.system || {});
+        render();
+      }
+      return;
+    case 'updateCheck':
+      r.value = 'Checking…';
+      r.cls = 'warn';
+      render();
+      flash('Checking for updates…');
+      return sendPost('/api/control', { action: 'updateCheck' }, 'Check complete');
+    case 'update':
+      if (!r.confirming) {
+        r.confirming = true;
+        r.origValue = r.value;
+        r.origPress = r.press;
+        r.origCls = r.cls;
+        r.value = 'Confirm?';
+        r.cls = 'warn';
+        r.press = 'Press OK again to install v' + r.targetVer;
+        flash('Press OK again to install v' + r.targetVer);
+        render();
+        setTimeout(function () {
+          if (r.confirming) {
+            r.confirming = false;
+            r.value = r.origValue;
+            r.press = r.origPress;
+            r.cls = r.origCls;
+            render();
+          }
+        }, 4000);
+        return;
+      }
+      r.confirming = false;
+      r.value = 'Installing…';
+      r.cls = 'warn';
+      render();
+      flash('Installing v' + r.targetVer + '…');
+      busy = true;
+      fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update' })
+      }).then(function (res) { return res.json().catch(function () { return {}; }); })
+        .then(function (res) {
+          if (res && res.ok === false) {
+            busy = false;
+            flash(res.error || 'Update failed');
+            return fetchTab(true);
+          }
+          awaitRestart(r.targetVer, 'Updated to v' + r.targetVer);
+        })
+        .catch(function () {
+          awaitRestart(r.targetVer, 'Updated to v' + r.targetVer);
+        });
+      return;
+    case 'updateRollback':
+      if (!r.confirming) {
+        r.confirming = true;
+        r.origValue = r.value;
+        r.origPress = r.press;
+        r.origCls = r.cls;
+        r.value = 'Confirm?';
+        r.cls = 'warn';
+        r.press = 'Press OK again to roll back to v' + r.targetVer;
+        flash('Press OK again to roll back to v' + r.targetVer);
+        render();
+        setTimeout(function () {
+          if (r.confirming) {
+            r.confirming = false;
+            r.value = r.origValue;
+            r.press = r.origPress;
+            r.cls = r.origCls;
+            render();
+          }
+        }, 4000);
+        return;
+      }
+      r.confirming = false;
+      r.value = 'Rolling back…';
+      r.cls = 'warn';
+      render();
+      flash('Rolling back to v' + r.targetVer + '…');
+      busy = true;
+      fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateRollback' })
+      }).then(function (res) { return res.json().catch(function () { return {}; }); })
+        .then(function (res) {
+          if (res && res.ok === false) {
+            busy = false;
+            flash(res.error || 'Rollback failed');
+            return fetchTab(true);
+          }
+          awaitRestart(r.targetVer, 'Rolled back to v' + r.targetVer);
+        })
+        .catch(function () {
+          awaitRestart(r.targetVer, 'Rolled back to v' + r.targetVer);
+        });
+      return;
   }
 }
 
