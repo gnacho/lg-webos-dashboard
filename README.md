@@ -381,7 +381,7 @@ That is a complete install — Home Assistant integration is optional.
 ### What these are
 
 **Home Assistant** is open-source home automation software that runs on your own
-hardware — a Raspberry Pi, a NUC, a container on a NAS. It gathers devices
+hardware (a Raspberry Pi, a NUC, a container on a NAS). It gathers devices
 from different vendors into one place and automates them locally. Communication
 between the TV, your broker, and Home Assistant stays entirely on your local
 network — no LG account or vendor cloud dependencies required.
