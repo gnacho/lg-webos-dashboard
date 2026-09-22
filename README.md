@@ -324,7 +324,7 @@ Find the TV's address under Settings → Network on the TV, or in the
 router's list of devices. The installer automatically uses SSH if the TV has
 it, and falls back to the Homebrew Channel's telnet if not.
 
-> [!TIP]
+> [!CAUTION]
 > Telnet leaves an unauthenticated root shell open on your local network.
 > [Moving from telnet to SSH](docs/SECURITY.md#moving-from-telnet-to-ssh)
 > takes about five minutes and is strongly recommended.
