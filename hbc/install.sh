@@ -20,9 +20,19 @@ running() { [ -x "$D/tvwebctl" ] && "$D/tvwebctl" status 2>/dev/null | grep -q '
 web_off() {
   [ -f "$D/config.json" ] && tr -d ' \t\r\n' < "$D/config.json" | grep -q '"web":{[^}]*"enabled":false'
 }
-result() {   # action, then whether the dashboard is switched off
+result() {   # action; also whether the dashboard is off, and the old tile's fate
   off=false; web_off && off=true
-  printf '{"ok":true,"action":"%s","version":"%s","webOff":%s}\n' "$1" "$(version_of "$D/tvweb.js")" "$off"
+  printf '{"ok":true,"action":"%s","version":"%s","webOff":%s,"oldTile":%s}\n' \
+    "$1" "$(version_of "$D/tvweb.js")" "$off" "${OLD_TILE:-null}"
+}
+
+# This app is the tile from now on: say so, which also stops the server's own
+# installer offering or refreshing the one deploy.sh added, then retire that
+# one if it is not open. Its answer is passed back for the launch page.
+adopt() {
+  : > "$D/.from-homebrew-channel"
+  OLD_TILE=$(sh "$D/assets/dashboard-app/install-app.sh" retire 2>/dev/null | tail -1)
+  case "$OLD_TILE" in "{"*) ;; *) OLD_TILE=null ;; esac
 }
 fail() { printf '{"ok":false,"error":"%s"}\n' "$1"; exit 0; }
 
@@ -34,6 +44,7 @@ have=$(version_of "$D/tvweb.js")
 # can get here before the boot hook has started the server.
 if [ -n "$have" ] && [ "$have" = "$want" ]; then
   running || "$D/tvwebctl" start >/dev/null 2>&1
+  adopt
   result started
   exit 0
 fi
@@ -60,10 +71,8 @@ cp "$S/50-tvweb.sh" "$HOOKDIR/.50-tvweb.new" &&
   mv -f "$HOOKDIR/.50-tvweb.new" "$HOOKDIR/50-tvweb"
 rm -rf "$S"
 
-# Installed by this app rather than deploy.sh, which decides where updates come
-# from: the Homebrew Channel, not the server's own updater.
-: > "$D/.from-homebrew-channel"
-
 [ "$(version_of "$D/tvweb.js")" = "$want" ] || fail "the new files did not take"
+# Before the restart, so the server starting up finds nothing left to retire.
+adopt
 "$D/tvwebctl" restart >/dev/null 2>&1
 if [ -n "$have" ]; then result upgraded; else result installed; fi

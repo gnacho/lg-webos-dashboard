@@ -59,7 +59,7 @@ body{display:flex;display:-webkit-flex;align-items:center;-webkit-align-items:ce
     location.replace(BASE + '/assets/dashboard.html?tab=system&t=' + Date.now());
   }
 
-  // Asks the server what it is. cb(version) with null when nothing answers.
+  // Asks the server what it is. cb(caps) with null when nothing answers.
   function ask(cb) {
     var xhr = new XMLHttpRequest(), finished = false;
     function end(v) { if (!finished) { finished = true; cb(v); } }
@@ -69,9 +69,9 @@ body{display:flex;display:-webkit-flex;align-items:center;-webkit-align-items:ce
       xhr.onreadystatechange = function () {
         if (xhr.readyState !== 4) return;
         if (xhr.status >= 200 && xhr.status < 400) {
-          var v = null;
-          try { v = JSON.parse(xhr.responseText).version || ''; } catch (e) { v = ''; }
-          end(v);
+          var caps = {};
+          try { caps = JSON.parse(xhr.responseText) || {}; } catch (e) { caps = {}; }
+          end(caps);
         } else { end(null); }
       };
       xhr.onerror = function () { end(null); };
@@ -121,8 +121,8 @@ body{display:flex;display:-webkit-flex;align-items:center;-webkit-align-items:ce
       }
       say('Starting…');
       // A fresh start takes a few seconds; allow a generous minute.
-      waitFor(60, function (v) {
-        if (v === null) return say('The dashboard did not start.', true);
+      waitFor(60, function (caps) {
+        if (caps === null) return say('The dashboard did not start.', true);
         open();
       });
     };
@@ -135,8 +135,10 @@ body{display:flex;display:-webkit-flex;align-items:center;-webkit-align-items:ce
     // A running server of this version opens straight away. Anything else - a
     // different version, or nothing answering after a few seconds - goes to the
     // setup step, which only starts the server when it is already up to date.
-    waitFor(4, function (v) {
-      if (v === APP_VERSION) return open();
+    // Setup also runs once for a server of the right version that deploy.sh put
+    // there, so this app can take over from the tile deploy.sh added.
+    waitFor(4, function (caps) {
+      if (caps && caps.version === APP_VERSION && caps.fromHomebrewChannel) return open();
       install();
     });
   }
@@ -146,7 +148,13 @@ body{display:flex;display:-webkit-flex;align-items:center;-webkit-align-items:ce
   document.addEventListener('keydown', function (e) {
     var k = e.keyCode || e.which;
     if (k === 13) retry();
-    else if (k === 461) window.close();   // Back
+    else if (k === 461) {                  // Back: leave, as everywhere else on the TV
+      if (window.PalmSystem && typeof window.PalmSystem.platformBack === 'function') {
+        window.PalmSystem.platformBack();
+      } else {
+        window.close();
+      }
+    }
   });
 
   start();

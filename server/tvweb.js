@@ -903,6 +903,11 @@ function lanOrigin() {
  * that will not take an unsigned app - reports unsupported, and the dashboard
  * hides the control rather than offering something that cannot work.
  */
+// Put in place by the app the Homebrew Channel installs, rather than deploy.sh.
+function fromHomebrewChannel() {
+  try { return fs.existsSync('/var/lib/tvweb/.from-homebrew-channel'); } catch (e) { return false; }
+}
+
 function tvApp(action, cb) {
   var script = assetPath('dashboard-app/install-app.sh');
   if (!script) return cb({ ok: true, supported: false, installed: false });
@@ -1240,7 +1245,8 @@ var server = http.createServer(function (req, res) {
   if (pathname === '/api/caps') {
     return send(res, 200, JSON.stringify({
       ok: true, allowControl: CONFIG.allowControl, allowPower: CONFIG.allowPower,
-      origin: lanOrigin(), version: TVWEB_VERSION
+      origin: lanOrigin(), version: TVWEB_VERSION,
+      fromHomebrewChannel: fromHomebrewChannel()
     }));
   }
 
@@ -1564,12 +1570,21 @@ if (CLI_MODE) {
                 '  auth=' + (CONFIG.token ? 'token' : 'none'));
     oled.detectOled(function () {});   // resolve and log panel type up front
     telemetry.detectLogoLight(function () {});
-    // The home-screen app packages its own loading screen, name and icons at
-    // install - the dashboard itself is served fresh - so bring those up to date
-    // with this release. A removed app is left removed.
-    tvApp('refresh', function (r) {
-      if (r && r.refreshed && r.ok) console.log('tv app: refreshed to this release');
-    });
+    if (fromHomebrewChannel()) {
+      // The Homebrew Channel app is the tile, so the one deploy.sh added goes.
+      // Boot is the moment to do it: nothing is open, and it is never removed
+      // while open. Once it is gone this finds nothing to do.
+      tvApp('retire', function (r) {
+        if (r && r.retired) console.log('tv app: old tile removed; the Homebrew Channel app replaces it');
+      });
+    } else {
+      // The home-screen app packages its own loading screen, name and icons at
+      // install - the dashboard itself is served fresh - so bring those up to
+      // date with this release. A removed app is left removed.
+      tvApp('refresh', function (r) {
+        if (r && r.refreshed && r.ok) console.log('tv app: refreshed to this release');
+      });
+    }
   });
 } else {
   console.log('web dashboard disabled (web.enabled=false) - mqtt bridge only');
