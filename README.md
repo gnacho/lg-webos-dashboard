@@ -308,14 +308,15 @@ versions and panel types.
 
 ### 1. Get the files
 
-Download the project onto a computer on the same network as the TV. On
-Windows, run these in a Git Bash window, which Git for Windows adds to the
-Start menu:
+Download the project onto a computer on the same network as the TV. 
 
 ```bash
 git clone https://github.com/rorygallagher2024/lg-webos-dashboard.git
 cd lg-webos-dashboard/server
 ```
+
+> [!TIP]
+> If you use  Windows, run these in a Git Bash window (which Git for Windows adds to the Start menu)
 
 ### 2. Access
 
