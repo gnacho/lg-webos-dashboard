@@ -874,6 +874,9 @@ function assetPath(rel) {
  * code of "localhost" would be useless to the person holding the phone.
  */
 function lanOrigin() {
+  // Bound to loopback, the server answers nothing on the network, so any LAN
+  // address handed to a phone would be a dead link.
+  if (/^(127\.|::1$|localhost$)/.test(String(CONFIG.host))) return null;
   var ifaces = {};
   try { ifaces = os.networkInterfaces() || {}; } catch (e) { return null; }
   var best = null;
@@ -909,7 +912,9 @@ function tvApp(action, cb) {
     try { return cb(JSON.parse(last)); }
     catch (e) {
       // install prints a sentence rather than JSON, so read its wording.
-      if (action === 'install') return cb({ ok: /added to the home screen/.test(out) });
+      if (action === 'install' || action === 'refresh') {
+        return cb({ ok: /added to the home screen/.test(out), refreshed: action === 'refresh' });
+      }
       return cb({ ok: !err, error: err ? err.message : 'unreadable result' });
     }
   });
@@ -1559,6 +1564,12 @@ if (CLI_MODE) {
                 '  auth=' + (CONFIG.token ? 'token' : 'none'));
     oled.detectOled(function () {});   // resolve and log panel type up front
     telemetry.detectLogoLight(function () {});
+    // The home-screen app packages its own loading screen, name and icons at
+    // install - the dashboard itself is served fresh - so bring those up to date
+    // with this release. A removed app is left removed.
+    tvApp('refresh', function (r) {
+      if (r && r.refreshed && r.ok) console.log('tv app: refreshed to this release');
+    });
   });
 } else {
   console.log('web dashboard disabled (web.enabled=false) - mqtt bridge only');
