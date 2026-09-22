@@ -1240,7 +1240,7 @@ var server = http.createServer(function (req, res) {
   if (pathname === '/api/caps') {
     return send(res, 200, JSON.stringify({
       ok: true, allowControl: CONFIG.allowControl, allowPower: CONFIG.allowPower,
-      origin: lanOrigin()
+      origin: lanOrigin(), version: TVWEB_VERSION
     }));
   }
 

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>TV Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;color:#fff;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+body{display:flex;display:-webkit-flex;align-items:center;-webkit-align-items:center;justify-content:center;-webkit-justify-content:center;flex-direction:column;-webkit-flex-direction:column;cursor:none}
+#card{display:flex;display:-webkit-flex;flex-direction:column;-webkit-flex-direction:column;align-items:center;-webkit-align-items:center;text-align:center;padding:4vh 4vw;max-width:70vw}
+.spinner{width:46px;height:46px;border:3px solid rgba(255,255,255,.12);border-top-color:#1ec15f;border-radius:50%;margin-bottom:3.2vh;animation:spin 1s linear infinite;-webkit-animation:spin 1s linear infinite}
+.spinner.off{visibility:hidden}
+@keyframes spin{to{transform:rotate(360deg)}}
+@-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
+.title{font-size:3.6vh;font-weight:400;letter-spacing:.02em;margin-bottom:1.4vh}
+.status{font-size:2.2vh;line-height:1.5;color:rgba(255,255,255,.65);min-height:3.2vh}
+#retry{display:none;margin-top:3.5vh;padding:1.4vh 3.2vw;font-size:2vh;font-weight:500;color:#000;background:#1ec15f;border:none;border-radius:.8vh;outline:none}
+#retry.on{display:inline-block}
+</style>
+</head>
+<body>
+<div id="card">
+  <div class="spinner" id="spinner"></div>
+  <div class="title">TV Dashboard</div>
+  <div id="status" class="status">Starting&hellip;</div>
+  <button id="retry">Press OK to try again</button>
+</div>
+
+<script>
+/*
+ * The app as the Homebrew Channel installs it. The dashboard is served by a
+ * small server on the TV, and this app carries that server with it: when the
+ * server does not answer with the version this app was built with - never
+ * installed, older, or not started yet - the page asks the Homebrew Channel,
+ * which runs as root, to put it in place, then opens the dashboard.
+ */
+(function () {
+  var APP_VERSION = '@VERSION@';                // filled in when the app is built
+  var BASE = 'http://localhost:8080';
+  var EXEC = 'luna://org.webosbrew.hbchannel.service/exec';
+  // This page's own directory, which holds the server files under payload/.
+  var appDir = decodeURIComponent(location.pathname.replace(/\/[^\/]*$/, ''));
+
+  var statusEl = document.getElementById('status');
+  var retryBtn = document.getElementById('retry');
+  var spinner = document.getElementById('spinner');
+  var busy = false, done = false;
+
+  function say(text, stuck) {
+    statusEl.textContent = text;
+    retryBtn.className = stuck ? 'on' : '';
+    spinner.className = stuck ? 'spinner off' : 'spinner';
+  }
+
+  function open() {
+    if (done) return;
+    done = true;
+    location.replace(BASE + '/assets/dashboard.html?tab=system&t=' + Date.now());
+  }
+
+  // Asks the server what it is. cb(version) with null when nothing answers.
+  function ask(cb) {
+    var xhr = new XMLHttpRequest(), finished = false;
+    function end(v) { if (!finished) { finished = true; cb(v); } }
+    try {
+      xhr.open('GET', BASE + '/api/caps?t=' + Date.now(), true);
+      xhr.timeout = 1500;
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+        if (xhr.status >= 200 && xhr.status < 400) {
+          var v = null;
+          try { v = JSON.parse(xhr.responseText).version || ''; } catch (e) { v = ''; }
+          end(v);
+        } else { end(null); }
+      };
+      xhr.onerror = function () { end(null); };
+      xhr.ontimeout = function () { end(null); };
+      xhr.send();
+    } catch (e) { end(null); }
+  }
+
+  // Waits for the server to answer at all, for up to `tries` attempts.
+  function waitFor(tries, cb) {
+    ask(function (v) {
+      if (v !== null) return cb(v);
+      if (tries <= 1) return cb(null);
+      setTimeout(function () { waitFor(tries - 1, cb); }, 1000);
+    });
+  }
+
+  function install() {
+    if (busy) return;
+    busy = true;
+    say('Setting up the dashboard…');
+    var bridge;
+    try { bridge = new PalmServiceBridge(); } catch (e) { bridge = null; }
+    if (!bridge) {
+      busy = false;
+      return say('This TV cannot run the setup. The Homebrew Channel is needed.', true);
+    }
+    var timer = setTimeout(function () {
+      busy = false;
+      say('Setup did not finish.', true);
+    }, 120000);
+    bridge.onservicecallback = function (msg) {
+      clearTimeout(timer);
+      busy = false;
+      var reply = {}, result = null;
+      try { reply = JSON.parse(msg); } catch (e) { reply = {}; }
+      if (reply.returnValue === false) {
+        return say('The Homebrew Channel would not run the setup. Check that it is installed and up to date.', true);
+      }
+      var lines = String(reply.stdoutString || '').replace(/\s+$/, '').split('\n');
+      try { result = JSON.parse(lines[lines.length - 1]); } catch (e) { result = null; }
+      if (!result || !result.ok) {
+        return say('Setup failed' + (result && result.error ? ': ' + result.error : '') + '.', true);
+      }
+      if (result.webOff) {
+        return say('The dashboard is switched off on this TV.', true);
+      }
+      say('Starting…');
+      // A fresh start takes a few seconds; allow a generous minute.
+      waitFor(60, function (v) {
+        if (v === null) return say('The dashboard did not start.', true);
+        open();
+      });
+    };
+    bridge.call(EXEC, JSON.stringify({ command: 'sh "' + appDir + '/payload/install.sh"' }));
+  }
+
+  function start() {
+    done = false;
+    say('Starting…');
+    // A running server of this version opens straight away. Anything else - a
+    // different version, or nothing answering after a few seconds - goes to the
+    // setup step, which only starts the server when it is already up to date.
+    waitFor(4, function (v) {
+      if (v === APP_VERSION) return open();
+      install();
+    });
+  }
+
+  function retry() { if (!busy) start(); }
+  retryBtn.addEventListener('click', retry);
+  document.addEventListener('keydown', function (e) {
+    var k = e.keyCode || e.which;
+    if (k === 13) retry();
+    else if (k === 461) window.close();   // Back
+  });
+
+  start();
+})();
+</script>
+</body>
+</html>
