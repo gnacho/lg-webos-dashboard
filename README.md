@@ -316,7 +316,7 @@ cd lg-webos-dashboard/server
 ```
 
 > [!TIP]
-> If you use  Windows, run these in a Git Bash window (which Git for Windows adds to the Start menu)
+> **Git is required.** On Windows, install [Git for Windows](https://git-scm.com/download/win), which also provides the Git Bash window used by the commands below. macOS and most Linux distributions already include Git or make it available through their standard package manager.
 
 ### 2. Access
 
