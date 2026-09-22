@@ -62,6 +62,14 @@ cp -r "$SRC" "$S" || fail "could not copy the server files"
   mv -f "$S/$f" "$D/$f"
 done
 chmod +x "$D/tvwebctl" 2>/dev/null
+
+# A first install starts closed - answering only on the TV itself - and asks
+# the owner through the setup screens whether to open it to the network. One
+# that already has a config, from deploy.sh or before, keeps it as it is.
+if [ -z "$have" ] && [ ! -f "$D/config.json" ]; then
+  printf '{\n  "host": "127.0.0.1"\n}\n' > "$D/config.json"
+  : > "$D/.setup-pending"
+fi
 chmod 600 "$D/config.json" 2>/dev/null
 
 # run-parts skips names containing a dot, so the copy in progress never runs.
