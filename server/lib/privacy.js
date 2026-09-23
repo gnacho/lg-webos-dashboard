@@ -544,7 +544,7 @@ function collectPrivacy(cb) {
       luna('com.webos.service.acr/getACRSolutionStatus', {}, function (acr) {
         out.acr = {
           label: 'Screen content recognition',
-          detail: 'LG calls this ACR. It samples what is on screen to work out what you are watching.',
+          detail: 'LG’s ACR captures what is on screen, from apps and HDMI alike, to work out what you watch and target ads at you.',
           active: !!(acr && acr.ACRSolutionStatus)
         };
         luna('com.webos.service.acr/getVideoCaptureStatus', {}, function (cap) {
@@ -556,7 +556,8 @@ function collectPrivacy(cb) {
             out.advertisingId = {
               available: adOk,
               label: 'Advertising identifier',
-              detail: 'A unique ID your TV hands to advertisers. Resetting it breaks the link to your past activity.',
+              detail: 'A unique ID your TV hands to advertisers so they can target ads at you. ' +
+                      'Resetting it breaks the link to your past activity.',
               present: !!id,
               limitTracking: !!(ad && String(ad.LMT).toLowerCase() === 'on'),
               limitTrackingLabel: 'Limit ad tracking',
