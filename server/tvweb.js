@@ -1106,10 +1106,13 @@ function checkHomebrewChannelApp() {
     return;
   }
   if (!fs.existsSync(path.dirname(dir)) || ++hbcMissing < 2) return;
-  // Read from the raw reply: luna-send can exit non-zero on the refusal itself.
+  // Only the app manager's own "no such app" counts - "Invalid appId
+  // specified" on webOS 4.4 and 9.2 alike - never a refusal for another reason
+  // such as permissions. Read from the raw reply, since luna-send can exit
+  // non-zero on the refusal itself.
   luna('com.webos.applicationManager/getAppInfo', { id: path.basename(dir) }, function (res, raw) {
     try { res = res || JSON.parse(raw); } catch (e) { res = null; }
-    if (!res || res.returnValue !== false) return;
+    if (!res || res.returnValue !== false || !/Invalid appId/i.test(String(res.errorText))) return;
     console.log('uninstall: the Homebrew Channel app is gone, removing the server');
     // Inline rather than a script, since the files it deletes include every
     // script there is. 20-services.sh holds down the services switched off in
