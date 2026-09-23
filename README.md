@@ -14,7 +14,7 @@
 > This project brings control, visibility and automation back to the device.
 > Local, transparent, and without requiring a manufacturer cloud service.
 
-This is a server that runs directly on a rooted LG webOS TV, providing both a live browser dashboard and an optional dashboard app.
+This is a server that runs directly on a rooted LG webOS TV, providing both a live browser dashboard and a dashboard app.
 
 Use it for remote control, app management and removal, OLED panel care, privacy controls, service menu access, and hardware telemetry. It also includes an MQTT bridge for integrating the TV with Home Assistant and other smart-home software.
 
