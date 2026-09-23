@@ -164,7 +164,7 @@ test('getApps segregates removable apps and built-in system tiles', function (do
     },
     {
       id: 'com.tvweb.dashboard',
-      title: 'TV Dashboard',
+      title: 'Glasshouse',
       removable: true,
       systemApp: false,
       folderPath: '/media/developer/apps/usr/palm/applications/com.tvweb.dashboard'

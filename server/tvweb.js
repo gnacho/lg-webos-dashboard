@@ -1186,7 +1186,7 @@ function missingAssetsPage() {
     '<!doctype html>',
     '<html lang="en"><head><meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width,initial-scale=1">',
-    '<title>LG webOS TV &middot; dashboard assets missing</title>',
+    '<title>Glasshouse &middot; dashboard assets missing</title>',
     '<style>',
     'body{background:#000;color:rgba(255,255,255,.8);margin:0;padding:8vw 6vw;',
     '  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}',

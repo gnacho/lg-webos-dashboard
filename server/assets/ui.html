@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<title>LG TV</title>
+<title>Glasshouse</title>
 <style>
 /* ---------------------------------------------------------------
    Type.
@@ -1411,7 +1411,7 @@ async function tick() {
                     (d.capabilities ? d.capabilities.oled === true : (/oled/i.test(model) || !!(d.oled && d.oled.panel_hours !== undefined)));
     const brand = isOled ? 'LG OLED TV' : 'LG TV';
     if (q('brand')) q('brand').textContent = brand;
-    const want = model ? brand + ' · ' + model : brand;
+    const want = model ? 'Glasshouse · ' + model : 'Glasshouse';
     if (document.title !== want) document.title = want;
     // Panel state first: without it, a blanked screen still reads as though
     // something were being displayed.
