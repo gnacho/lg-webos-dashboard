@@ -15,6 +15,7 @@
 >
 > This project brings control, visibility and automation back to the device.
 > Local, transparent, and without requiring a manufacturer cloud service.
+> No nonsense, no data collection, no ads, no dark patterns. I don't want your data.
 
 **glasshouse** is a server that runs directly on a rooted LG webOS TV, providing both a live browser dashboard and a dashboard app.
 
