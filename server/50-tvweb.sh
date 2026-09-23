@@ -50,8 +50,10 @@ if [ -f /var/lib/tvweb/screensaver/.tvweb-screensaver ]; then
   fi
 fi
 
-# Restore hidden built-in app overrides if tile hiding is enabled
-if [ -f /var/lib/tvweb/tile_hiding_enabled ] && [ "$(cat /var/lib/tvweb/tile_hiding_enabled 2>/dev/null)" = "1" ] && [ -f /var/lib/tvweb/hidden_apps ]; then
+# Restore hidden built-in app overrides if tile hiding is enabled. Not on a
+# Homebrew Channel install, which does not offer it: restarting the app
+# manager mid-boot is a risk that store asks its apps not to take.
+if [ ! -f /var/lib/tvweb/.from-homebrew-channel ] && [ -f /var/lib/tvweb/tile_hiding_enabled ] && [ "$(cat /var/lib/tvweb/tile_hiding_enabled 2>/dev/null)" = "1" ] && [ -f /var/lib/tvweb/hidden_apps ]; then
   mounted=0
   while read -r app; do
     [ -z "$app" ] && continue

@@ -760,6 +760,7 @@ function doControl(action, value, cb) {
                   TOAST_SOURCE);
 
     case 'tileHiding':
+      if (fromHomebrewChannel()) return cb({ ok: false, error: TILE_HIDING_OFF });
       return appsModule.setTileHidingEnabled(!!value, function (r) {
         telemetry.clearCache();
         cb(r);
@@ -1054,6 +1055,12 @@ var HBC_MARK = '/var/lib/tvweb/.from-homebrew-channel';
 function fromHomebrewChannel() {
   try { return fs.existsSync(HBC_MARK); } catch (e) { return false; }
 }
+
+// Hiding tiles restarts the app manager at boot, the kind of step that can
+// make a boot fail, which the Homebrew Channel asks its apps not to risk.
+// Doing it later would let the tiles show after every cold boot, so installs
+// from there go without it.
+var TILE_HIDING_OFF = 'hiding home-screen tiles is not available when installed from the Homebrew Channel';
 
 /*
  * The Homebrew Channel only replaces or removes the app; the server is ours to
@@ -1585,6 +1592,8 @@ var server = http.createServer(function (req, res) {
 
   if (pathname === '/api/apps' && req.method === 'GET') {
     return appsModule.getApps(function (d) {
+      d.tileHidingAvailable = !fromHomebrewChannel();
+      if (!d.tileHidingAvailable) { d.systemTiles = []; d.tileHidingEnabled = false; d.hiddenCount = 0; }
       servicesModule.getServices(function (sRes) {
         if (sRes && sRes.services) d.services = sRes.services;
         send(res, 200, JSON.stringify(d));
@@ -1624,6 +1633,9 @@ var server = http.createServer(function (req, res) {
     });
   }
 
+  if ((pathname === '/api/apps/hide' || pathname === '/api/apps/unhide') && fromHomebrewChannel()) {
+    return send(res, 400, JSON.stringify({ ok: false, error: TILE_HIDING_OFF }));
+  }
   if (pathname === '/api/apps/hide' && req.method === 'POST') {
     return readJsonBody(req, res, function (body) {
       appsModule.hideTile(body.id, function (r) {

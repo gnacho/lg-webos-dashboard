@@ -27,7 +27,7 @@ the first reboot after uninstalling.
 | Feature | What it does | Undone by |
 | :------ | :----------- | :-------- |
 | Ad blocker | Bind-mounts a replacement `/etc/hosts` | Switching it off |
-| Hidden home-screen tiles | Bind-mounts edited `appinfo.json` files, then restarts the app manager so the home screen rereads them | Switching tile hiding off |
+| Hidden home-screen tiles | Bind-mounts edited `appinfo.json` files, then restarts the app manager so the home screen rereads them. Not offered when installed from the Homebrew Channel, since the restart happens during boot | Switching tile hiding off |
 | Switched-off background services | Stops them and masks their systemd units under `/run` | Switching them back on |
 | Replacement screen saver | Bind-mounts over the built-in screen saver app; restarts the app manager at boot when the replacement is a different app type | Choosing the stock screen saver |
 
