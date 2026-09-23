@@ -766,7 +766,7 @@ function updateRows(d) {
   r.push({
     label: 'Installed version',
     value: inst,
-    hint: 'The version of tvweb currently running on this TV.'
+    hint: 'The version of the dashboard running on this TV.'
   });
 
   if (d.state === 'checking') {
@@ -1026,7 +1026,7 @@ function fetchTab(keepSel) {
       document.getElementById('rows').innerHTML = '';
       var msg = document.getElementById('msg');
       msg.style.display = 'block';
-      var detail = '<div class="msg-detail">The tvweb server did not respond.';
+      var detail = '<div class="msg-detail">The dashboard’s server on this TV did not respond.';
       if (lanOrigin) detail += '<br>Use the web dashboard instead: <span class="msg-url">' + esc(lanOrigin) + '</span>';
       detail += '<br>If this persists, open an issue at github.com/rorygallagher2024/lg-webos-dashboard</div>';
       msg.innerHTML = 'Could not reach the TV server' + detail;
