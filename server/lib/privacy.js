@@ -428,6 +428,12 @@ function readConsentFlags() {
       out.other.push(describeUnlabelled(key, on, groups));
     }
   }
+  // The file's order is not stable: writing a flag moves it within the file,
+  // so a list in that order reshuffles as flags are switched. Named flags go
+  // in the order they are described above, the rest by key.
+  var order = Object.keys(CONSENT_LABELS);
+  out.known.sort(function (a, b) { return order.indexOf(a.key) - order.indexOf(b.key); });
+  out.other.sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
   return out;
 }
 
@@ -450,27 +456,6 @@ function upstartJobs(cb) {
       if (m) out[m[1]] = m[2].replace(/,$/, '');
     }
     cb(out);
-  });
-}
-
-function setServiceEnabled(name, enable, cb) {
-  execFile('/sbin/initctl', [enable ? 'start' : 'stop', name], { timeout: 6000 }, function () {
-    upstartJobs(function (jobs) {
-      var running = String(jobs[name] || '').indexOf('start/') === 0;
-      var list = stoppedServices(), at = list.indexOf(name);
-      if (enable && at !== -1) list.splice(at, 1);
-      if (!enable && at === -1) list.push(name);
-      try {
-        if (list.length) fs.writeFileSync(SERVICES_FILE, list.join('\n') + '\n', 'utf8');
-        else if (fs.existsSync(SERVICES_FILE)) fs.unlinkSync(SERVICES_FILE);
-      } catch (e) {}
-      clearCache();
-      console.log('service: ' + name + ' -> ' + (enable ? 'start' : 'stop') +
-                  (running === enable ? '' : ' (did not take)'));
-      cb(running === enable
-        ? { ok: true, name: name, running: running }
-        : { ok: false, error: 'the TV did not ' + (enable ? 'start' : 'stop') + ' ' + name });
-    });
   });
 }
 
@@ -634,7 +619,6 @@ module.exports = {
   clearAdCookies: clearAdCookies,
   collectPrivacy: collectPrivacy,
   setConsent: setConsent,
-  setServiceEnabled: setServiceEnabled,
   readConsentFlags: readConsentFlags,
   clearCache: clearCache,
   ADBLOCK_ADS: ADBLOCK_ADS,

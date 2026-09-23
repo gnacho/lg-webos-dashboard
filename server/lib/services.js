@@ -7,6 +7,7 @@ var execFile = require('child_process').execFile;
 var CATALOG = [
   {
     id: 'mycar',
+    bin: 'com.webos.service.mycar',
     title: 'Car-to-Home Telematics',
     unit: 'com.webos.service.mycar.service',
     upstart: null,
@@ -15,6 +16,7 @@ var CATALOG = [
   },
   {
     id: 'camera',
+    bin: 'com.webos.service.camera2',
     title: 'USB Camera Listener',
     unit: 'com.webos.service.camera.service',
     upstart: null,
@@ -23,6 +25,7 @@ var CATALOG = [
   },
   {
     id: 'uploadd',
+    bin: 'uploadd',
     title: 'Telemetry & Diagnostics Uploader',
     unit: 'uploadd.service',
     upstart: 'uploadd',
@@ -31,6 +34,7 @@ var CATALOG = [
   },
   {
     id: 'rdxd',
+    bin: 'rdxd',
     title: 'Remote Diagnostics Daemon',
     unit: 'rdxd.service',
     upstart: 'rdxd',
@@ -39,6 +43,7 @@ var CATALOG = [
   },
   {
     id: 'crashreportd',
+    bin: 'crashreportd',
     title: 'Jira Crash Reporter',
     unit: null,
     upstart: 'crashreportd',
@@ -47,6 +52,7 @@ var CATALOG = [
   },
   {
     id: 'contentminer',
+    bin: 'contentminer',
     title: 'ACR Content Miner',
     unit: 'contentminer.service',
     upstart: null,
@@ -55,6 +61,7 @@ var CATALOG = [
   },
   {
     id: 'nudge',
+    bin: 'nudge',
     title: 'LG Promotions & Tips Popups',
     unit: 'nudge.service',
     upstart: null,
@@ -63,6 +70,7 @@ var CATALOG = [
   },
   {
     id: 'alwaysready',
+    bin: 'alwaysready',
     title: 'Always Ready Ambient Mode',
     unit: 'alwaysready.service',
     upstart: null,
@@ -71,6 +79,7 @@ var CATALOG = [
   },
   {
     id: 'remotelogger',
+    bin: 'remotelogger',
     title: 'Remote Logging Daemon',
     unit: 'remotelogger.service',
     upstart: 'remotelogger',
@@ -86,6 +95,50 @@ var disabledFilePath = null;
 var initScriptPath = '/var/lib/webosbrew/init.d/20-tvweb-services';
 var oldInitScriptPath = '/var/lib/webosbrew/init.d/20-services.sh';
 var transientDir = '/run/systemd/transient';
+
+// The processes running, by program name, from each one's executable.
+function runningPrograms() {
+  var out = {}, pids = [];
+  try { pids = fs.readdirSync('/proc'); } catch (e) { return out; }
+  for (var i = 0; i < pids.length; i++) {
+    if (!/^\d+$/.test(pids[i])) continue;
+    try {
+      var name = path.basename(fs.readlinkSync('/proc/' + pids[i] + '/exe'));
+      (out[name] = out[name] || []).push(parseInt(pids[i], 10));
+    } catch (e2) {}
+  }
+  return out;
+}
+
+/*
+ * Stops any switched-off service found running. The boot hook stops them
+ * once, but on webOS 9 the service hub launches some on demand whenever
+ * something asks for them, outside the unit: uploadd was seen running 22s into
+ * a C2's boot, before the hook got to it. The unit or job is stopped first, so
+ * nothing supervising it starts it again; anything left is then signalled
+ * directly, which is how one the hub launched ends.
+ */
+function enforce() {
+  var disabled = readDisabledList();
+  if (!disabled.length) return;
+  var procs = runningPrograms(), systemctl = getSystemctl(), initctl = getInitctl();
+  CATALOG.forEach(function (item) {
+    var pids = item.bin && procs[item.bin];
+    if (!pids || disabled.indexOf(item.id) === -1) return;
+    console.log('services: ' + item.id + ' was running while switched off, stopping it');
+    if (systemctl && item.unit) execFile(systemctl, ['stop', item.unit], function () {});
+    if (initctl && item.upstart) execFile(initctl, ['stop', item.upstart], function () {});
+    setTimeout(function () {
+      var left = runningPrograms()[item.bin] || [];
+      left.forEach(function (pid) { try { process.kill(pid, 'SIGTERM'); } catch (e) {} });
+    }, 3000);
+  });
+}
+
+function startEnforcing() {
+  setTimeout(enforce, 30000);
+  setInterval(enforce, 5 * 60000);
+}
 
 function getSystemctl() {
   if (fs.existsSync('/bin/systemctl')) return '/bin/systemctl';
@@ -278,6 +331,7 @@ function getServices(cb) {
   }
 
   // Probe running state for available services
+  var procs = runningPrograms();
   var pending = available.length;
   function doneOne() {
     pending--;
@@ -295,17 +349,22 @@ function getServices(cb) {
       for (var k = 0; k < CATALOG.length; k++) {
         if (CATALOG[k].id === svc.id) { catItem = CATALOG[k]; break; }
       }
+      // The program itself counts as well as the unit or job: on webOS 9 the
+      // service hub launches some of these on demand, outside the unit that
+      // systemd reports on (uploadd, observed 22s into a boot on a C2).
+      var seen = !!(catItem && catItem.bin && procs[catItem.bin]);
       if (systemctl && catItem && catItem.unit) {
         execFile(systemctl, ['is-active', catItem.unit], function (err, stdout) {
-          svc.running = (!err && String(stdout).trim() === 'active');
+          svc.running = seen || (!err && String(stdout).trim() === 'active');
           doneOne();
         });
       } else if (initctl && catItem && catItem.upstart) {
         execFile(initctl, ['status', catItem.upstart], function (err, stdout) {
-          svc.running = (!err && String(stdout).indexOf('start/running') !== -1);
+          svc.running = seen || (!err && String(stdout).indexOf('start/running') !== -1);
           doneOne();
         });
       } else {
+        svc.running = seen;
         doneOne();
       }
     })(available[j]);
@@ -373,5 +432,6 @@ module.exports = {
   init: init,
   CATALOG: CATALOG,
   getServices: getServices,
-  toggleService: toggleService
+  toggleService: toggleService,
+  startEnforcing: startEnforcing
 };
