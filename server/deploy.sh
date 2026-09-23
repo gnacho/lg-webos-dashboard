@@ -51,6 +51,7 @@ SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=6 -o StrictHostKeyChecking=accept-n
 STAGE=/var/lib/tvweb/.deploy     # on the TV; beside the install so moves are renames
 
 FILES="tvweb.js tvwebctl assets/ui.html assets/dashboard.html \
+assets/qr.js assets/setup.html assets/setup-phone.html \
 assets/dashboard-app/appinfo.json assets/dashboard-app/index.html \
 assets/dashboard-app/packageinfo.json assets/dashboard-app/install-app.sh \
 assets/dashboard-app/assets/icon80.png assets/dashboard-app/assets/icon130.png \
@@ -278,9 +279,11 @@ if ! command -v curl >/dev/null 2>&1; then
   exit 0
 fi
 # A restart takes a few seconds, so give it twenty before calling it a failure.
+# Any reply counts: with a token set, the 401 is the server answering.
 answered=""
 for _ in 1 2 3 4 5 6 7 8 9 10; do
-  if curl -sf --max-time 4 "http://$TV:8080/api/caps" >/dev/null; then answered=1; break; fi
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "http://$TV:8080/api/caps")
+  if [ -n "$code" ] && [ "$code" != 000 ]; then answered=1; break; fi
   sleep 2
 done
 if [ -z "$answered" ]; then
