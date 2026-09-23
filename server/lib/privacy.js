@@ -659,6 +659,7 @@ function collectPrivacy(cb) {
               adCount: adBlockAds().length,
               platform: adBlockPlatform()
             };
+            out.simple = simpleSummary(out);
             cachedPrivacy = out;
             lastPrivacyCheck = Date.now();
             cb(out);
@@ -667,6 +668,60 @@ function collectPrivacy(cb) {
       });
     });
   });
+}
+
+/*
+ * The short view both dashboards lead with: three things people mean by LG
+ * tracking, what is still on under each, and how to switch each off. Voice and
+ * LG Channels are left alone, since they run features people use, and so is
+ * anything the TV will not let this server change.
+ */
+var SIMPLE_KEEP = { voiceAllowed: 1, voice2Allowed: 1 };
+
+function simpleSummary(p) {
+  var flags = ((p.consent && p.consent.known) || []).concat((p.consent && p.consent.other) || []);
+  var writable = p.consentWritable !== false;
+  var onIn = function (group) {
+    /** @type {any[]} */
+    var out = [];
+    for (var i = 0; i < flags.length; i++) {
+      var f = flags[i];
+      if (f.group !== group || !f.enabled || !f.settable || !writable || SIMPLE_KEEP[f.key]) continue;
+      out.push({ label: f.label || f.key, action: 'consent', value: { key: f.key, enabled: false } });
+    }
+    return out;
+  };
+  var ad = p.advertisingId || {};
+  var mode = (p.adblock && p.adblock.mode) || 'off';
+
+  var watching = onIn('watching');
+  if (p.acr && p.acr.active && writable) {
+    watching.push({ label: 'Content recognition is running', action: 'acr', value: false });
+  }
+  var ads = onIn('advertising');
+  if (ad.available && !ad.limitTracking && writable) {
+    ads.push({ label: 'Limit ad tracking is off', action: 'limitAdTracking', value: true });
+  }
+  if (mode === 'off') {
+    ads.push({ label: 'LG’s ad and tracking servers can be reached', action: 'setAdBlock', value: 'ads' });
+  }
+  var reports = onIn('analytics');
+  (p.daemons || []).forEach(function (x) {
+    // Only what is running: one that is merely allowed to start is not on.
+    if (!x.onDemand && x.stoppable && x.running) reports.push({ label: x.label + ' is running', service: x.name });
+  });
+
+  var areas = [
+    { id: 'watching', name: 'Screen recognition', detail: 'LG identifying what you watch, to target ads at you.', items: watching },
+    { id: 'ads', name: 'Ad tracking', detail: 'Advertisers tracking the TV across apps, to target ads at you.', items: ads },
+    { id: 'reports', name: 'Usage reports', detail: 'Usage and diagnostic reports sent to LG, and data passed to other companies.', items: reports }
+  ];
+  var total = 0;
+  areas.forEach(function (a) { total += a.items.length; });
+  var kept = flags.filter(function (f) {
+    return f.enabled && (SIMPLE_KEEP[f.key] || f.group === 'services');
+  }).map(function (f) { return f.label || f.key; });
+  return { total: total, areas: areas, kept: kept };
 }
 
 function resetAdId(cb) {
@@ -788,6 +843,7 @@ module.exports = {
   setLimitTracking: setLimitTracking,
   clearAdCookies: clearAdCookies,
   collectPrivacy: collectPrivacy,
+  simpleSummary: simpleSummary,
   setConsent: setConsent,
   readConsentFlags: readConsentFlags,
   clearCache: clearCache,

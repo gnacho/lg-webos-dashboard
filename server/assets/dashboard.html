@@ -537,6 +537,34 @@ function privacyRows(d) {
   if (!d || !d.ok) return [];
   var r = [];
 
+  // The same summary as the browser dashboard's, worked out by the server.
+  // The detailed rows follow, unchanged, for anyone who wants them.
+  var sm = d.simple;
+  if (sm) {
+    var can = d.consentWritable !== false;
+    r.push(head('Tracking and ads'));
+    r.push({ label: sm.total ? (sm.total === 1 ? '1 thing is still on' : sm.total + ' things are still on')
+                             : 'Tracking and targeted ads are off',
+             value: sm.total ? (can ? 'Switch it all off' : sm.total + ' on') : 'All off',
+             cls: sm.total ? (can ? 'act' : 'off') : 'on',
+             act: sm.total && can ? 'allOff' : null,
+             press: 'Press OK to switch it all off',
+             hint: sm.total ? 'Keeps the TV’s features working. Anything can be switched back on further down.'
+                            : 'If an LG update switches anything back on, it shows here.' });
+    for (var sa = 0; sa < sm.areas.length; sa++) {
+      var ar = sm.areas[sa];
+      var still = [];
+      for (var si = 0; si < ar.items.length; si++) still.push(ar.items[si].label);
+      r.push({ label: ar.name, value: still.length ? still.length + ' on' : 'Off',
+               cls: still.length ? 'off' : 'on',
+               hint: ar.detail + (still.length ? ' Still on: ' + still.join(', ') + '.' : '') });
+    }
+    if (sm.kept.length)
+      r.push({ label: 'Left on', value: sm.kept.length + ' on',
+               hint: 'These run features, so switching it all off leaves them: ' + sm.kept.join(', ') +
+                     '. They can be switched off further down.' });
+  }
+
   // The same three settings as the browser dashboard, stepped through with OK
   // as logo luminance is: off, then ads and telemetry, then everything.
   if (d.adblock) {
@@ -1275,6 +1303,9 @@ function activate() {
                   r.on ? 'Switched off' : 'Switched on');
     case 'resetAdId':
       return send({ action: 'resetAdId' }, 'Advertising ID reset');
+    case 'allOff':
+      flash('Switching off…');
+      return send({ action: 'privacyAllOff' }, 'Switched off');
     case 'lmt':
       return send({ action: 'limitAdTracking', value: !r.on }, r.on ? 'Switched off' : 'Switched on');
     case 'tvupd':
