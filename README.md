@@ -1,4 +1,6 @@
-# LG webOS TV Dashboard & Home Assistant Bridge
+# Glasshouse
+
+**Own the glass.** A dashboard, privacy controls and Home Assistant bridge for rooted LG webOS TVs.
 
 > [!NOTE]
 >
@@ -33,7 +35,7 @@ Use it for remote control, app management and removal, OLED panel care, privacy 
 
 Root the TV and install the [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel), then either:
 
-* **From the Homebrew Channel:** install **TV Dashboard**, then open it from the home screen. The first launch asks two questions and the dashboard is ready. No computer needed.
+* **From the Homebrew Channel:** install **Glasshouse**, then open it from the home screen. The first launch asks two questions and the dashboard is ready. No computer needed.
 * **With a computer:** clone this repository, run `./deploy.sh <tv-ip>` from the `server/` directory, and open `http://<tv-ip>:8080/` in a browser.
 
 [Installation](#installation) compares the two.
@@ -299,8 +301,8 @@ Tested across the following TVs so far. The Luna service names and `/proc/lg` pa
 
 ### From the Homebrew Channel
 
-1. Open the Homebrew Channel, find **TV Dashboard**, and install it.
-2. Open **TV Dashboard** from the home screen. The first launch puts the server in place, which takes a few seconds.
+1. Open the Homebrew Channel, find **Glasshouse**, and install it.
+2. Open **Glasshouse** from the home screen. The first launch puts the server in place, which takes a few seconds.
 3. Setup asks whether phones and computers on the network may use the dashboard, and whether to connect Home Assistant. Broker details are typed on a phone, which scans a code from the TV. Both can be changed later in the **Settings** tab.
 
 An install from the Homebrew Channel differs from one made with `deploy.sh` in a few ways:
@@ -476,7 +478,7 @@ ssh root@<tv-ip> /var/lib/tvweb/tvwebctl status    # start | stop | restart | st
 
 How depends on the install.
 
-**From the Homebrew Channel.** Update TV Dashboard there. The server installs the new version within a few minutes, even if the app is not opened.
+**From the Homebrew Channel.** Update Glasshouse there. The server installs the new version within a few minutes, even if the app is not opened.
 
 **With `deploy.sh`.** One with a **Server** tab in its dashboard updates itself; an older one is updated by deploying again, after which it has the tab.
 
@@ -522,7 +524,7 @@ The request says nothing about the TV beyond the address any HTTP request reveal
 
 ### Uninstalling
 
-Installed from the Homebrew Channel: uninstall TV Dashboard there. The server stops starting at boot straight away, and within a few minutes it removes its Home Assistant entities and deletes itself, config included.
+Installed from the Homebrew Channel: uninstall Glasshouse there. The server stops starting at boot straight away, and within a few minutes it removes its Home Assistant entities and deletes itself, config included.
 
 Installed with `deploy.sh`:
 
