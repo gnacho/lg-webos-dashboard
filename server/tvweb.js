@@ -533,6 +533,15 @@ function doControl(action, value, cb) {
     case 'launchApp':
       var appId = String(value || '').trim();
       if (!appId) return cb({ ok: false, error: 'missing app id' });
+      // Home Assistant sends ids, but a name is accepted too, matched loosely.
+      var apps = telemetry.getInstalledApps() || [];
+      var isId = apps.some(function (x) { return x.id === appId; });
+      if (!isId) {
+        var want = appId.toLowerCase();
+        for (var ai = 0; ai < apps.length; ai++) {
+          if (String(apps[ai].title || '').toLowerCase() === want) { appId = apps[ai].id; break; }
+        }
+      }
       return luna('com.webos.applicationManager/launch', { id: appId }, function (r) {
         cb({ ok: !!(r && r.returnValue) });
       });
@@ -587,9 +596,19 @@ function doControl(action, value, cb) {
     case 'soundOutput':
       var sOut = String(value || '').trim();
       if (!sOut) return cb({ ok: false, error: 'missing sound output' });
-      return luna('com.webos.service.settings/setSystemSettings',
-                  { category: 'sound', settings: { soundOutput: sOut } },
-                  function (r) { cb({ ok: !!(r && r.returnValue) }); });
+      /* Home Assistant sends one id per name, and some names cover two ids
+         that differ between firmware; the other is tried if the first is
+         refused. */
+      var sAlias = { optical: 'external_optical', external_optical: 'optical',
+                     tv_speaker: 'internal', internal: 'tv_speaker' }[sOut];
+      var setOut = function (id, next) {
+        luna('com.webos.service.settings/setSystemSettings',
+             { category: 'sound', settings: { soundOutput: id } }, function (r) { next(!!(r && r.returnValue)); });
+      };
+      return setOut(sOut, function (ok) {
+        if (ok || !sAlias) return cb({ ok: ok });
+        setOut(sAlias, function (ok2) { cb({ ok: ok2 }); });
+      });
 
     case 'playback':
     case 'media':

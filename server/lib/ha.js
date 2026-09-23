@@ -4,6 +4,7 @@
  */
 
 var INPUTS = { hdmi1: 1, hdmi2: 1, hdmi3: 1, hdmi4: 1, livetv: 1 };
+var INPUT_NAMES = { hdmi1: 'HDMI 1', hdmi2: 'HDMI 2', hdmi3: 'HDMI 3', hdmi4: 'HDMI 4', livetv: 'Live TV' };
 
 // Screen saver names come from the registry, so a new one reaches Home
 // Assistant without a second list to keep in step (Bokeh was missed once).
@@ -14,6 +15,31 @@ function ssMap(byLabel) {
   SS_IDS.forEach(function (k) { if (byLabel) m[SS[k].label] = k; else m[k] = SS[k].label; });
   return m;
 }
+
+var PIC_MODE_MAP = {
+  dolbyHdrVivid: 'Dolby Vision Vivid',
+  dolbyHdrCinemaBright: 'Dolby Vision Cinema Bright',
+  dolbyHdrCinema: 'Dolby Vision Cinema',
+  dolbyHdrCinemaHome: 'Dolby Vision Cinema Home',
+  dolbyHdrStandard: 'Dolby Vision Standard',
+  dolbyHdrGame: 'Dolby Vision Game',
+  hdrCinema: 'HDR Cinema',
+  hdrCinemaHome: 'HDR Cinema Home',
+  hdrStandard: 'HDR Standard',
+  hdrGame: 'HDR Game',
+  cinema: 'Cinema',
+  personalized: 'Personalized',
+  expert1: 'ISF Expert (Bright)',
+  expert2: 'ISF Expert (Dark)',
+  game: 'Game',
+  standard: 'Standard',
+  eco: 'Eco',
+  technicolor: 'Technicolor',
+  technicolorHdr: 'Technicolor HDR',
+  hdrEffect: 'HDR Effect',
+  vivid: 'Vivid',
+  normal: 'Standard'
+};
 
 var SOUND_OUTPUT_MAP = {
   tv_speaker: 'TV Speaker',
@@ -133,6 +159,62 @@ for (var i = 0; i < HA_ENTITIES.length; i++) {
 function entityCategory(e) {
   if (!e) return 'diagnostics';
   return ENTITY_CATEGORIES[e.type + '.' + e.id] || ENTITY_CATEGORIES[e.id] || 'diagnostics';
+}
+
+/*
+ * Launch App options by name. Before the app list has loaded, the common apps
+ * stand in so the select is not empty. A name two apps share gets the id of
+ * the second, since the select needs every option to be distinct.
+ */
+var DEFAULT_APPS = {
+  'com.webos.app.livetv': 'Live TV',
+  'youtube.leanback.v4': 'YouTube',
+  'netflix': 'Netflix',
+  'amazon': 'Prime Video',
+  'spotify-beehive': 'Spotify',
+  'com.apple.appletv': 'Apple TV'
+};
+
+function appNames(installed) {
+  var byId = {}, taken = {};
+  var add = function (id, title) {
+    if (byId[id]) return;
+    var name = title || id;
+    if (taken[name]) name += ' (' + id + ')';
+    taken[name] = true;
+    byId[id] = name;
+  };
+  if (!installed || !installed.length) {
+    for (var d in DEFAULT_APPS) add(d, DEFAULT_APPS[d]);
+  } else {
+    for (var i = 0; i < installed.length; i++) add(installed[i].id, installed[i].title);
+  }
+  return byId;
+}
+
+/*
+ * A select that shows names but sends and reads ids. Where two ids share a
+ * name (optical and external_optical are both "Optical"), the first id is the
+ * one sent. A value sent that is not a listed name goes through as written,
+ * so an automation still sending the id keeps working.
+ */
+function namedSelect(ids, names, stateExpr) {
+  var toId = {}, toName = {}, options = [];
+  for (var i = 0; i < ids.length; i++) {
+    var name = names[ids[i]] || ids[i];
+    toName[ids[i]] = name;
+    if (!toId[name]) { toId[name] = ids[i]; options.push(name); }
+  }
+  return {
+    options: options,
+    command_template: '{{ ' + JSON.stringify(toId) + '.get(value, value) }}',
+    value_template: '{{ ' + JSON.stringify(toName) + '.get(' + stateExpr + ', "None") }}'
+  };
+}
+
+function withSelect(payload, sel) {
+  for (var k in sel) payload[k] = sel[k];
+  return payload;
 }
 
 function selectState(expr, options) {
@@ -567,14 +649,12 @@ function buildEntities(opts) {
       },
       {
         type: 'select', id: 'input_source',
-        payload: {
+        payload: withSelect({
           name: 'Input Source',
           command_topic: cmdInputTopic,
           state_topic: telemetryTopic,
-          value_template: selectState('value_json.app', Object.keys(INPUTS)),
-          options: Object.keys(INPUTS),
           icon: 'mdi:video-input-hdmi'
-        }
+        }, namedSelect(Object.keys(INPUTS), INPUT_NAMES, 'value_json.app'))
       },
       {
         type: 'text', id: 'screen_notification',
@@ -747,19 +827,18 @@ function buildEntities(opts) {
       },
       {
         type: 'select', id: 'picture_mode',
-        payload: {
+        payload: withSelect({
           name: 'Picture Mode',
           command_topic: pfx + '/command/picture_mode',
           state_topic: telemetryTopic,
-          value_template: '{{ value_json.picture.mode_raw if value_json.picture else "standard" }}',
-          /* The settable modes depend on the dynamic range of what is playing,
-             so this is whatever the TV last said it would accept. Discovery is
-             republished when that set changes - see publishTelemetry. */
-          options: lastPicModes.length
+          icon: 'mdi:image-filter-black-white'
+        /* The settable modes depend on the dynamic range of what is playing,
+           so this is whatever the TV last said it would accept. Discovery is
+           republished when that set changes - see publishTelemetry. */
+        }, namedSelect(lastPicModes.length
             ? lastPicModes.map(function (m) { return m.value; })
             : ['expert1', 'expert2', 'cinema', 'game', 'standard', 'eco', 'sports'],
-          icon: 'mdi:image-filter-black-white'
-        }
+          PIC_MODE_MAP, '(value_json.picture.mode_raw if value_json.picture else "standard")'))
       },
       {
         type: 'select', id: 'energy_saving',
@@ -773,35 +852,29 @@ function buildEntities(opts) {
       },
       {
         type: 'select', id: 'sound_output',
-        payload: {
+        payload: withSelect({
           name: 'Sound Output',
           command_topic: pfx + '/command/sound_output',
           state_topic: telemetryTopic,
-          value_template: selectState('value_json.sound.output_raw if value_json.sound else "tv_speaker"',
-                                      Object.keys(SOUND_OUTPUT_MAP)),
-          options: Object.keys(SOUND_OUTPUT_MAP),
           icon: 'mdi:speaker'
-        }
+        }, namedSelect(Object.keys(SOUND_OUTPUT_MAP), SOUND_OUTPUT_MAP,
+          '(value_json.sound.output_raw if value_json.sound else "tv_speaker")'))
       },
       {
         type: 'select', id: 'app',
         payload: (function () {
-          /*
-           * Full app ids on both sides: listApps and telemetry's app_id report
-           * com.webos.app.livetv, and launch wants that same id back, so the
-           * option list needs no translation in either direction.
-           */
-          var opts = ['com.webos.app.livetv', 'youtube.leanback.v4', 'netflix', 'amazon', 'spotify-beehive', 'com.apple.appletv'];
-          var merged = {};
-          for (var o = 0; o < opts.length; o++) merged[opts[o]] = 1;
-          for (var a = 0; a < installedApps.length; a++) merged[installedApps[a].id] = 1;
-          var appOptions = Object.keys(merged);
+          var byId = appNames(installedApps);
+          var toId = {};
+          for (var id in byId) toId[byId[id]] = id;
           return {
             name: 'Launch App',
             command_topic: pfx + '/command/launch_app',
+            // A name outside the list goes through as written, so an app id
+            // sent by an older automation still launches.
+            command_template: '{{ ' + JSON.stringify(toId) + '.get(value, value) }}',
             state_topic: telemetryTopic,
-            value_template: selectState('value_json.app_id', appOptions),
-            options: appOptions,
+            value_template: '{{ ' + JSON.stringify(byId) + '.get(value_json.app_id, "None") }}',
+            options: Object.keys(toId),
             icon: 'mdi:apps'
           };
         })()
@@ -1095,11 +1168,13 @@ function filterWithholds(entities, opts) {
 module.exports = {
   INPUTS: INPUTS,
   SOUND_OUTPUT_MAP: SOUND_OUTPUT_MAP,
+  PIC_MODE_MAP: PIC_MODE_MAP,
   HA_CATEGORIES: HA_CATEGORIES,
   HA_ENTITIES: HA_ENTITIES,
   ENTITY_CATEGORIES: ENTITY_CATEGORIES,
   entityCategory: entityCategory,
   selectState: selectState,
+  appNames: appNames,
   RETIRED_ENTITIES: RETIRED_ENTITIES,
   HDMI_DIAG_ONLY: HDMI_DIAG_ONLY,
   OLED_ONLY: OLED_ONLY,
