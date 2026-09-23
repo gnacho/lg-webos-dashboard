@@ -453,7 +453,11 @@ function upstartJobs(cb) {
   });
 }
 
+// initctl will start or stop any job it is given, so only the listed ones.
 function setServiceEnabled(name, enable, cb) {
+  if (!SERVICE_CONTROLLABLE[name]) {
+    return cb({ ok: false, error: name ? name + ' is not controllable' : 'no service named' });
+  }
   execFile('/sbin/initctl', [enable ? 'start' : 'stop', name], { timeout: 6000 }, function () {
     upstartJobs(function (jobs) {
       var running = String(jobs[name] || '').indexOf('start/') === 0;

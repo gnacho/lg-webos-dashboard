@@ -554,28 +554,124 @@ function privacyRows(d) {
              hint: 'Issues a fresh identifier, which breaks the link to whatever has been collected against the old one. Harmless to repeat.' });
   }
 
-  /* The consent flags are many and each needs its own agreement text to mean
-     anything, which does not belong on a screen read from the sofa. The count
-     says whether anything is on; the browser dashboard is where they change. */
+  // Each opens its own list, one row per consent or service.
   if (d.consent && d.consent.known) {
     var all = d.consent.known.concat(d.consent.other || []);
     var on = all.filter(function (c) { return c.enabled; }).length;
     r.push(head('Data consents'));
     r.push({ label: 'Consents switched on', value: on + ' of ' + all.length,
-             cls: on === 0 ? 'on' : '',
+             cls: on === 0 ? 'on' : '', act: 'open', key: 'consents',
+             press: d.consentWritable === false ? 'Press OK to see them' : 'Press OK to see and change them',
              web: '/?tab=privacy',
-             hint: 'The agreements the TV records against this account. Each needs its own wording to mean anything, so they are read and changed in a browser rather than here.',
-             scan: 'Scan to open the Privacy tab on a phone.' });
+             hint: 'The agreements the TV records against this account, each with what it lets LG do.',
+             scan: 'They can be changed from a phone too.' });
   }
 
-  if (d.daemons && d.daemons.length) {
-    var run = d.daemons.filter(function (x) { return x.running; }).length;
-    r.push({ label: 'LG data services running', value: run + ' of ' + d.daemons.length,
-             cls: run === 0 ? 'on' : '',
-             web: '/?tab=privacy',
-             hint: 'Background services that collect and send usage data. They are stopped from a browser rather than here.',
-             scan: 'Scan to stop them from a phone.' });
+  var sup = supervised(d);
+  if (sup.length) {
+    var run = sup.filter(function (x) { return x.running; }).length;
+    r.push({ label: 'LG data services running', value: run + ' of ' + sup.length,
+             cls: run === 0 ? 'on' : '', act: 'open', key: 'services',
+             press: 'Press OK to see them',
+             hint: 'Background services that collect and send usage data.' });
   }
+  return r;
+}
+
+/*
+ * The lists a Privacy row opens. They replace the tab's rows until Back, or
+ * the first row, returns to it. A switch that changes the TV reloads the list,
+ * since LG ties some consents together and one can take others with it.
+ */
+var SUBLISTS = { consents: consentRows, services: serviceRows };
+var sub = null, subFrom = 0;
+
+function buildRows(t, d) {
+  return (sub && t.key === 'privacy') ? SUBLISTS[sub](d) : (t.build(d) || []);
+}
+
+function openSub(key) {
+  subFrom = sel;
+  sub = key;
+  rows = buildRows(T(), data[T().key]);
+  sel = nextRow(firstSel());           // the first entry, past the way back
+  render();
+}
+
+function closeSub() {
+  sub = null;
+  rows = T().build(data[T().key]) || [];
+  sel = subFrom < rows.length ? subFrom : firstSel();
+  render();
+}
+
+function nextRow(i) {
+  do { i++; } while (i < rows.length && rows[i].head);
+  return i < rows.length ? i : firstSel();
+}
+
+function backRow() {
+  return { label: '‹ Privacy', value: '', act: 'close', press: 'Press OK or Back to return',
+           hint: 'Back to the Privacy tab.' };
+}
+
+// Only the supervised services: an on-demand one starts whenever anything asks
+// it a question, this dashboard included, so its state would say more about
+// the asking than the TV.
+function supervised(d) {
+  return (d && d.daemons || []).filter(function (x) { return !x.onDemand; });
+}
+
+function consentRows(d) {
+  if (!d || !d.ok || !d.consent) return [backRow()];
+  var cw = d.consentWritable !== false;
+  var flags = (d.consent.known || []).concat(d.consent.other || []);
+  var groups = d.consentGroups || [['unknown', '']];
+  var r = [backRow()];
+  groups.forEach(function (g) {
+    var inGroup = flags.filter(function (f) { return (f.group || 'unknown') === g[0]; });
+    if (!inGroup.length) return;
+    // Flags with no name and no agreement behind them are one row, not one
+    // each: five rows saying the same nothing tell less than a count.
+    var anon = g[0] === 'unknown' ? inGroup.filter(function (f) { return !f.settable && !f.documents; }) : [];
+    inGroup = inGroup.filter(function (f) { return anon.indexOf(f) < 0; });
+    r.push(head(g[1] || 'Other'));
+    inGroup.forEach(function (f) {
+      var can = cw && f.settable;
+      var why = [f.detail ? f.detail.replace(/([^.!?])$/, '$1.') : ''];
+      if (f.agreements && f.agreements.length) why.push('Part of: ' + f.agreements.join(', ') + '.');
+      if (f.sharesWith && f.sharesWith.length) why.push('Switching this off also switches off ' + f.sharesWith.join(', ') + '.');
+      if (!can && g[2]) why.push(g[2]);
+      else if (!can && !cw) why.push('Controls are switched off in this dashboard’s config.');
+      r.push({ label: f.label || f.key, value: f.enabled ? 'On' : 'Off',
+               cls: f.enabled ? 'off' : 'on', act: can ? 'consent' : null, key: f.key, on: f.enabled,
+               press: f.enabled ? 'Press OK to switch off' : 'Press OK to switch on',
+               hint: why.join(' ') });
+    });
+    if (anon.length) {
+      var anonOn = anon.filter(function (f) { return f.enabled; }).length;
+      r.push({ label: anon.length + ' unidentified flag' + (anon.length === 1 ? '' : 's'),
+               value: anonOn ? anonOn + ' on' : 'All off', cls: anonOn ? 'off' : 'on',
+               hint: 'Recorded by the TV, tied to no agreement on this firmware, and not writable.' });
+    }
+  });
+  return r;
+}
+
+function serviceRows(d) {
+  var r = [backRow(), head('LG data services')];
+  var cw = d && d.consentWritable !== false;
+  supervised(d).forEach(function (x) {
+    var can = cw && x.stoppable;
+    r.push({ label: x.label || x.name, value: x.running ? 'Running' : 'Stopped',
+             cls: x.running ? 'off' : 'on', act: can ? 'daemon' : null, key: x.name, on: x.running,
+             press: x.running ? 'Press OK to stop it' : 'Press OK to start it',
+             hint: (x.detail ? x.detail.replace(/([^.!?])$/, '$1.') + ' ' : '') +
+                   (x.heldDown ? 'Kept stopped at every boot. ' : '') +
+                   (can ? 'Stopping it keeps it stopped across reboots.'
+                        : 'This firmware does not let the dashboard stop it.') });
+  });
+  if (r.length === 2) r.push({ label: 'None on this TV', value: '' });
   return r;
 }
 
@@ -896,7 +992,7 @@ function fetchTab(keepSel) {
     .then(function (d) {
       if (T().key !== key) return;        // the user moved on while this was in flight
       data[key] = d;
-      rows = t.build(d) || [];
+      rows = buildRows(t, d);
       if (initialSel !== null && initialSel < rows.length && (!rows[initialSel] || !rows[initialSel].head)) {
         sel = initialSel;
         initialSel = null;
@@ -920,6 +1016,7 @@ function fetchTab(keepSel) {
 function openTab(i, keepSel) {
   if (timer) { clearInterval(timer); timer = null; }
   tab = i;
+  sub = null;
   if (!keepSel) sel = 0;
   rows = [];
   renderTabs();
@@ -1125,6 +1222,16 @@ function activate() {
       return send({ action: 'toggleAdBlock' });
     case 'acr':
       return send({ action: 'acr', value: !r.on }, r.on ? 'Switched off' : 'Switched on');
+    case 'open':
+      return openSub(r.key);
+    case 'close':
+      return closeSub();
+    case 'consent':
+      return send({ action: 'consent', value: { key: r.key, enabled: !r.on } },
+                  r.on ? 'Switched off' : 'Switched on');
+    case 'daemon':
+      return send({ action: 'service', value: { name: r.key, enabled: !r.on } },
+                  r.on ? 'Stopped' : 'Started');
     case 'resetAdId':
       return send({ action: 'resetAdId' }, 'Advertising ID reset');
     case 'lock':
@@ -1276,7 +1383,7 @@ document.addEventListener('keydown', function (e) {
   else if (c === 38 || k === 'ArrowUp')    { move(-1);      e.preventDefault(); }
   else if (c === 40 || k === 'ArrowDown')  { move(1);       e.preventDefault(); }
   else if (c === 13 || k === 'Enter')      { activate();    e.preventDefault(); }
-  else if (c === 461 || k === 'GoBack' || k === 'BrowserBack') { leaveApp(); e.preventDefault(); }
+  else if (c === 461 || k === 'GoBack' || k === 'BrowserBack') { if (sub) closeSub(); else leaveApp(); e.preventDefault(); }
 });
 window.addEventListener('resize', function () { if (rows.length) position(); });
 

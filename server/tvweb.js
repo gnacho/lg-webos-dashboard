@@ -633,6 +633,10 @@ function doControl(action, value, cb) {
       var cOn = !!(value && (value.enabled === true || value.enabled === 'true'));
       return privacy.setConsent(ckey, cOn, cb);
 
+    case 'service':
+      return privacy.setServiceEnabled((value && value.name) ? String(value.name) : '',
+        !!(value && (value.enabled === true || value.enabled === 'true')), cb);
+
     case 'clearAdCookies':
       return privacy.clearAdCookies(cb);
 
@@ -991,15 +995,16 @@ function startHandoff(cb) {
         }
         // The phone supplies the broker; everything else keeps its current value.
         var cur = CONFIG.mqtt || {}, dev = CONFIG.device || {};
+        var own = ownIdentity();
         var v = validateSettings({
           mqtt: {
             enabled: true, host: p.host, port: p.port, tls: !!p.tls,
             tlsRejectUnauthorized: cur.tlsRejectUnauthorized !== false,
             username: p.username, password: typeof p.password === 'string' ? p.password : '',
-            topicPrefix: cur.topicPrefix, discoveryPrefix: cur.discoveryPrefix,
+            topicPrefix: own ? own.prefix : cur.topicPrefix, discoveryPrefix: cur.discoveryPrefix,
             telemetryIntervalMs: cur.telemetryIntervalMs || 10000, entities: cur.entities
           },
-          device: { id: dev.id, name: dev.name }
+          device: own ? { id: own.id, name: dev.name } : { id: dev.id, name: dev.name }
         });
         if (v.errors.length) {
           return send(res, 400, JSON.stringify({ ok: false, error: v.errors.join('; ') }));
@@ -1026,6 +1031,32 @@ function startHandoff(cb) {
     HANDOFF.timer = setTimeout(stopHandoff, HANDOFF_MS);
     cb(null, handoffUrl());
   });
+}
+
+/*
+ * A TV set up from a phone has had no chance to pick a device id or topic
+ * prefix, and the defaults are the same on every TV: a second TV would take
+ * over the first one's entities in Home Assistant. So one that has neither
+ * saved gets its own, from its model and the end of its network address, which
+ * also tells two TVs of the same model apart.
+ */
+function ownIdentity() {
+  var file = readConfigFile();
+  var fm = file.mqtt || {};
+  // One already set up keeps what it has, defaults included: its entities in
+  // Home Assistant are named from it.
+  if ((file.device && file.device.id) || fm.topicPrefix || fm.host) return null;
+  var model = String((CONFIG.device && CONFIG.device.model) || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!model || model === 'webostv') model = 'tv';
+  var mac = '', ifaces = {};
+  try { ifaces = os.networkInterfaces() || {}; } catch (e) {}
+  var ip = lanAddress();
+  for (var name in ifaces) {
+    (ifaces[name] || []).forEach(function (a) { if (a.address === ip && a.mac) mac = a.mac; });
+  }
+  var tail = mac.replace(/[^0-9a-f]/gi, '').slice(-4).toLowerCase();
+  var key = (model + (tail ? '_' + tail : '')).slice(0, 40);
+  return { id: 'lg_' + key, prefix: 'lgtv_' + key };
 }
 
 function setupState() {
