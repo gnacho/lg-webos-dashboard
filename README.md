@@ -501,6 +501,10 @@ The request says nothing about the TV beyond the address any HTTP request reveal
 
 ### Uninstalling
 
+Installed from the Homebrew Channel: uninstall TV Dashboard there. The server stops starting at boot straight away, and within a few minutes it removes its Home Assistant entities and deletes itself, config included.
+
+Installed with `deploy.sh`:
+
 ```bash
 ssh root@<tv-ip>
 /var/lib/tvweb/tvwebctl stop
@@ -508,7 +512,7 @@ rm -rf /var/lib/tvweb
 rm -f /var/lib/webosbrew/init.d/50-tvweb*
 ```
 
-Nothing on the TV's read-only rootfs is ever modified.
+Nothing on the TV's read-only rootfs is ever modified. [What the dashboard changes on the TV](docs/TV-CHANGES.md) lists everything else, including the settings that uninstalling leaves as they are.
 
 ---
 

@@ -956,16 +956,18 @@ function buildEntities(opts) {
       }
     ];
 
-    entities.push({
-      type: 'update', id: 'server_update',
-      payload: {
-        name: 'Server Update',
-        state_topic: updateTopic,
-        command_topic: pfx + '/command/update',
-        payload_install: 'install',
-        icon: 'mdi:package-up'
-      }
-    });
+    var updatePayload = {
+      name: 'Server Update',
+      state_topic: updateTopic,
+      icon: 'mdi:package-up'
+    };
+    // Without a command topic Home Assistant shows the release but no Install
+    // button, which is right where the Homebrew Channel does the updating.
+    if (!opts.updatesElsewhere) {
+      updatePayload.command_topic = pfx + '/command/update';
+      updatePayload.payload_install = 'install';
+    }
+    entities.push({ type: 'update', id: 'server_update', payload: updatePayload });
 
     if (opts.allowPower) {
       entities.push({

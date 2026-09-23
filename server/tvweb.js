@@ -1049,8 +1049,71 @@ function setupState() {
  * hides the control rather than offering something that cannot work.
  */
 // Put in place by the app the Homebrew Channel installs, rather than deploy.sh.
+var HBC_MARK = '/var/lib/tvweb/.from-homebrew-channel';
 function fromHomebrewChannel() {
-  try { return fs.existsSync('/var/lib/tvweb/.from-homebrew-channel'); } catch (e) { return false; }
+  try { return fs.existsSync(HBC_MARK); } catch (e) { return false; }
+}
+
+/*
+ * The Homebrew Channel only replaces or removes the app; the server is ours to
+ * keep in step with it. A newer copy inside the app is installed without
+ * waiting for someone to open the app, so a TV used only from Home Assistant
+ * still updates. An app that has gone takes the server with it.
+ *
+ * The directory has to be missing on two checks in a row and the app manager
+ * has to deny knowing the app before anything is removed: an update in
+ * progress can briefly leave the directory absent. The boot hook is a link
+ * into the app, so after an uninstall nothing starts at boot even if this
+ * never gets to run.
+ */
+var HBC_APP_DEFAULT = '/media/developer/apps/usr/palm/applications/io.github.rorygallagher2024.lg-webos-dashboard';
+var HBC_CHECK_MS = 5 * 60000;
+var hbcMissing = 0, hbcTried = null;
+
+function hbcAppDir() {
+  var dir = '';
+  try { dir = fs.readFileSync(HBC_MARK, 'utf8').trim(); } catch (e) {}
+  return dir || HBC_APP_DEFAULT;
+}
+
+function checkHomebrewChannelApp() {
+  if (!fromHomebrewChannel()) return;
+  var dir = hbcAppDir();
+  if (fs.existsSync(dir)) {
+    hbcMissing = 0;
+    var src = '';
+    try { src = fs.readFileSync(path.join(dir, 'payload/server/tvweb.js'), 'utf8'); } catch (e) {}
+    var m = /^var TVWEB_VERSION = '([^']+)';/m.exec(src);
+    var carried = m && m[1];
+    if (!carried || carried === hbcTried || !updater.verNewer(carried, TVWEB_VERSION)) return;
+    hbcTried = carried;
+    console.log('update: the Homebrew Channel app carries v' + carried + ', installing it');
+    try {
+      child_process.spawn('/bin/sh', [path.join(dir, 'payload/install.sh')], {
+        detached: true, stdio: 'ignore'
+      }).unref();
+    } catch (e) {
+      console.error('update: could not run the app\'s installer: ' + e.message);
+    }
+    return;
+  }
+  if (!fs.existsSync(path.dirname(dir)) || ++hbcMissing < 2) return;
+  // Read from the raw reply: luna-send can exit non-zero on the refusal itself.
+  luna('com.webos.applicationManager/getAppInfo', { id: path.basename(dir) }, function (res, raw) {
+    try { res = res || JSON.parse(raw); } catch (e) { res = null; }
+    if (!res || res.returnValue !== false) return;
+    console.log('uninstall: the Homebrew Channel app is gone, removing the server');
+    // Inline rather than a script, since the files it deletes include every
+    // script there is. 20-services.sh holds down the services switched off in
+    // the dashboard, and they come back once it goes.
+    forgetHomeAssistant(function () {
+      child_process.spawn('/bin/sh', ['-c',
+        '/var/lib/tvweb/tvwebctl stop >/dev/null 2>&1; rm -rf /var/lib/tvweb; ' +
+        'cd /var/lib/webosbrew/init.d && rm -f 50-tvweb 20-services.sh 20-tvweb-services; ' +
+        'rm -f /var/lib/webosbrew/tvweb-boot.log /var/lib/webosbrew/tvweb-boot.log.old'
+      ], { detached: true, stdio: 'ignore' }).unref();
+    });
+  });
 }
 
 function tvApp(action, cb) {
@@ -1269,7 +1332,8 @@ function writeSettings(patch, cb) {
   cb(null);
 }
 
-updater.init({ config: CONFIG, version: TVWEB_VERSION, installDir: __dirname, writeSettings: writeSettings });
+updater.init({ config: CONFIG, version: TVWEB_VERSION, installDir: __dirname, writeSettings: writeSettings,
+               viaHomebrewChannel: fromHomebrewChannel });
 
 /*
  * MQTT is wired up once at startup - the client, its keepalive, the telemetry
@@ -1787,6 +1851,11 @@ if (CLI_MODE) {
   oled.detectOled(function () {});
 }
 
+if (!CLI_MODE) {
+  setTimeout(checkHomebrewChannelApp, 60000);
+  setInterval(checkHomebrewChannelApp, HBC_CHECK_MS);
+}
+
 // ---------------------------------------------------------------- Home Assistant Integration
 
 /*
@@ -1808,6 +1877,8 @@ function mqttStatus(state, detail) {
   MQTT_STATUS.state = state;
   MQTT_STATUS.detail = detail || '';
 }
+
+var forgetHomeAssistant = function (cb) { cb(); };
 
 function setupHomeAssistant() {
   if (!CONFIG.mqtt || !CONFIG.mqtt.enabled || !CONFIG.mqtt.host) {
@@ -1865,6 +1936,7 @@ function setupHomeAssistant() {
   });
   stateMqtt.attach(liveState.state);
 
+  var discTopics = {};
   function publishDiscovery() {
     ha.clearRetired(function (topic, payload, retain) {
       mqttClient.publish(topic, payload, retain);
@@ -1884,7 +1956,8 @@ function setupHomeAssistant() {
       installedApps: telemetry.getInstalledApps(),
       pictureModes: telemetry.getPictureModes(),
       allowPower: CONFIG.allowPower,
-      isOled: oled.getIsOled()
+      isOled: oled.getIsOled(),
+      updatesElsewhere: fromHomebrewChannel()
     });
 
     entities = ha.filterWithholds(entities, {
@@ -1911,6 +1984,7 @@ function setupHomeAssistant() {
 
       var discTopic = discPfx + '/' + item.type + '/' + devId + '/' + item.id + '/config';
       mqttClient.publish(discTopic, JSON.stringify(conf), true);
+      discTopics[discTopic] = 1;
     }
     console.log('mqtt: published ' + entities.length + ' Home Assistant discovery entities');
   }
@@ -1936,6 +2010,18 @@ function setupHomeAssistant() {
     }), true);
   }
   updater.setPublishHandler(publishUpdate, publishDiscovery);
+
+  // Empty retained messages remove the entities from Home Assistant, rather
+  // than leaving them unavailable. The client has no publish acknowledgement,
+  // so the callback waits a moment for the messages to leave.
+  forgetHomeAssistant = function (cb) {
+    if (!mqttClient.connected) return cb();
+    Object.keys(discTopics).forEach(function (t) { mqttClient.publish(t, '', true); });
+    mqttClient.publish(updateTopic, '', true);
+    mqttClient.publish(statusTopic, '', true);
+    console.log('mqtt: removed ' + Object.keys(discTopics).length + ' Home Assistant entities');
+    setTimeout(cb, 2000);
+  };
 
   var lastPicSig = '';
   var lastCapSig = '';

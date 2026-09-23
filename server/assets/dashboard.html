@@ -665,7 +665,13 @@ function updateRows(d) {
       cls: 'on',
       hint: 'A newer release is available on GitHub (v' + d.latest + ').'
     });
-    if (d.writable) {
+    if (d.viaHomebrewChannel) {
+      r.push({
+        label: 'Install update',
+        value: 'In the Homebrew Channel',
+        hint: 'Update TV Dashboard in the Homebrew Channel. The server follows within a few minutes, keeping your settings, ad blocker and screen saver.'
+      });
+    } else if (d.writable) {
       r.push({
         label: 'Install update',
         value: 'Install v' + d.latest,

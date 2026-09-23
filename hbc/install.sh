@@ -16,6 +16,13 @@ D=/var/lib/tvweb
 HOOKDIR=/var/lib/webosbrew/init.d
 
 version_of() { sed -n "s/^var TVWEB_VERSION = '\([^']*\)';.*/\1/p" "$1" 2>/dev/null; }
+# Whether dotted version $1 is newer than $2. BusyBox sort has no -V.
+newer() {
+  awk -v a="$1" -v b="$2" 'BEGIN {
+    n = split(a, x, "."); m = split(b, y, "."); if (m > n) n = m
+    for (i = 1; i <= n; i++) { if (x[i] + 0 > y[i] + 0) exit 0; if (x[i] + 0 < y[i] + 0) exit 1 }
+    exit 1 }'
+}
 running() { [ -x "$D/tvwebctl" ] && "$D/tvwebctl" status 2>/dev/null | grep -q '^running'; }
 web_off() {
   [ -f "$D/config.json" ] && tr -d ' \t\r\n' < "$D/config.json" | grep -q '"web":{[^}]*"enabled":false'
@@ -30,9 +37,17 @@ result() {   # action; also whether the dashboard is off, and the old tile's fat
 # installer offering or refreshing the one deploy.sh added, then retire that
 # one if it is not open. Its answer is passed back for the launch page.
 adopt() {
-  : > "$D/.from-homebrew-channel"
+  # Records where the app lives, so the server can tell when it is uninstalled.
+  dirname "$HERE" > "$D/.from-homebrew-channel"
   OLD_TILE=$(sh "$D/assets/dashboard-app/install-app.sh" retire 2>/dev/null | tail -1)
   case "$OLD_TILE" in "{"*) ;; *) OLD_TILE=null ;; esac
+}
+# A link into this app rather than a copy, as the Homebrew Channel asks: once
+# the app is removed the link leads nowhere and nothing runs at boot. Replaces
+# the copy an earlier build or deploy.sh left there.
+link_hook() {
+  chmod +x "$SRC/50-tvweb.sh" 2>/dev/null
+  mkdir -p "$HOOKDIR" && ln -sf "$SRC/50-tvweb.sh" "$HOOKDIR/50-tvweb"
 }
 fail() { printf '{"ok":false,"error":"%s"}\n' "$1"; exit 0; }
 
@@ -40,10 +55,11 @@ fail() { printf '{"ok":false,"error":"%s"}\n' "$1"; exit 0; }
 want=$(version_of "$SRC/tvweb.js")
 have=$(version_of "$D/tvweb.js")
 
-# Already this version: only make sure it is up. At a cold boot the launch page
-# can get here before the boot hook has started the server.
-if [ -n "$have" ] && [ "$have" = "$want" ]; then
+# Already this version, or newer - never downgrade: only make sure it is up. At
+# a cold boot the launch page can get here before the boot hook has started it.
+if [ -n "$have" ] && { [ "$have" = "$want" ] || newer "$have" "$want"; }; then
   running || "$D/tvwebctl" start >/dev/null 2>&1
+  link_hook
   adopt
   result started
   exit 0
@@ -72,14 +88,10 @@ if [ -z "$have" ] && [ ! -f "$D/config.json" ]; then
 fi
 chmod 600 "$D/config.json" 2>/dev/null
 
-# run-parts skips names containing a dot, so the copy in progress never runs.
-mkdir -p "$HOOKDIR"
-cp "$S/50-tvweb.sh" "$HOOKDIR/.50-tvweb.new" &&
-  chmod +x "$HOOKDIR/.50-tvweb.new" &&
-  mv -f "$HOOKDIR/.50-tvweb.new" "$HOOKDIR/50-tvweb"
 rm -rf "$S"
 
 [ "$(version_of "$D/tvweb.js")" = "$want" ] || fail "the new files did not take"
+link_hook
 # Before the restart, so the server starting up finds nothing left to retire.
 adopt
 "$D/tvwebctl" restart >/dev/null 2>&1
