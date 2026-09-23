@@ -1984,7 +1984,16 @@ function setupHomeAssistant() {
   });
   stateMqtt.attach(liveState.state);
 
-  var discTopics = {};
+  // Every retained topic published, so an uninstall can clear them all:
+  // discovery, which is what Home Assistant's entities come from, and the
+  // state, update and status the broker would otherwise keep for good.
+  var retained = {};
+  var publishRaw = mqttClient.publish;
+  mqttClient.publish = function (topic, message, retain) {
+    if (retain) retained[topic] = message !== '';
+    return publishRaw.call(mqttClient, topic, message, retain);
+  };
+
   function publishDiscovery() {
     ha.clearRetired(function (topic, payload, retain) {
       mqttClient.publish(topic, payload, retain);
@@ -2032,7 +2041,6 @@ function setupHomeAssistant() {
 
       var discTopic = discPfx + '/' + item.type + '/' + devId + '/' + item.id + '/config';
       mqttClient.publish(discTopic, JSON.stringify(conf), true);
-      discTopics[discTopic] = 1;
     }
     console.log('mqtt: published ' + entities.length + ' Home Assistant discovery entities');
   }
@@ -2060,15 +2068,16 @@ function setupHomeAssistant() {
   updater.setPublishHandler(publishUpdate, publishDiscovery);
 
   // Empty retained messages remove the entities from Home Assistant, rather
-  // than leaving them unavailable. The client has no publish acknowledgement,
-  // so the callback waits a moment for the messages to leave.
+  // than leaving them unavailable, and clear the rest the broker keeps. The
+  // clean disconnect stops the broker publishing the "offline" will after.
+  // The client has no publish acknowledgement, so this waits a moment for the
+  // messages to leave.
   forgetHomeAssistant = function (cb) {
     if (!mqttClient.connected) return cb();
-    Object.keys(discTopics).forEach(function (t) { mqttClient.publish(t, '', true); });
-    mqttClient.publish(updateTopic, '', true);
-    mqttClient.publish(statusTopic, '', true);
-    console.log('mqtt: removed ' + Object.keys(discTopics).length + ' Home Assistant entities');
-    setTimeout(cb, 2000);
+    var topics = Object.keys(retained).filter(function (t) { return retained[t]; });
+    topics.forEach(function (t) { mqttClient.publish(t, '', true); });
+    console.log('mqtt: cleared ' + topics.length + ' retained topics, removing this TV from Home Assistant');
+    setTimeout(function () { mqttClient.disconnect(); setTimeout(cb, 500); }, 1500);
   };
 
   var lastPicSig = '';
