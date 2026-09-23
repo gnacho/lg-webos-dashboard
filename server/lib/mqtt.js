@@ -143,7 +143,7 @@ MiniMQTT.prototype.connect = function() {
       console.log('mqtt: disconnected from ' + self.opts.host + ':' + (self.opts.port || (self.opts.tls ? 8883 : 1883)));
       self.emit('close');
     }
-    self.retryTimer = setTimeout(function() { self.connect(); }, 5000);
+    if (!self.closing) self.retryTimer = setTimeout(function() { self.connect(); }, 5000);
   });
 
   socket.on('error', function(err) {
@@ -246,7 +246,11 @@ MiniMQTT.prototype.publish = function(topic, message, retain) {
   this.client.write(packet);
 };
 
+// A clean DISCONNECT also stops the broker publishing the will, and the
+// client stays disconnected rather than retrying.
 MiniMQTT.prototype.disconnect = function() {
+  this.closing = true;
+  clearTimeout(this.retryTimer);
   if (this.client && this.connected) {
     try {
       this.client.write(toBuffer([0xe0, 0x00])); // DISCONNECT

@@ -760,6 +760,7 @@ function doControl(action, value, cb) {
                   TOAST_SOURCE);
 
     case 'tileHiding':
+      if (fromHomebrewChannel()) return cb({ ok: false, error: TILE_HIDING_OFF });
       return appsModule.setTileHidingEnabled(!!value, function (r) {
         telemetry.clearCache();
         cb(r);
@@ -1076,6 +1077,83 @@ function setupState() {
  * that will not take an unsigned app - reports unsupported, and the dashboard
  * hides the control rather than offering something that cannot work.
  */
+// Put in place by the app the Homebrew Channel installs, rather than deploy.sh.
+var HBC_MARK = '/var/lib/tvweb/.from-homebrew-channel';
+function fromHomebrewChannel() {
+  try { return fs.existsSync(HBC_MARK); } catch (e) { return false; }
+}
+
+// Hiding tiles restarts the app manager at boot, the kind of step that can
+// make a boot fail, which the Homebrew Channel asks its apps not to risk.
+// Doing it later would let the tiles show after every cold boot, so installs
+// from there go without it.
+var TILE_HIDING_OFF = 'hiding home-screen tiles is not available when installed from the Homebrew Channel';
+
+/*
+ * The Homebrew Channel only replaces or removes the app; the server is ours to
+ * keep in step with it. A newer copy inside the app is installed without
+ * waiting for someone to open the app, so a TV used only from Home Assistant
+ * still updates. An app that has gone takes the server with it.
+ *
+ * The directory has to be missing on two checks in a row and the app manager
+ * has to deny knowing the app before anything is removed: an update in
+ * progress can briefly leave the directory absent. The boot hook is a link
+ * into the app, so after an uninstall nothing starts at boot even if this
+ * never gets to run.
+ */
+var HBC_APP_DEFAULT = '/media/developer/apps/usr/palm/applications/io.github.rorygallagher2024.lg-webos-dashboard';
+var HBC_CHECK_MS = 5 * 60000;
+var hbcMissing = 0, hbcTried = null;
+
+function hbcAppDir() {
+  var dir = '';
+  try { dir = fs.readFileSync(HBC_MARK, 'utf8').trim(); } catch (e) {}
+  return dir || HBC_APP_DEFAULT;
+}
+
+function checkHomebrewChannelApp() {
+  if (!fromHomebrewChannel()) return;
+  var dir = hbcAppDir();
+  if (fs.existsSync(dir)) {
+    hbcMissing = 0;
+    var src = '';
+    try { src = fs.readFileSync(path.join(dir, 'payload/server/tvweb.js'), 'utf8'); } catch (e) {}
+    var m = /^var TVWEB_VERSION = '([^']+)';/m.exec(src);
+    var carried = m && m[1];
+    if (!carried || carried === hbcTried || !updater.verNewer(carried, TVWEB_VERSION)) return;
+    hbcTried = carried;
+    console.log('update: the Homebrew Channel app carries v' + carried + ', installing it');
+    try {
+      child_process.spawn('/bin/sh', [path.join(dir, 'payload/install.sh')], {
+        detached: true, stdio: 'ignore'
+      }).unref();
+    } catch (e) {
+      console.error('update: could not run the app\'s installer: ' + e.message);
+    }
+    return;
+  }
+  if (!fs.existsSync(path.dirname(dir)) || ++hbcMissing < 2) return;
+  // Only the app manager's own "no such app" counts - "Invalid appId
+  // specified" on webOS 4.4 and 9.2 alike - never a refusal for another reason
+  // such as permissions. Read from the raw reply, since luna-send can exit
+  // non-zero on the refusal itself.
+  luna('com.webos.applicationManager/getAppInfo', { id: path.basename(dir) }, function (res, raw) {
+    try { res = res || JSON.parse(raw); } catch (e) { res = null; }
+    if (!res || res.returnValue !== false || !/Invalid appId/i.test(String(res.errorText))) return;
+    console.log('uninstall: the Homebrew Channel app is gone, removing the server');
+    // Inline rather than a script, since the files it deletes include every
+    // script there is. 20-services.sh holds down the services switched off in
+    // the dashboard, and they come back once it goes.
+    forgetHomeAssistant(function () {
+      child_process.spawn('/bin/sh', ['-c',
+        '/var/lib/tvweb/tvwebctl stop >/dev/null 2>&1; rm -rf /var/lib/tvweb; ' +
+        'cd /var/lib/webosbrew/init.d && rm -f 50-tvweb 20-services.sh 20-tvweb-services; ' +
+        'rm -f /var/lib/webosbrew/tvweb-boot.log /var/lib/webosbrew/tvweb-boot.log.old'
+      ], { detached: true, stdio: 'ignore' }).unref();
+    });
+  });
+}
+
 function tvApp(action, cb) {
   var script = assetPath('dashboard-app/install-app.sh');
   if (!script) return cb({ ok: true, supported: false, installed: false });
@@ -1292,7 +1370,8 @@ function writeSettings(patch, cb) {
   cb(null);
 }
 
-updater.init({ config: CONFIG, version: TVWEB_VERSION, installDir: __dirname, writeSettings: writeSettings });
+updater.init({ config: CONFIG, version: TVWEB_VERSION, installDir: __dirname, writeSettings: writeSettings,
+               viaHomebrewChannel: fromHomebrewChannel });
 
 /*
  * MQTT is wired up once at startup - the client, its keepalive, the telemetry
@@ -1417,7 +1496,8 @@ var server = http.createServer(function (req, res) {
   if (pathname === '/api/caps') {
     var caps = {
       ok: true, allowControl: CONFIG.allowControl, allowPower: CONFIG.allowPower,
-      origin: lanOrigin(), version: TVWEB_VERSION, setupNeeded: setupPending()
+      origin: lanOrigin(), version: TVWEB_VERSION,
+      fromHomebrewChannel: fromHomebrewChannel(), setupNeeded: setupPending()
     };
     // The token goes into the TV's QR codes, so a phone that scans one can use
     // what it opens. Only to the TV itself: whoever sees the screen holds the
@@ -1542,6 +1622,8 @@ var server = http.createServer(function (req, res) {
 
   if (pathname === '/api/apps' && req.method === 'GET') {
     return appsModule.getApps(function (d) {
+      d.tileHidingAvailable = !fromHomebrewChannel();
+      if (!d.tileHidingAvailable) { d.systemTiles = []; d.tileHidingEnabled = false; d.hiddenCount = 0; }
       servicesModule.getServices(function (sRes) {
         if (sRes && sRes.services) d.services = sRes.services;
         send(res, 200, JSON.stringify(d));
@@ -1581,6 +1663,9 @@ var server = http.createServer(function (req, res) {
     });
   }
 
+  if ((pathname === '/api/apps/hide' || pathname === '/api/apps/unhide') && fromHomebrewChannel()) {
+    return send(res, 400, JSON.stringify({ ok: false, error: TILE_HIDING_OFF }));
+  }
   if (pathname === '/api/apps/hide' && req.method === 'POST') {
     return readJsonBody(req, res, function (body) {
       appsModule.hideTile(body.id, function (r) {
@@ -1795,16 +1880,30 @@ if (CLI_MODE) {
                 '  auth=' + (CONFIG.token ? 'token' : 'none'));
     oled.detectOled(function () {});   // resolve and log panel type up front
     telemetry.detectLogoLight(function () {});
-    // The home-screen app packages its own loading screen, name and icons at
-    // install - the dashboard itself is served fresh - so bring those up to date
-    // with this release. A removed app is left removed.
-    tvApp('refresh', function (r) {
-      if (r && r.refreshed && r.ok) console.log('tv app: refreshed to this release');
-    });
+    if (fromHomebrewChannel()) {
+      // The Homebrew Channel app is the tile, so the one deploy.sh added goes.
+      // Boot is the moment to do it: nothing is open, and it is never removed
+      // while open. Once it is gone this finds nothing to do.
+      tvApp('retire', function (r) {
+        if (r && r.retired) console.log('tv app: old tile removed; the Homebrew Channel app replaces it');
+      });
+    } else {
+      // The home-screen app packages its own loading screen, name and icons at
+      // install - the dashboard itself is served fresh - so bring those up to
+      // date with this release. A removed app is left removed.
+      tvApp('refresh', function (r) {
+        if (r && r.refreshed && r.ok) console.log('tv app: refreshed to this release');
+      });
+    }
   });
 } else {
   console.log('web dashboard disabled (web.enabled=false) - mqtt bridge only');
   oled.detectOled(function () {});
+}
+
+if (!CLI_MODE) {
+  setTimeout(checkHomebrewChannelApp, 60000);
+  setInterval(checkHomebrewChannelApp, HBC_CHECK_MS);
 }
 
 // ---------------------------------------------------------------- Home Assistant Integration
@@ -1828,6 +1927,8 @@ function mqttStatus(state, detail) {
   MQTT_STATUS.state = state;
   MQTT_STATUS.detail = detail || '';
 }
+
+var forgetHomeAssistant = function (cb) { cb(); };
 
 function setupHomeAssistant() {
   if (!CONFIG.mqtt || !CONFIG.mqtt.enabled || !CONFIG.mqtt.host) {
@@ -1885,6 +1986,16 @@ function setupHomeAssistant() {
   });
   stateMqtt.attach(liveState.state);
 
+  // Every retained topic published, so an uninstall can clear them all:
+  // discovery, which is what Home Assistant's entities come from, and the
+  // state, update and status the broker would otherwise keep for good.
+  var retained = {};
+  var publishRaw = mqttClient.publish;
+  mqttClient.publish = function (topic, message, retain) {
+    if (retain) retained[topic] = message !== '';
+    return publishRaw.call(mqttClient, topic, message, retain);
+  };
+
   function publishDiscovery() {
     ha.clearRetired(function (topic, payload, retain) {
       mqttClient.publish(topic, payload, retain);
@@ -1904,7 +2015,8 @@ function setupHomeAssistant() {
       installedApps: telemetry.getInstalledApps(),
       pictureModes: telemetry.getPictureModes(),
       allowPower: CONFIG.allowPower,
-      isOled: oled.getIsOled()
+      isOled: oled.getIsOled(),
+      updatesElsewhere: fromHomebrewChannel()
     });
 
     entities = ha.filterWithholds(entities, {
@@ -1956,6 +2068,19 @@ function setupHomeAssistant() {
     }), true);
   }
   updater.setPublishHandler(publishUpdate, publishDiscovery);
+
+  // Empty retained messages remove the entities from Home Assistant, rather
+  // than leaving them unavailable, and clear the rest the broker keeps. The
+  // clean disconnect stops the broker publishing the "offline" will after.
+  // The client has no publish acknowledgement, so this waits a moment for the
+  // messages to leave.
+  forgetHomeAssistant = function (cb) {
+    if (!mqttClient.connected) return cb();
+    var topics = Object.keys(retained).filter(function (t) { return retained[t]; });
+    topics.forEach(function (t) { mqttClient.publish(t, '', true); });
+    console.log('mqtt: cleared ' + topics.length + ' retained topics, removing this TV from Home Assistant');
+    setTimeout(function () { mqttClient.disconnect(); setTimeout(cb, 500); }, 1500);
+  };
 
   var lastPicSig = '';
   var lastCapSig = '';

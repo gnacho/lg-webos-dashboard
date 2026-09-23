@@ -23,10 +23,48 @@ PKGDIR=/media/developer/apps/usr/palm/packages/$ID
 
 installed() { [ -d "$APPDIR" ]; }
 
+# Set when the server was put in place by the app the Homebrew Channel installs.
+# That app is then the tile, so this one is retired rather than offered.
+HBC_MARK=/var/lib/tvweb/.from-homebrew-channel
+from_hbc() { [ -f "$HBC_MARK" ]; }
+
+# Take this tile away now the Homebrew Channel app replaces it - but never
+# while it is running. Closing an open app from outside made a webOS 4 TV
+# relaunch its last input in the background, after which that input would not
+# open until a reboot. A running tile is left for a later start, and the
+# server tries again at every boot, when nothing is open. Only the install
+# service removes it: deleting the files behind the app manager's back leaves
+# it confused until a reboot.
+if [ "$ACTION" = retire ]; then
+  installed || { echo '{"ok":true,"retired":false,"reason":"absent"}'; exit 0; }
+  RUN=$(luna-send -n 1 -w 5000 luna://com.webos.applicationManager/running '{}' 2>/dev/null)
+  # No answer means no way to know it is closed, so leave it alone.
+  echo "$RUN" | grep -q '"returnValue":true' || { echo '{"ok":true,"retired":false,"reason":"unknown"}'; exit 0; }
+  if echo "$RUN" | grep -q "\"id\":\"$ID\""; then
+    echo '{"ok":true,"retired":false,"reason":"running"}'; exit 0
+  fi
+  RLOG=$(mktemp /tmp/tvweb-rt.XXXXXX) || exit 0
+  luna-send -i -w 60000 luna://com.webos.appInstallService/dev/remove \
+    "{\"id\":\"$ID\",\"subscribe\":true}" > "$RLOG" 2>&1 &
+  rpid=$!
+  n=0
+  while [ "$n" -lt 30 ]; do
+    installed || break
+    grep -q 'errorText\|failed' "$RLOG" 2>/dev/null && break
+    sleep 1; n=$((n + 1))
+  done
+  kill "$rpid" 2>/dev/null
+  rm -f "$RLOG"
+  if installed; then echo '{"ok":false,"retired":false,"reason":"service"}'
+  else echo '{"ok":true,"retired":true}'; fi
+  exit 0
+fi
+
 # Reported as one JSON line so the server can read it back. "supported" is
 # whether this TV will take an unsigned app at all.
 if [ "$ACTION" = status ]; then
   sup=false; [ -f "$SRC/appinfo.json" ] && command -v luna-send >/dev/null 2>&1 && sup=true
+  from_hbc && sup=false        # the Homebrew Channel app is the tile
   ins=false; installed && ins=true
   printf '{"ok":true,"supported":%s,"installed":%s}\n' "$sup" "$ins"
   exit 0
@@ -61,6 +99,7 @@ fi
 # removed.
 if [ "$ACTION" = refresh ]; then
   installed || { echo '{"ok":true,"installed":false,"refreshed":false}'; exit 0; }
+  from_hbc && { echo '{"ok":true,"installed":true,"refreshed":false}'; exit 0; }
   stale=""
   for f in appinfo.json index.html assets/icon80.png assets/icon130.png; do
     [ -f "$SRC/$f" ] || continue
@@ -70,6 +109,11 @@ if [ "$ACTION" = refresh ]; then
   done
   [ -n "$stale" ] || { echo '{"ok":true,"installed":true,"refreshed":false}'; exit 0; }
   ACTION=install
+fi
+
+if from_hbc; then
+  echo "dashboard app not added: the Homebrew Channel app is on the home screen instead"
+  exit 0
 fi
 
 # The app is a window onto the server's own dashboard, so with the dashboard

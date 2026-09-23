@@ -39,5 +39,8 @@ jobs:
       - name: unit tests
         run: node test/run-all.js
 
+      - name: Homebrew Channel package builds
+        run: python3 scripts/build-ipk.py
+
       - name: entity templates resolve against fixture
         run: ./scripts/check-entities.py --stats test/fixtures/stats-b8-webos4.json

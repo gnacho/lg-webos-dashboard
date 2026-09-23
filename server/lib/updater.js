@@ -35,6 +35,9 @@ var currentVersion = '';
 var writeSettingsFn = null;
 var publishUpdateFn = null;
 var publishDiscoveryFn = null;
+// True when the Homebrew Channel installed the server. It updates it then: a
+// release installed here would be taken back to the app's own copy.
+var viaHomebrewChannel = function () { return false; };
 var updateFirstTimer = null;
 var updateEveryTimer = null;
 
@@ -93,8 +96,9 @@ function updateSummary() {
     error: UPDATE.error,
     client: fetchClient,
     autoCheck: !!(config.update && config.update.check),
-    rollbackTo: rollbackVersion(),
+    rollbackTo: viaHomebrewChannel() ? null : rollbackVersion(),
     writable: config.allowControl,
+    viaHomebrewChannel: viaHomebrewChannel(),
     checkedMs: UPDATE.checked ? Date.now() - UPDATE.checked : null,
     attemptedMs: UPDATE.attempted ? Date.now() - UPDATE.attempted : null
   };
@@ -334,6 +338,7 @@ function isExecutable(rel) {
 
 function installUpdate(cb) {
   if (UPDATE.busy) return cb({ ok: false, error: 'an update is already running' });
+  if (viaHomebrewChannel()) return cb({ ok: false, error: 'updates for this install come from the Homebrew Channel' });
 
   if (fs.existsSync(path.join(installDir, '..', '.git'))) {
     return cb({ ok: false, error: 'this is a git checkout - update it with git, not from here' });
@@ -443,6 +448,7 @@ function installUpdate(cb) {
 }
 
 function rollbackUpdate(cb) {
+  if (viaHomebrewChannel()) return cb({ ok: false, error: 'updates for this install come from the Homebrew Channel' });
   var was = rollbackVersion();
   if (!was) return cb({ ok: false, error: 'nothing to roll back to' });
   var files = listFiles(prevDir);
@@ -470,6 +476,7 @@ function init(opts) {
   if (opts.writeSettings) writeSettingsFn = opts.writeSettings;
   if (opts.onUpdateChange) publishUpdateFn = opts.onUpdateChange;
   if (opts.onDiscoveryChange) publishDiscoveryFn = opts.onDiscoveryChange;
+  if (opts.viaHomebrewChannel) viaHomebrewChannel = opts.viaHomebrewChannel;
 }
 
 function setPublishHandler(pubUpdate, pubDiscovery) {
