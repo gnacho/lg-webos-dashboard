@@ -1,4 +1,6 @@
-# LG webOS TV Dashboard & Home Assistant Bridge
+# Glasshouse
+
+**Own the glass.** A dashboard, privacy controls and Home Assistant bridge for rooted LG webOS TVs.
 
 > [!NOTE]
 >
