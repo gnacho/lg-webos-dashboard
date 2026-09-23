@@ -203,7 +203,7 @@ var tab = 0, sel = 0, busy = false, ROW_VH = 7.6, HEAD_VH = 5.4;
 var initialSel = null;
 /* Where a phone can reach this server. Only the server knows it - the app is
    served from localhost - so it is asked for once and kept. */
-var lanOrigin = null;
+var lanOrigin = null, lanKey = null;
 function refreshCaps() {
   fetch('/api/caps', { cache: 'no-store' })
     .then(function (r) { return r.json(); })
@@ -212,6 +212,7 @@ function refreshCaps() {
       // phone's browser cannot use those screens.
       if (d && d.setupNeeded && window.PalmSystem) return location.replace('/assets/setup.html');
       lanOrigin = (d && d.origin) || null;
+      lanKey = (d && d.key) || null;
       renderHint();
     })
     .catch(function () {});
@@ -312,14 +313,9 @@ function sysRows(d) {
   if (d.remote && d.remote.battery !== null && d.remote.battery !== undefined)
     r.push({ label: 'Remote battery', value: withUnit(d.remote.battery, '%') });
   if (d.ssid) r.push({ label: 'Wi-Fi', value: d.ssid });
-  if (d.tvwebVersion) {
-    r.push({ label: 'Dashboard Server', value: 'v' + d.tvwebVersion, act: 'gotoUpdate',
-             press: 'Press OK to view updates',
-             hint: 'The version of this dashboard server. Press OK to open the Updates tab.' });
-  }
 
   if (d.quickBoot !== undefined || (d.lights && d.lights.standby !== undefined)) {
-    r.push(head('Settings'));
+    r.push(head('Power'));
     if (d.quickBoot !== undefined) {
       r.push({
         label: 'Quick Boot',
@@ -344,16 +340,18 @@ function sysRows(d) {
     }
   }
 
-  r.push(head('Appearance'));
-  r.push({
+  return r;
+}
+
+function appearanceRows() {
+  return [head('Appearance'), {
     label: 'Theme',
     value: currentTheme === 'light' ? 'Light' : 'Dark',
     cls: 'act',
     act: 'toggleTheme',
     press: 'Press OK to switch to ' + (currentTheme === 'light' ? 'Dark' : 'Light') + ' theme',
     hint: 'Switches the dashboard interface between Dark (true black for OLED) and Light theme.'
-  });
-  return r;
+  }];
 }
 
 function oledRows(d) {
@@ -589,14 +587,16 @@ function privacyRows(d) {
 function settingsRows(d) {
   if (!d || !d.ok) {
     return [{ label: 'Changed on the TV itself', value: '',
-              hint: 'These settings can only be changed with the remote, on the TV.' }];
+              hint: 'These settings can only be changed with the remote, on the TV.' }].concat(appearanceRows());
   }
   var r = [head('This dashboard')];
   r.push({ label: 'Phones and computers', value: d.network ? 'On' : 'Off', cls: d.network ? 'on' : 'off',
            act: d.writable ? 'net' : null, on: d.network,
            press: d.network ? 'Press OK to keep it to this TV' : 'Press OK to open it to your network',
            hint: d.network
-             ? 'Anything on your home network can open it in a browser. There is no password, so anyone on that network can use it.'
+             ? (d.token
+               ? 'Anything on your home network can open it in a browser, but only with its access token. Scanning the code here fills that in.'
+               : 'Anything on your home network can open it in a browser. There is no password, so anyone on that network can use it.')
              : 'Only this TV can open it. Open it up to use it from a phone or computer, where it does more than here.' });
   if (d.network && d.address) {
     r.push({ label: 'Address', value: d.address, web: '/',
@@ -616,7 +616,7 @@ function settingsRows(d) {
              : ha.configured
                ? 'The details are saved but it is not connected yet. Set it up again to check them.'
                : 'Use this TV in Home Assistant automations. You finish setting it up on your phone.' });
-  return r;
+  return r.concat(appearanceRows());
 }
 
 function svcRows(d) {
@@ -814,7 +814,10 @@ function renderQr(r) {
   var box = document.getElementById('hintQr');
   if (!r.web || !lanOrigin) { box.className = 'h-qr'; return false; }
   var url = lanOrigin + (r.web === true ? '/' : r.web);
-  if (!qrDraw(document.getElementById('hintQrSvg'), url)) { box.className = 'h-qr'; return false; }
+  // The code carries the token so the phone can use the page; the address
+  // printed beneath it leaves it out.
+  var scan = lanKey ? url + (url.indexOf('?') < 0 ? '?' : '&') + 'k=' + encodeURIComponent(lanKey) : url;
+  if (!qrDraw(document.getElementById('hintQrSvg'), scan)) { box.className = 'h-qr'; return false; }
   document.getElementById('hintUrl').textContent = url.replace(/^https?:\/\//, '');
   box.className = 'h-qr on';
   return true;
@@ -1138,18 +1141,13 @@ function activate() {
       return setNetwork(!r.on);
     case 'ha':
       return location.assign('/assets/setup.html#ha');
-    case 'gotoUpdate':
-      for (var ti = 0; ti < TABS.length; ti++) {
-        if (TABS[ti].key === 'update') { openTab(ti); break; }
-      }
-      return;
     case 'toggleTheme':
       var nextTheme = currentTheme === 'light' ? 'dark' : 'light';
       applyTheme(nextTheme);
       try { localStorage.setItem('theme', nextTheme); } catch (e) {}
       flash('Theme: ' + (nextTheme === 'light' ? 'Light' : 'Dark'));
-      if (T().key === 'system') {
-        rows = sysRows(data.system || {});
+      if (T().key === 'settings') {
+        rows = settingsRows(data.settings || {});
         render();
       }
       return;
@@ -1261,6 +1259,13 @@ function activate() {
  * everywhere else on the TV. platformBack is webOS's own Back; window.close
  * covers the page being opened somewhere other than the app.
  */
+// Back only sends a webOS app to the background, and opening it again from the
+// home screen resumes the page as it was. Reload instead, on the same tab, so
+// a server updated in the meantime shows its current dashboard.
+document.addEventListener('webOSRelaunch', function () {
+  location.replace(location.pathname + '?tab=' + T().key + '&t=' + Date.now());
+});
+
 function leaveApp() {
   if (window.PalmSystem && typeof window.PalmSystem.platformBack === 'function') {
     window.PalmSystem.platformBack();

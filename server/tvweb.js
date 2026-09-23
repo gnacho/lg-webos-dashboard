@@ -42,7 +42,7 @@ var zeroBuffer = MiniMQTT.zeroBuffer;
  * a link to /releases/tag/v<version>, so a value with no tag behind it gives a
  * 404 rather than a wrong page.
  */
-var TVWEB_VERSION = '0.44.4';
+var TVWEB_VERSION = '0.45.0';
 
 // ---------------------------------------------------------------- config
 /** @type {any} */
@@ -909,9 +909,9 @@ function lanAddress() {
 
 // ---------------------------------------------------------------- first-run setup
 /*
- * A Homebrew Channel install starts closed - bound to the TV itself - and the
- * on-TV app walks the owner through opening it to the network and connecting
- * Home Assistant. Everything here is reachable only from the TV (fromTV), and
+ * Setup screens on the TV: opening the dashboard to the network and connecting
+ * Home Assistant. An installer that leaves SETUP_PENDING shows them at first
+ * launch; the Settings tab offers the same afterwards. Everything here is reachable only from the TV (fromTV), and
  * through its own endpoint rather than the control actions, which MQTT and the
  * network can reach: whoever holds the remote is the owner, a phone on the
  * network is not.
@@ -1035,6 +1035,7 @@ function setupState() {
     needed: setupPending(),
     writable: CONFIG.allowControl,
     network: networkOpen(),
+    token: !!CONFIG.token,
     address: lanAddress() ? lanAddress() + ':' + CONFIG.port : null,
     homeAssistant: { configured: !!(m.enabled && m.host), state: MQTT_STATUS.state },
     handoff: HANDOFF.server ? handoffUrl() : null
@@ -1456,11 +1457,16 @@ var server = http.createServer(function (req, res) {
   }
 
   if (pathname === '/api/caps') {
-    return send(res, 200, JSON.stringify({
+    var caps = {
       ok: true, allowControl: CONFIG.allowControl, allowPower: CONFIG.allowPower,
       origin: lanOrigin(), version: TVWEB_VERSION,
       fromHomebrewChannel: fromHomebrewChannel(), setupNeeded: setupPending()
-    }));
+    };
+    // The token goes into the TV's QR codes, so a phone that scans one can use
+    // what it opens. Only to the TV itself: whoever sees the screen holds the
+    // remote, and the remote needs no token.
+    if (CONFIG.token && fromTV(req)) caps.key = CONFIG.token;
+    return send(res, 200, JSON.stringify(caps));
   }
 
   if (pathname === '/api/screensaver') {

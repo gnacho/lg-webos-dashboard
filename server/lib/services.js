@@ -81,7 +81,10 @@ var CATALOG = [
 
 var stateDir = '/var/lib/tvweb';
 var disabledFilePath = null;
-var initScriptPath = '/var/lib/webosbrew/init.d/20-services.sh';
+// run-parts skips any name containing a character outside a-zA-Z0-9-_, so the
+// hook must not end in .sh. It once did, and never ran.
+var initScriptPath = '/var/lib/webosbrew/init.d/20-tvweb-services';
+var oldInitScriptPath = '/var/lib/webosbrew/init.d/20-services.sh';
 var transientDir = '/run/systemd/transient';
 
 function getSystemctl() {
@@ -197,6 +200,12 @@ function init(options) {
     disabled = disabled.filter(function (id) { return id !== 'tvdataexchanger'; });
     writeDisabledList(disabled);
   }
+  try {
+    if (fs.existsSync(oldInitScriptPath)) {
+      fs.unlinkSync(oldInitScriptPath);
+      syncBootScript(disabled);
+    }
+  } catch (e) {}
 
   var systemctl = getSystemctl();
 
@@ -279,10 +288,9 @@ function getServices(cb) {
 
   for (var j = 0; j < available.length; j++) {
     (function (svc) {
-      if (svc.disabled) {
-        svc.running = false;
-        return doneOne();
-      }
+      // Probed even when switched off: the setting says what was asked for,
+      // not what the TV did, and the two differed while the boot hook was
+      // never run.
       var catItem = null;
       for (var k = 0; k < CATALOG.length; k++) {
         if (CATALOG[k].id === svc.id) { catItem = CATALOG[k]; break; }
