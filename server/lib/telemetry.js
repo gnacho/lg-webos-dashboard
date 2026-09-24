@@ -1064,6 +1064,18 @@ function collectStats(cb) {
     var logo = ot && ot.settings && ot.settings.lgLogoDisplay;
     if (logo !== undefined) out.lgLogo = logo === 'on' || logo === true;
 
+  /*
+   * LG's universal control (UEI QuickSet), which looks for a set-top box the
+   * Magic Remote can control. On a C2 (webOS 9.2) its iconnectivity service
+   * reverse-looks-up every address on the local network, three times over,
+   * each time the TV switches on: 759 lookups in two minutes, and none with
+   * this off. Asked on its own so a TV without it does not lose the rest.
+   */
+  lunaCachedFn('com.webos.service.settings/getSystemSettings',
+       { category: 'other', keys: ['ueiEnable'] }, 60000, function (ue) {
+    var uei = ue && ue.returnValue !== false && ue.settings && ue.settings.ueiEnable;
+    if (uei !== undefined && uei !== null && uei !== false) out.deviceDetection = uei === 'on' || uei === true;
+
   lunaCachedFn('com.palm.connectionmanager/getStatus', {}, 60000, function (cm) {
     var w = cm && cm.wifi;
     out.ssid = (w && w.ssid) ? w.ssid : null;
@@ -1184,6 +1196,7 @@ function collectStats(cb) {
         });
       }
     );
+  });
   });
   });
   });
