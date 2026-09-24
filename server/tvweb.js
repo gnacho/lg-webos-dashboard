@@ -709,6 +709,18 @@ function doControl(action, value, cb) {
                   { category: 'option', settings: { quickStartMode: qbOn ? 'on' : 'off' } },
                   function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
 
+    /*
+     * The same setting as LG's "Mobile TV On" / "Turn on via Wi-Fi" menu.
+     * webos-connman-adapter subscribes to it and passes it to connman, which
+     * keeps it as WOLWOWLMode in /var/lib/connman/settings for the power
+     * daemon to read at standby, so writing the setting is all LG's menu does.
+     */
+    case 'wakeOnLan':
+      var wolOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
+      return luna('com.webos.service.settings/setSystemSettings',
+                  { category: 'network', settings: { wolwowlOnOff: wolOn ? 'true' : 'false' } },
+                  function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
+
     case 'serviceMenuLock':
       return oled.setServiceMenuLock(!!(value && value.locked), cb);
 

@@ -1052,6 +1052,11 @@ function collectStats(cb) {
     }
     out.gpuMhz = gpuClockMhz();
 
+  lunaCachedFn('com.webos.service.settings/getSystemSettings',
+       { category: 'network', keys: ['wolwowlOnOff'] }, 60000, function (nw) {
+    var wol = nw && nw.settings && nw.settings.wolwowlOnOff;
+    if (wol !== undefined) out.wakeOnLan = wol === true || wol === 'true';
+
   lunaCachedFn('com.palm.connectionmanager/getStatus', {}, 60000, function (cm) {
     var w = cm && cm.wifi;
     out.ssid = (w && w.ssid) ? w.ssid : null;
@@ -1172,6 +1177,7 @@ function collectStats(cb) {
         });
       }
     );
+  });
   });
   });
   });

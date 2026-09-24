@@ -316,7 +316,7 @@ function sysRows(d) {
     r.push({ label: 'Remote battery', value: withUnit(d.remote.battery, '%') });
   if (d.ssid) r.push({ label: 'Wi-Fi', value: d.ssid });
 
-  if (d.quickBoot !== undefined || (d.lights && d.lights.standby !== undefined)) {
+  if (d.quickBoot !== undefined || d.wakeOnLan !== undefined || (d.lights && d.lights.standby !== undefined)) {
     r.push(head('Power'));
     if (d.quickBoot !== undefined) {
       r.push({
@@ -327,6 +327,17 @@ function sysRows(d) {
         on: !!d.quickBoot,
         press: 'Press OK to turn ' + (d.quickBoot ? 'off' : 'on'),
         hint: 'Quick Start+ puts the TV into instant standby so it wakes in <2s instead of performing a ~25s cold boot.'
+      });
+    }
+    if (d.wakeOnLan !== undefined) {
+      r.push({
+        label: 'Wake-on-LAN',
+        value: d.wakeOnLan ? 'On' : 'Off',
+        cls: 'act',
+        act: 'wakeOnLan',
+        on: !!d.wakeOnLan,
+        press: 'Press OK to turn ' + (d.wakeOnLan ? 'off' : 'on'),
+        hint: 'Lets Home Assistant, a phone or another device on the network switch the TV on from standby. LG calls this Mobile TV On.'
       });
     }
     if (d.lights && d.lights.standby !== undefined) {
@@ -1260,6 +1271,8 @@ function activate() {
       return startSaverAfterRelease();
     case 'quickBoot':
       return send({ action: 'quickBoot', value: !r.on }, r.on ? 'Quick Boot turned off' : 'Quick Boot turned on');
+    case 'wakeOnLan':
+      return send({ action: 'wakeOnLan', value: !r.on }, r.on ? 'Wake-on-LAN turned off' : 'Wake-on-LAN turned on');
     case 'standbyLight':
       return send({ action: 'standbyLight', value: !r.on }, r.on ? 'Standby LED turned off' : 'Standby LED turned on');
     case 'adblock':
