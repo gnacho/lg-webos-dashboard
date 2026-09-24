@@ -2282,6 +2282,16 @@ function setupHomeAssistant() {
        * first time turns that entity on; nothing is ever unlatched, so this
        * settles rather than flapping.
        */
+      /*
+       * The network address goes into the device's own record, where Home
+       * Assistant shows it and its Wake-on-LAN integration can take it from:
+       * the one way to reach the TV once it is asleep. Discovery is sent
+       * again the first time it is known.
+       */
+      if (s.mac && !devInfo.connections) {
+        devInfo.connections = [['mac', s.mac]];
+        publishDiscovery();
+      }
       var cap = telemetry.getCapabilitySignature();
       if (cap !== lastCapSig) {
         lastCapSig = cap;
