@@ -1067,10 +1067,10 @@ function collectStats(cb) {
   /*
    * LG's device detection (UEI QuickSet), which finds a set-top box and smart
    * lights, plugs and switches for the Home Dashboard. On a C2 (webOS 9.2) its
-   * iconnectivity service
-   * reverse-looks-up every address on the local network, three times over,
-   * each time the TV switches on: 759 lookups in two minutes, and none with
-   * this off. Asked on its own so a TV without it does not lose the rest.
+   * iconnectivity service reverse-looks-up every address on the local network,
+   * three times over, each time the TV switches on: 759 lookups in two
+   * minutes, and none with this off. Asked on its own so a TV without it does
+   * not lose the rest.
    */
   lunaCachedFn('com.webos.service.settings/getSystemSettings',
        { category: 'other', keys: ['ueiEnable'] }, 60000, function (ue) {
