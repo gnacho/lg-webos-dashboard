@@ -683,7 +683,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <header>
   <div class="hdr-left">
     <div class="mark">
-      <div class="mark-name">Glasshouse <span class="mark-kind">web dashboard</span></div>
+      <div class="mark-name">Glasshouse <span class="mark-kind" data-i18n="web dashboard">web dashboard</span></div>
       <div class="mark-tv"><span id="brand">LG TV</span><i></i><span id="model">&mdash;</span></div>
     </div>
   </div>
@@ -707,16 +707,16 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <div class="tabs-wrap">
   <button type="button" class="tabs-arrow" id="tabs-prev" hidden aria-label="Scroll tabs left" onclick="scrollTabs(-1)">&#8249;</button>
   <nav class="tabs" id="tabs" role="tablist">
-  <button type="button" role="tab" data-tab="control">Control</button>
-  <button type="button" role="tab" data-tab="metrics">Metrics</button>
-  <button type="button" role="tab" data-tab="apps">Apps</button>
-  <button type="button" role="tab" data-tab="privacy">Privacy</button>
-  <button type="button" role="tab" data-tab="oledcare" id="tab-btn-oledcare" hidden>OLED Care</button>
-  <button type="button" role="tab" data-tab="servicemenu" id="tab-btn-servicemenu" hidden>Service menu</button>
-  <button type="button" role="tab" data-tab="screensaver">Screensaver</button>
-  <button type="button" role="tab" data-tab="advanced">Advanced</button>
-  <button type="button" role="tab" data-tab="mqtt">MQTT</button>
-  <button type="button" role="tab" data-tab="server">Server</button>
+  <button type="button" role="tab" data-tab="control" data-i18n="Control">Control</button>
+  <button type="button" role="tab" data-tab="metrics" data-i18n="Metrics">Metrics</button>
+  <button type="button" role="tab" data-tab="apps" data-i18n="Apps">Apps</button>
+  <button type="button" role="tab" data-tab="privacy" data-i18n="Privacy">Privacy</button>
+  <button type="button" role="tab" data-tab="oledcare" id="tab-btn-oledcare" hidden data-i18n="OLED Care">OLED Care</button>
+  <button type="button" role="tab" data-tab="servicemenu" id="tab-btn-servicemenu" hidden data-i18n="Service menu">Service menu</button>
+  <button type="button" role="tab" data-tab="screensaver" data-i18n="Screensaver">Screensaver</button>
+  <button type="button" role="tab" data-tab="advanced" data-i18n="Advanced">Advanced</button>
+  <button type="button" role="tab" data-tab="mqtt" data-i18n="MQTT">MQTT</button>
+  <button type="button" role="tab" data-tab="server" data-i18n="Server">Server</button>
   </nav>
   <button type="button" class="tabs-arrow right" id="tabs-next" hidden aria-label="Scroll tabs right" onclick="scrollTabs(1)">&#8250;</button>
 </div>
@@ -724,10 +724,10 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <main id="panels">
 <section class="panel" id="tab-metrics" role="tabpanel" hidden>
   <div class="col-telemetry">
-    <div class="col-sec">System</div>
+    <div class="col-sec" data-i18n="System">System</div>
 
     <div class="grp-sec first" data-col="0">
-      <div class="grp">Temperature</div>
+      <div class="grp" data-i18n="Temperature">Temperature</div>
       <section class="hero" style="margin-top:0">
         <div>
           <div class="lbl" style="margin-bottom:14px">SoC</div>
@@ -744,81 +744,81 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     </div>
 
     <div class="grp-sec" data-col="0">
-      <div class="grp">System</div>
+      <div class="grp" data-i18n="System">System</div>
       <section class="readouts" id="readouts"></section>
     </div>
 
     <div class="grp-sec" id="luxblock" data-col="2" hidden>
-      <div class="grp">Ambient</div>
-      <div class="lbl">Room light</div>
+      <div class="grp" data-i18n="Ambient">Ambient</div>
+      <div class="lbl" data-i18n="Room light">Room light</div>
       <div class="v num" id="lux">&mdash;</div>
-      <div class="sub">Ambient sensor</div>
+      <div class="sub" data-i18n="Ambient sensor">Ambient sensor</div>
     </div>
 
     <div class="grp-sec" data-col="1">
-      <div class="grp">Storage</div>
+      <div class="grp" data-i18n="Storage">Storage</div>
       <div id="appstore-cell" hidden>
-        <div class="lbl">App space</div>
-        <div class="n num" style="margin-top:10px"><span id="appstore">&mdash;</span><em>GB free</em></div>
+        <div class="lbl" data-i18n="App space">App space</div>
+        <div class="n num" style="margin-top:10px"><span id="appstore">&mdash;</span><em data-i18n="GB free">GB free</em></div>
         <div class="sub" id="appstore-sub"></div>
       </div>
       <div class="cols" style="margin-top:24px">
-        <div id="flashwear-cell"><div class="lbl">Flash wear</div><div class="v num" id="flashval">&mdash;</div><div class="sub">eMMC lifetime estimated</div></div>
-        <div id="flashhealth-cell"><div class="lbl">Pre-EOL status</div><div class="v" id="flasheol">&mdash;</div><div class="sub">Drive's own assessment</div></div>
+        <div id="flashwear-cell"><div class="lbl" data-i18n="Flash wear">Flash wear</div><div class="v num" id="flashval">&mdash;</div><div class="sub" data-i18n="eMMC lifetime estimated">eMMC lifetime estimated</div></div>
+        <div id="flashhealth-cell"><div class="lbl" data-i18n="Pre-EOL status">Pre-EOL status</div><div class="v" id="flasheol">&mdash;</div><div class="sub" data-i18n="Drive&#x27;s own assessment">Drive's own assessment</div></div>
       </div>
     </div>
 
     <div class="grp-sec" id="remoteblock" data-col="2" hidden>
-      <div class="grp">Magic remote</div>
-      <div class="lbl">Battery</div>
+      <div class="grp" data-i18n="Magic remote">Magic remote</div>
+      <div class="lbl" data-i18n="Battery">Battery</div>
       <div class="n num" style="margin-top:10px"><span id="remote-pct">&mdash;</span><em>%</em></div>
       <div class="track" style="margin-top:16px;max-width:220px"><b id="remote-gauge-fill" style="width:0%"></b></div>
       <div class="sub" id="remote-model-sub"></div>
     </div>
 
     <div class="grp-sec" id="hdmiblock" data-col="2">
-      <div class="grp">HDMI<span class="cur" id="hdmi-cur"></span></div>
+      <div class="grp" data-i18n="HDMI">HDMI<span class="cur" id="hdmi-cur"></span></div>
       <div class="ports" id="hdmi-grid"></div>
       <div class="sub" id="hdmi-diag-row" hidden style="margin-top:12px;line-height:1.5"></div>
     </div>
 
     <div class="grp-sec" id="advblock" data-col="1">
-      <div class="grp">Advanced</div>
+      <div class="grp" data-i18n="Advanced">Advanced</div>
       <details class="disc" id="disc-hwinfo" hidden style="border-top:0;margin-top:0">
-      <summary>System info</summary>
+      <summary data-i18n="System info">System info</summary>
       <div class="prot-table" id="hw-specs">
         <div class="prot-row" id="spec-os-item" hidden>
           <div class="prot-main">
             <div class="prot-title">webOS</div>
-            <div class="prot-desc">Operating system release version</div>
+            <div class="prot-desc" data-i18n="Operating system release version">Operating system release version</div>
           </div>
           <div class="prot-status"><span class="pill idle" id="spec-os">&mdash;</span></div>
         </div>
         <div class="prot-row" id="spec-fw-item" hidden>
           <div class="prot-main">
-            <div class="prot-title">Firmware</div>
-            <div class="prot-desc">TV software build version</div>
+            <div class="prot-title" data-i18n="Firmware">Firmware</div>
+            <div class="prot-desc" data-i18n="TV software build version">TV software build version</div>
           </div>
           <div class="prot-status"><span class="pill idle" id="spec-fw">&mdash;</span></div>
         </div>
         <div class="prot-row" id="spec-arch-item" hidden>
           <div class="prot-main">
-            <div class="prot-title">Processor</div>
-            <div class="prot-desc">SoC platform and generation</div>
+            <div class="prot-title" data-i18n="Processor">Processor</div>
+            <div class="prot-desc" data-i18n="SoC platform and generation">SoC platform and generation</div>
           </div>
           <div class="prot-status"><span class="pill idle" id="spec-arch">&mdash;</span></div>
         </div>
         <div class="prot-row" id="spec-silicon-item" hidden>
           <div class="prot-main">
-            <div class="prot-title">OLED Cell</div>
-            <div class="prot-desc">Panel silicon cell identifier</div>
+            <div class="prot-title" data-i18n="OLED Cell">OLED Cell</div>
+            <div class="prot-desc" data-i18n="Panel silicon cell identifier">Panel silicon cell identifier</div>
           </div>
           <div class="prot-status"><span class="pill idle" id="spec-silicon">&mdash;</span></div>
         </div>
         <div class="prot-row" id="spec-tcon-item" hidden>
           <div class="prot-main">
-            <div class="prot-title">TCON Firmware</div>
-            <div class="prot-desc">Timing controller driving the panel</div>
+            <div class="prot-title" data-i18n="TCON Firmware">TCON Firmware</div>
+            <div class="prot-desc" data-i18n="Timing controller driving the panel">Timing controller driving the panel</div>
           </div>
           <div class="prot-status"><span class="pill idle" id="spec-tcon">&mdash;</span></div>
         </div>
@@ -827,12 +827,12 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
 
       <details class="disc" id="disc-proc">
-      <summary>Process memory <span class="cur" id="proc-cur"></span></summary>
+      <summary data-i18n="Process memory">Process memory <span class="cur" id="proc-cur"></span></summary>
       <div id="proc-list"></div>
     </details>
 
       <details class="disc" id="disc-cpu">
-      <summary>Detailed CPU usage <span class="cur" id="cpu-cur"></span></summary>
+      <summary data-i18n="Detailed CPU usage">Detailed CPU usage <span class="cur" id="cpu-cur"></span></summary>
       <div id="cpu-list"></div>
     </details>
     </div>
@@ -842,44 +842,44 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
 <section class="panel" id="tab-control" role="tabpanel" hidden>
   <div class="col-controls">
-    <div class="col-sec">Control</div>
+    <div class="col-sec" data-i18n="Control">Control</div>
     <div id="err"></div>
 
     <!-- Panel first: it is the control the remote cannot do easily, and the
          reason a lot of people install this at all. -->
-    <div class="set" style="margin-top:0"><div class="lbl">Panel</div>
+    <div class="set" style="margin-top:0"><div class="lbl" data-i18n="Panel">Panel</div>
       <div class="btns">
-        <button id="btn-screenoff" onclick="c('screenOff')">Screen off</button>
-        <button id="btn-screenon" onclick="c('screenOn')">Screen on</button>
-        <button id="btn_ss" onclick="pressScreensaver('btn_ss')">Screensaver</button>
+        <button id="btn-screenoff" onclick="c('screenOff')" data-i18n="Screen off">Screen off</button>
+        <button id="btn-screenon" onclick="c('screenOn')" data-i18n="Screen on">Screen on</button>
+        <button id="btn_ss" onclick="pressScreensaver('btn_ss')" data-i18n="Screensaver">Screensaver</button>
       </div>
     </div>
 
-    <div class="set"><div class="lbl">Source</div>
+    <div class="set"><div class="lbl" data-i18n="Source">Source</div>
       <div class="btns" id="inputs"></div>
     </div>
 
-    <div class="set"><div class="lbl">Volume &middot; <span id="vol" class="num">&mdash;</span></div>
+    <div class="set"><div class="lbl" data-i18n="Volume ·">Volume &middot; <span id="vol" class="num">&mdash;</span></div>
       <div class="btns">
-        <button onclick="c('volumeStep',-1)">Vol &minus;</button>
-        <button onclick="c('volumeStep',1)">Vol &plus;</button>
-        <button id="mute" onclick="toggleMute()">Mute</button>
+        <button onclick="c('volumeStep',-1)" data-i18n="Vol −">Vol &minus;</button>
+        <button onclick="c('volumeStep',1)" data-i18n="Vol +">Vol &plus;</button>
+        <button id="mute" onclick="toggleMute()" data-i18n="Mute">Mute</button>
       </div>
     </div>
 
-    <div class="set"><div class="lbl">Playback</div>
+    <div class="set"><div class="lbl" data-i18n="Playback">Playback</div>
       <div class="playback-btns">
-        <button onclick="c('media','rewind')">Rewind</button>
-        <button onclick="c('media','playPause')">Play / Pause</button>
-        <button onclick="c('media','stop')">Stop</button>
-        <button onclick="c('media','fastForward')">Fast Fwd</button>
+        <button onclick="c('media','rewind')" data-i18n="Rewind">Rewind</button>
+        <button onclick="c('media','playPause')" data-i18n="Play / Pause">Play / Pause</button>
+        <button onclick="c('media','stop')" data-i18n="Stop">Stop</button>
+        <button onclick="c('media','fastForward')" data-i18n="Fast Fwd">Fast Fwd</button>
       </div>
     </div>
 
     <!-- Pinned to the first column: it is the one control here that people
          reach for repeatedly, so it should not move about as the others grow. -->
     <details class="disc" id="disc-dpad" data-col="0">
-      <summary>D-pad <span class="cur">Navigate the TV</span></summary>
+      <summary data-i18n="D-pad">D-pad <span class="cur" data-i18n="Navigate the TV">Navigate the TV</span></summary>
 
       <div class="set">
         <div class="dpad">
@@ -890,88 +890,88 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
           <button class="dp dp-down"  onclick="c('rcu','down')"  title="Down">&#9660;</button>
         </div>
         <div class="btns">
-          <button onclick="c('rcu','back')">Back</button>
-          <button onclick="c('rcu','home')">Home</button>
+          <button onclick="c('rcu','back')" data-i18n="Back">Back</button>
+          <button onclick="c('rcu','home')" data-i18n="Home">Home</button>
         </div>
       </div>
     </details>
 
     <details class="disc" id="disc-timers">
-      <summary>Sleep timer <span class="cur" id="tl-cur"></span></summary>
+      <summary data-i18n="Sleep timer">Sleep timer <span class="cur" id="tl-cur"></span></summary>
 
       <div class="set">
         <div class="btns" id="sleepbtns">
-          <button id="sl_off" onclick="c('sleepTimer','off')">Off</button>
-          <button id="sl_10"  onclick="c('sleepTimer','10')">10 min</button>
-          <button id="sl_30"  onclick="c('sleepTimer','30')">30 min</button>
-          <button id="sl_60"  onclick="c('sleepTimer','60')">60 min</button>
-          <button id="sl_90"  onclick="c('sleepTimer','90')">90 min</button>
-          <button id="sl_120" onclick="c('sleepTimer','120')">120 min</button>
+          <button id="sl_off" onclick="c('sleepTimer','off')" data-i18n="Off">Off</button>
+          <button id="sl_10"  onclick="c('sleepTimer','10')" data-i18n="10 min">10 min</button>
+          <button id="sl_30"  onclick="c('sleepTimer','30')" data-i18n="30 min">30 min</button>
+          <button id="sl_60"  onclick="c('sleepTimer','60')" data-i18n="60 min">60 min</button>
+          <button id="sl_90"  onclick="c('sleepTimer','90')" data-i18n="90 min">90 min</button>
+          <button id="sl_120" onclick="c('sleepTimer','120')" data-i18n="120 min">120 min</button>
         </div>
       </div>
     </details>
 
     <details class="disc" id="disc-display">
-      <summary>Picture <span class="cur" id="ds-cur"></span></summary>
+      <summary data-i18n="Picture">Picture <span class="cur" id="ds-cur"></span></summary>
 
-      <div class="set"><div class="lbl">Mode &middot; <span id="picmode-lbl" class="num">&mdash;</span></div>
+      <div class="set"><div class="lbl" data-i18n="Mode ·">Mode &middot; <span id="picmode-lbl" class="num">&mdash;</span></div>
         <!-- Built from what the TV says it will accept: the settable modes
              change with the dynamic range of what is playing. -->
         <div class="btns" id="picmodes"></div>
       </div>
 
-      <div class="set"><div class="lbl">Energy saving &middot; <span id="energy-lbl" class="num">&mdash;</span></div>
+      <div class="set"><div class="lbl" data-i18n="Energy saving ·">Energy saving &middot; <span id="energy-lbl" class="num">&mdash;</span></div>
         <div class="btns" id="energysteps">
-          <button id="es_auto" onclick="c('energySaving','auto')">Auto</button>
-          <button id="es_off" onclick="c('energySaving','off')">Off</button>
-          <button id="es_min" onclick="c('energySaving','min')">Minimum</button>
-          <button id="es_med" onclick="c('energySaving','med')">Medium</button>
-          <button id="es_max" onclick="c('energySaving','max')">Maximum</button>
-          <button id="es_screen_off" onclick="c('energySaving','screen_off')">Screen off</button>
+          <button id="es_auto" onclick="c('energySaving','auto')" data-i18n="Auto">Auto</button>
+          <button id="es_off" onclick="c('energySaving','off')" data-i18n="Off">Off</button>
+          <button id="es_min" onclick="c('energySaving','min')" data-i18n="Minimum">Minimum</button>
+          <button id="es_med" onclick="c('energySaving','med')" data-i18n="Medium">Medium</button>
+          <button id="es_max" onclick="c('energySaving','max')" data-i18n="Maximum">Maximum</button>
+          <button id="es_screen_off" onclick="c('energySaving','screen_off')" data-i18n="Screen off">Screen off</button>
         </div>
       </div>
 
     </details>
 
     <details class="disc" id="disc-sound">
-      <summary>Sound <span class="cur" id="snd-cur"></span></summary>
+      <summary data-i18n="Sound">Sound <span class="cur" id="snd-cur"></span></summary>
 
-      <div class="set"><div class="lbl">Output &middot; <span id="soundout-lbl" class="num">&mdash;</span></div>
+      <div class="set"><div class="lbl" data-i18n="Output ·">Output &middot; <span id="soundout-lbl" class="num">&mdash;</span></div>
         <div class="btns" id="soundouts">
-          <button id="so_tv_speaker" onclick="c('soundOutput','tv_speaker')">TV Speaker</button>
-          <button id="so_external_arc" onclick="c('soundOutput','external_arc')">HDMI ARC</button>
-          <button id="so_optical" onclick="c('soundOutput','optical')">Optical</button>
-          <button id="so_headphone" onclick="c('soundOutput','headphone')">Headphone</button>
-          <button id="so_bt_soundbar" onclick="c('soundOutput','bt_soundbar')">Bluetooth</button>
+          <button id="so_tv_speaker" onclick="c('soundOutput','tv_speaker')" data-i18n="TV Speaker">TV Speaker</button>
+          <button id="so_external_arc" onclick="c('soundOutput','external_arc')" data-i18n="HDMI ARC">HDMI ARC</button>
+          <button id="so_optical" onclick="c('soundOutput','optical')" data-i18n="Optical">Optical</button>
+          <button id="so_headphone" onclick="c('soundOutput','headphone')" data-i18n="Headphone">Headphone</button>
+          <button id="so_bt_soundbar" onclick="c('soundOutput','bt_soundbar')" data-i18n="Bluetooth">Bluetooth</button>
         </div>
       </div>
     </details>
 
     <details class="disc" id="disc-apps">
-      <summary>Apps <span class="cur" id="currapp-lbl"></span></summary>
+      <summary data-i18n="Apps">Apps <span class="cur" id="currapp-lbl"></span></summary>
       <div class="set">
         <div class="app-grid" id="apps"></div>
       </div>
     </details>
 
-    <div class="set"><div class="lbl">Screen notification</div>
+    <div class="set"><div class="lbl" data-i18n="Screen notification">Screen notification</div>
       <form class="toast-form" onsubmit="event.preventDefault();sendToast();">
         <input type="text" id="toast-input" placeholder="Message to display on TV screen..." maxlength="120" autocomplete="off">
-        <button type="submit" id="btn-toast">Send</button>
+        <button type="submit" id="btn-toast" data-i18n="Send">Send</button>
       </form>
     </div>
 
-    <div class="set"><div class="lbl">Open a web page</div>
+    <div class="set"><div class="lbl" data-i18n="Open a web page">Open a web page</div>
       <form class="toast-form" onsubmit="event.preventDefault();openUrl();">
         <input type="text" id="url-input" placeholder="https://example.com" maxlength="2048" autocomplete="off" spellcheck="false">
-        <button type="submit" id="btn-url">Open</button>
+        <button type="submit" id="btn-url" data-i18n="Open">Open</button>
       </form>
     </div>
 
-    <div class="set"><div class="lbl">Power</div>
+    <div class="set"><div class="lbl" data-i18n="Power">Power</div>
       <div class="btns">
-        <button id="poff" onclick="pw(pwStandby ? 'powerOn' : 'powerOff')">Power off</button>
-        <button id="prb" onclick="pw('reboot')">Reboot</button>
+        <button id="poff" onclick="pw(pwStandby ? 'powerOn' : 'powerOff')" data-i18n="Power off">Power off</button>
+        <button id="prb" onclick="pw('reboot')" data-i18n="Reboot">Reboot</button>
       </div>
       <div class="sub" id="pwnote"></div>
     </div>
@@ -992,18 +992,18 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <section class="priv panel" id="oledpane" role="tabpanel" hidden>
   <div class="oled-split">
     <div class="oled-wear">
-      <div class="grp">Panel life</div>
-      <div class="lbl">Total power on hours</div>
-      <div class="n num" style="margin-top:10px"><span id="oc-hours">&mdash;</span><em>hours</em></div>
+      <div class="grp" data-i18n="Panel life">Panel life</div>
+      <div class="lbl" data-i18n="Total power on hours">Total power on hours</div>
+      <div class="n num" style="margin-top:10px"><span id="oc-hours">&mdash;</span><em data-i18n="hours">hours</em></div>
       <div class="cols" style="margin-top:22px">
-        <div><div class="lbl">Panel maintenance in</div><div class="v num" id="oc-comp">&mdash;</div><div class="sub" id="oc-comp-sub">&mdash;</div></div>
-        <div><div class="lbl">Pixel refresher in</div><div class="v num" id="oc-refr">&mdash;</div><div class="sub" id="oc-refr-sub">&mdash;</div></div>
+        <div><div class="lbl" data-i18n="Panel maintenance in">Panel maintenance in</div><div class="v num" id="oc-comp">&mdash;</div><div class="sub" id="oc-comp-sub">&mdash;</div></div>
+        <div><div class="lbl" data-i18n="Pixel refresher in">Pixel refresher in</div><div class="v num" id="oc-refr">&mdash;</div><div class="sub" id="oc-refr-sub">&mdash;</div></div>
       </div>
       <div class="oc-cycles" id="oc-cycles"></div>
     </div>
 
     <div class="oled-controls">
-      <div class="grp">Protections</div>
+      <div class="grp" data-i18n="Protections">Protections</div>
       <div id="oled-rows"></div>
 
       <div class="oled-warn" id="oled-warn" hidden>
@@ -1016,12 +1016,12 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 </section>
 
 <section class="priv panel" id="advpane" role="tabpanel" hidden>
-  <div class="lbl">Advanced</div>
-  <div class="pv-sec">Power</div>
+  <div class="lbl" data-i18n="Advanced">Advanced</div>
+  <div class="pv-sec" data-i18n="Power">Power</div>
   <div class="prot-table">
     <div class="prot-row" id="row-quickboot" hidden>
       <div class="prot-main">
-        <div class="prot-title">Quick Boot</div>
+        <div class="prot-title" data-i18n="Quick Boot">Quick Boot</div>
         <div class="prot-desc">Switching off puts the TV into a light sleep rather than shutting it down, so it
           comes back in under 2 seconds instead of about 25. LG calls this Quick Start+.</div>
       </div>
@@ -1029,7 +1029,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     </div>
     <div class="prot-row" id="row-wol" hidden>
       <div class="prot-main">
-        <div class="prot-title">Wake-on-LAN</div>
+        <div class="prot-title" data-i18n="Wake-on-LAN">Wake-on-LAN</div>
         <div class="prot-desc">Lets Home Assistant, a phone or another device on the network switch the TV on
           from standby. The Home Assistant guide shows how to set it up. LG calls this Mobile TV On.</div>
       </div>
@@ -1037,22 +1037,22 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     </div>
   </div>
 
-  <div class="pv-sec adv-sec" id="adv-display" hidden>Display</div>
+  <div class="pv-sec adv-sec" id="adv-display" hidden data-i18n="Display">Display</div>
   <div class="prot-table">
     <div class="prot-row" id="row-lglogo" hidden>
       <div class="prot-main">
-        <div class="prot-title">LG logo</div>
-        <div class="prot-desc">Shows the LG logo as the TV switches on and off. LG calls this LG Logo Display.</div>
+        <div class="prot-title" data-i18n="LG logo">LG logo</div>
+        <div class="prot-desc" data-i18n="Shows the LG logo as the TV switches on and off. LG calls this LG Logo Display.">Shows the LG logo as the TV switches on and off. LG calls this LG Logo Display.</div>
       </div>
       <div class="prot-status"><button type="button" class="pill idle" id="btn_lglogo" onclick="toggleLgLogo()">&mdash;</button></div>
     </div>
   </div>
 
-  <div class="pv-sec adv-sec" id="adv-devices" hidden>Devices</div>
+  <div class="pv-sec adv-sec" id="adv-devices" hidden data-i18n="Devices">Devices</div>
   <div class="prot-table">
     <div class="prot-row" id="row-devdetect" hidden>
       <div class="prot-main">
-        <div class="prot-title">Auto device detection</div>
+        <div class="prot-title" data-i18n="Auto device detection">Auto device detection</div>
         <div class="prot-desc">Lets the TV find devices at home that it can show on its Home Dashboard and control:
           a set-top box on an HDMI input, and smart lights, plugs and switches on your network, such as Philips Hue,
           LIFX and TP-Link Kasa. On newer TVs it looks up every address on your home network each time the TV switches
@@ -1063,19 +1063,19 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     </div>
   </div>
 
-  <div class="pv-sec adv-sec">Front lights</div>
+  <div class="pv-sec adv-sec" data-i18n="Front lights">Front lights</div>
   <div class="prot-table">
     <div class="prot-row" id="row-standby" hidden>
       <div class="prot-main">
-        <div class="prot-title">Standby light</div>
-        <div class="prot-desc">The small light on the front of the TV that shows while it is switched off.</div>
+        <div class="prot-title" data-i18n="Standby light">Standby light</div>
+        <div class="prot-desc" data-i18n="The small light on the front of the TV that shows while it is switched off.">The small light on the front of the TV that shows while it is switched off.</div>
       </div>
       <div class="prot-status"><button type="button" class="pill idle" id="lt_standby" onclick="toggleLight('standbyLight')">&mdash;</button></div>
     </div>
     <div class="prot-row" id="row-logolight" hidden>
       <div class="prot-main">
-        <div class="prot-title">Logo light</div>
-        <div class="prot-desc">The lit LG logo on the front of the TV, on models that have one.</div>
+        <div class="prot-title" data-i18n="Logo light">Logo light</div>
+        <div class="prot-desc" data-i18n="The lit LG logo on the front of the TV, on models that have one.">The lit LG logo on the front of the TV, on models that have one.</div>
       </div>
       <div class="prot-status"><button type="button" class="pill idle" id="lt_logo" onclick="toggleLight('logoLight')">&mdash;</button></div>
     </div>
@@ -1087,58 +1087,58 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
   <div id="ss-list" class="ss-list"></div>
   <div class="ss-side">
   <div class="ss-level-row" id="ss-level-row" hidden>
-    <div class="ss-level-lbl">Brightness</div>
+    <div class="ss-level-lbl" data-i18n="Brightness">Brightness</div>
     <div class="btns" id="ss-level"></div>
   </div>
 
   <div class="ss-level-row">
-    <div class="ss-level-lbl">Show it now</div>
+    <div class="ss-level-lbl" data-i18n="Show it now">Show it now</div>
     <div class="btns">
-      <button id="ss-toggle" onclick="pressScreensaver('ss-toggle')">Start screen saver</button>
+      <button id="ss-toggle" onclick="pressScreensaver('ss-toggle')" data-i18n="Start screen saver">Start screen saver</button>
     </div>
   </div>
 
-  <div class="pv-note" id="ss-note">Note: if a firmware update is applied, the screen saver will be restored to the LG default.</div>
+  <div class="pv-note" id="ss-note" data-i18n="Note: if a firmware update is applied, the screen saver will be restored to the LG default.">Note: if a firmware update is applied, the screen saver will be restored to the LG default.</div>
   </div>
   </div>
 </section>
 
 <section class="priv panel" id="appspane" role="tabpanel" hidden>
-  <div class="lbl">Apps &amp; Home Screen Launcher</div>
+  <div class="lbl" data-i18n="Apps &amp; Home Screen Launcher">Apps &amp; Home Screen Launcher</div>
 
 
   <details class="pv-d" id="disc-installed-apps" open>
-    <summary>Uninstall applications <span class="cur" id="apps-installed-summary"></span></summary>
+    <summary data-i18n="Uninstall applications">Uninstall applications <span class="cur" id="apps-installed-summary"></span></summary>
     <div class="pv-sub">Store downloads and user-installed applications. Click Uninstall to permanently remove the application and free up internal eMMC flash storage space.</div>
     <div class="prot-table" id="apps-installed-list">
-      <div class="sub" style="padding:16px 0">Loading installed apps&hellip;</div>
+      <div class="sub" style="padding:16px 0" data-i18n="Loading installed apps…">Loading installed apps&hellip;</div>
     </div>
   </details>
 
   <details class="pv-d" id="disc-system-tiles">
-    <summary>Hide home screen system apps <span class="cur" id="apps-tiles-summary"></span></summary>
-    <div class="pv-sub">Hide built-in LG apps (Gallery, Music, Sports, Always Ready, Alexa, etc.) from the TV's home launcher ribbon.</div>
+    <summary data-i18n="Hide home screen system apps">Hide home screen system apps <span class="cur" id="apps-tiles-summary"></span></summary>
+    <div class="pv-sub" data-i18n="Hide built-in LG apps (Gallery, Music, Sports, Always Ready, Alexa, etc.) from the TV&#x27;s home launcher ribbon.">Hide built-in LG apps (Gallery, Music, Sports, Always Ready, Alexa, etc.) from the TV's home launcher ribbon.</div>
     <div class="btns" style="margin-top:14px;max-width:520px">
-      <button type="button" id="tile-hiding-off" onclick="setTileHiding(false)">Off (Stock)</button>
-      <button type="button" id="tile-hiding-on" onclick="setTileHiding(true)">On (Custom)</button>
+      <button type="button" id="tile-hiding-off" onclick="setTileHiding(false)" data-i18n="Off (Stock)">Off (Stock)</button>
+      <button type="button" id="tile-hiding-on" onclick="setTileHiding(true)" data-i18n="On (Custom)">On (Custom)</button>
     </div>
     <div class="sub" id="apps-hidden-count" style="margin-top:8px">&mdash;</div>
-    <div class="pv-note" id="tile-hiding-warning" style="margin-top:12px" hidden><b>When enabled:</b> On each cold boot of your TV, this can cause a brief 1-second blank screen or input refresh before returning to your active HDMI source.</div>
+    <div class="pv-note" id="tile-hiding-warning" style="margin-top:12px" hidden><b data-i18n="When enabled:">When enabled:</b> On each cold boot of your TV, this can cause a brief 1-second blank screen or input refresh before returning to your active HDMI source.</div>
     <div class="prot-table" id="apps-tiles-list" style="margin-top:16px">
-      <div class="sub" style="padding:16px 0">Loading system apps&hellip;</div>
+      <div class="sub" style="padding:16px 0" data-i18n="Loading system apps…">Loading system apps&hellip;</div>
     </div>
   </details>
 
   <details class="pv-d" id="disc-system-services" open hidden>
-    <summary>Turn off background services <span class="cur" id="apps-services-summary"></span></summary>
+    <summary data-i18n="Turn off background services">Turn off background services <span class="cur" id="apps-services-summary"></span></summary>
     <div class="pv-sub">Non-essential background services discovered on this TV. Disable unnecessary services to reduce memory usage, eliminate background telemetry, and speed up boot times.</div>
     <div class="prot-table" id="apps-services-list">
-      <div class="sub" style="padding:16px 0">Loading background services&hellip;</div>
+      <div class="sub" style="padding:16px 0" data-i18n="Loading background services…">Loading background services&hellip;</div>
     </div>
   </details>
 
   <details class="pv-d" id="disc-saved-pages" open>
-    <summary>Saved web pages <span class="cur" id="apps-pages-summary"></span></summary>
+    <summary data-i18n="Saved web pages">Saved web pages <span class="cur" id="apps-pages-summary"></span></summary>
     <div class="pv-sub">Web pages on the TV's home screen, each opening in its browser. A page saved
       from the browser takes its whole title as its name, so a long one can be given a shorter name
       here. Pages can also be added, pointed at a new address, or removed.</div>
@@ -1147,16 +1147,16 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
       <input type="text" id="page-add-url" placeholder="Web address, such as bbc.co.uk/weather" maxlength="2048"
         autocomplete="off" spellcheck="false">
       <input type="text" id="page-add-name" placeholder="Name (optional)" maxlength="60" autocomplete="off">
-      <button type="submit" id="page-add-btn">Add to home screen</button>
+      <button type="submit" id="page-add-btn" data-i18n="Add to home screen">Add to home screen</button>
     </form>
     <div class="sub page-add-msg" id="page-add-msg" role="alert"></div>
   </details>
 </section>
 
 <section class="priv panel" id="privpane" role="tabpanel" hidden>
-  <div class="lbl">Privacy &amp; data collection</div>
+  <div class="lbl" data-i18n="Privacy &amp; data collection">Privacy &amp; data collection</div>
 
-  <div class="pv-sec">Overview</div>
+  <div class="pv-sec" data-i18n="Overview">Overview</div>
   <div class="ps" id="ps">
     <div class="ps-state">
       <span class="ps-dot" id="ps-dot"></span>
@@ -1167,63 +1167,63 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     </div>
     <div class="pv-list" id="ps-areas"></div>
     <div class="btns" style="max-width:520px;margin-top:18px">
-      <button type="button" id="ps-go" onclick="switchAllOff()">Switch it all off</button>
+      <button type="button" id="ps-go" onclick="switchAllOff()" data-i18n="Switch it all off">Switch it all off</button>
     </div>
     <div class="sub" id="ps-msg" style="margin-top:12px"></div>
     <div class="pv-note" id="ps-keep" hidden></div>
   </div>
 
   <details class="pv-d" id="pv-adv">
-  <summary>Advanced <span class="cur">Every setting, one by one</span></summary>
+  <summary data-i18n="Advanced">Advanced <span class="cur" data-i18n="Every setting, one by one">Every setting, one by one</span></summary>
 
   <div class="pv-top">
     <div>
-      <div class="pv-h">Ad &amp; telemetry blocker</div>
-      <div class="pv-sub">Stops the TV reaching LG's ad, tracking and diagnostics servers.</div>
+      <div class="pv-h" data-i18n="Ad &amp; telemetry blocker">Ad &amp; telemetry blocker</div>
+      <div class="pv-sub" data-i18n="Stops the TV reaching LG&#x27;s ad, tracking and diagnostics servers.">Stops the TV reaching LG's ad, tracking and diagnostics servers.</div>
       <div class="btns" style="max-width:520px">
-        <button id="ab-off" onclick="setAdBlockMode('off')">Off</button>
-        <button id="ab-ads" onclick="setAdBlockMode('ads')">Ads &amp; telemetry</button>
-        <button id="ab-full" onclick="setAdBlockMode('full')">Everything</button>
+        <button id="ab-off" onclick="setAdBlockMode('off')" data-i18n="Off">Off</button>
+        <button id="ab-ads" onclick="setAdBlockMode('ads')" data-i18n="Ads &amp; telemetry">Ads &amp; telemetry</button>
+        <button id="ab-full" onclick="setAdBlockMode('full')" data-i18n="Everything">Everything</button>
       </div>
       <div class="sub" id="adblock-detail" style="margin-top:12px">&mdash;</div>
-      <div class="pv-note"><b>Everything</b> also blocks the servers the Content Store installs
+      <div class="pv-note"><b data-i18n="Everything">Everything</b> also blocks the servers the Content Store installs
         from and LG delivers firmware through, so on that setting <b>the app store and updates
-        may stop working</b>. To stop only system updates, use <b>Block TV software updates</b>
+        may stop working</b data-i18n=". To stop only system updates, use">. To stop only system updates, use <b data-i18n="Block TV software updates">Block TV software updates</b>
         in the Server tab.</div>
     </div>
 
     <div>
-      <div class="pv-h">Advertising identifier</div>
+      <div class="pv-h" data-i18n="Advertising identifier">Advertising identifier</div>
       <div class="pv-sub">A unique ID your TV hands to advertisers so they can recognise it and
         target ads at you. Resetting it breaks the link to any profile built from past activity.</div>
       <div id="pv-adid"></div>
       <div id="pv-lmt"></div>
       <div class="sub" id="pv-adnote" style="margin-top:8px"></div>
       <div class="btns" style="margin-top:14px;max-width:520px">
-        <button id="adid-reset" onclick="privAction('resetAdId')">Reset advertising ID</button>
-        <button id="adcookies-clear" onclick="privAction('clearAdCookies')">Clear ad cookies</button>
+        <button id="adid-reset" onclick="privAction('resetAdId')" data-i18n="Reset advertising ID">Reset advertising ID</button>
+        <button id="adcookies-clear" onclick="privAction('clearAdCookies')" data-i18n="Clear ad cookies">Clear ad cookies</button>
       </div>
     </div>
   </div>
 
   <details class="pv-d">
-  <summary>What LG is allowed to collect <span class="cur" id="pv-consent-cur"></span></summary>
-  <div class="pv-sub">These are the agreements recorded on the TV. <b>Off is the private
+  <summary data-i18n="What LG is allowed to collect">What LG is allowed to collect <span class="cur" id="pv-consent-cur"></span></summary>
+  <div class="pv-sub" data-i18n="These are the agreements recorded on the TV.">These are the agreements recorded on the TV. <b>Off is the private
     setting.</b></div>
   <div id="pv-consent" class="pv-list"></div>
   <div class="pv-note" id="pv-consent-note"></div>
   </details>
 
   <details class="pv-d">
-  <summary>What&rsquo;s running now <span class="cur" id="pv-running-cur"></span></summary>
+  <summary data-i18n="What’s running now">What&rsquo;s running now <span class="cur" id="pv-running-cur"></span></summary>
   <div class="pv-sub">What LG's collection machinery is doing at this moment, which is a
     separate question from what it is permitted to collect.</div>
   <!-- The feature and the process behind it are different questions: ACR can
        report "not running" while acr2 is alive, which read as a contradiction
        when the two sat in one list. -->
   <div class="pv-list">
-    <div class="pv-grp"><div class="pv-g"><span>Recognition</span></div><div id="pv-live"></div></div>
-    <div class="pv-grp"><div class="pv-g"><span>Diagnostics services</span></div><div id="pv-daemons"></div></div>
+    <div class="pv-grp"><div class="pv-g"><span data-i18n="Recognition">Recognition</span></div><div id="pv-live"></div></div>
+    <div class="pv-grp"><div class="pv-g"><span data-i18n="Diagnostics services">Diagnostics services</span></div><div id="pv-daemons"></div></div>
   </div>
   <div class="pv-note" id="pv-running-note"></div>
   </details>
@@ -1231,93 +1231,93 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 </section>
 
 <section class="priv panel" id="mqttpane" role="tabpanel" hidden>
-  <div class="lbl">MQTT &amp; Home Assistant</div>
+  <div class="lbl" data-i18n="MQTT &amp; Home Assistant">MQTT &amp; Home Assistant</div>
 
   <div class="cfg-cols">
   <div class="cfg-side">
     <div class="pv-row" style="margin-top:0">
       <div>
-        <div class="n">Bridge status</div>
+        <div class="n" data-i18n="Bridge status">Bridge status</div>
         <div class="d" id="cfg-status-detail">&mdash;</div>
       </div>
       <div><span class="pill idle" id="cfg-status-pill">&mdash;</span></div>
     </div>
 
     <div class="cfg-toggles" style="margin-top:18px">
-      <button id="cfg-enabled" onclick="cfgToggle('cfg-enabled')">MQTT bridge</button>
+      <button id="cfg-enabled" onclick="cfgToggle('cfg-enabled')" data-i18n="MQTT bridge">MQTT bridge</button>
     </div>
     <div class="sub" id="cfg-enabled-note" style="margin-top:8px"></div>
   </div>
 
   <div class="cfg-main">
-  <div class="pv-h" style="margin-top:0">Broker</div>
+  <div class="pv-h" style="margin-top:0" data-i18n="Broker">Broker</div>
   <div class="pv-sub">Where this TV publishes its telemetry. Home Assistant picks the
     entities up automatically once the broker is reachable.</div>
 
   <div class="cfg-grid">
     <div class="cfg-f">
-      <label for="cfg-host">Broker address</label>
+      <label for="cfg-host" data-i18n="Broker address">Broker address</label>
       <input type="text" id="cfg-host" placeholder="192.168.1.10" autocomplete="off" spellcheck="false">
-      <div class="hint">Hostname or IP of the MQTT broker.</div>
+      <div class="hint" data-i18n="Hostname or IP of the MQTT broker.">Hostname or IP of the MQTT broker.</div>
     </div>
     <div class="cfg-f">
-      <label for="cfg-port">Port</label>
+      <label for="cfg-port" data-i18n="Port">Port</label>
       <input type="number" id="cfg-port" placeholder="auto" min="1" max="65535" autocomplete="off">
-      <div class="hint">Left blank: 1883, or 8883 with TLS.</div>
+      <div class="hint" data-i18n="Left blank: 1883, or 8883 with TLS.">Left blank: 1883, or 8883 with TLS.</div>
     </div>
     <div class="cfg-f">
-      <label for="cfg-user">Username</label>
+      <label for="cfg-user" data-i18n="Username">Username</label>
       <input type="text" id="cfg-user" autocomplete="off" spellcheck="false">
-      <div class="hint">Blank for an anonymous broker.</div>
+      <div class="hint" data-i18n="Blank for an anonymous broker.">Blank for an anonymous broker.</div>
     </div>
     <div class="cfg-f">
-      <label for="cfg-pass">Password</label>
+      <label for="cfg-pass" data-i18n="Password">Password</label>
       <input type="password" id="cfg-pass" autocomplete="new-password">
-      <div class="hint" id="cfg-pass-hint">Stored on the TV in plain text.</div>
+      <div class="hint" id="cfg-pass-hint" data-i18n="Stored on the TV in plain text.">Stored on the TV in plain text.</div>
     </div>
   </div>
 
   <div class="cfg-toggles">
-    <button id="cfg-tls" onclick="cfgToggle('cfg-tls')">TLS</button>
-    <button id="cfg-verify" onclick="cfgToggle('cfg-verify')">Verify certificate</button>
+    <button id="cfg-tls" onclick="cfgToggle('cfg-tls')" data-i18n="TLS">TLS</button>
+    <button id="cfg-verify" onclick="cfgToggle('cfg-verify')" data-i18n="Verify certificate">Verify certificate</button>
   </div>
   <div class="pv-note">Without TLS the username and password cross the network in
     cleartext. The config file is readable by anything with root on this TV, so use a
     broker account restricted to these topics rather than a shared one.</div>
 
-  <div class="pv-h">Topics &amp; identity</div>
+  <div class="pv-h" data-i18n="Topics &amp; identity">Topics &amp; identity</div>
   <div class="pv-sub">Changing the device ID orphans any entities Home Assistant has
     already created &mdash; it appears as a second device rather than renaming the first.</div>
 
   <div class="cfg-grid">
     <div class="cfg-f">
-      <label for="cfg-prefix">Topic prefix</label>
+      <label for="cfg-prefix" data-i18n="Topic prefix">Topic prefix</label>
       <input type="text" id="cfg-prefix" placeholder="lgtv" autocomplete="off" spellcheck="false">
-      <div class="hint">Must differ per TV. Publishes to &lt;prefix&gt;/telemetry.</div>
+      <div class="hint" data-i18n="Must differ per TV. Publishes to &lt;prefix&gt;/telemetry.">Must differ per TV. Publishes to &lt;prefix&gt;/telemetry.</div>
     </div>
     <div class="cfg-f">
-      <label for="cfg-disc">Discovery prefix</label>
+      <label for="cfg-disc" data-i18n="Discovery prefix">Discovery prefix</label>
       <input type="text" id="cfg-disc" placeholder="homeassistant" autocomplete="off" spellcheck="false">
-      <div class="hint">Only change if Home Assistant was reconfigured.</div>
+      <div class="hint" data-i18n="Only change if Home Assistant was reconfigured.">Only change if Home Assistant was reconfigured.</div>
     </div>
     <div class="cfg-f">
-      <label for="cfg-devid">Device ID</label>
+      <label for="cfg-devid" data-i18n="Device ID">Device ID</label>
       <input type="text" id="cfg-devid" placeholder="lg_tv" autocomplete="off" spellcheck="false">
-      <div class="hint">Lowercase letters, digits and underscores.</div>
+      <div class="hint" data-i18n="Lowercase letters, digits and underscores.">Lowercase letters, digits and underscores.</div>
     </div>
     <div class="cfg-f">
-      <label for="cfg-devname">Device name</label>
+      <label for="cfg-devname" data-i18n="Device name">Device name</label>
       <input type="text" id="cfg-devname" placeholder="LG OLED TV" autocomplete="off">
-      <div class="hint">Shown as the device name in Home Assistant.</div>
+      <div class="hint" data-i18n="Shown as the device name in Home Assistant.">Shown as the device name in Home Assistant.</div>
     </div>
     <div class="cfg-f">
-      <label for="cfg-interval">Telemetry interval</label>
+      <label for="cfg-interval" data-i18n="Telemetry interval">Telemetry interval</label>
       <input type="number" id="cfg-interval" placeholder="10000" min="1000" max="600000" autocomplete="off">
-      <div class="hint">Milliseconds between publishes.</div>
+      <div class="hint" data-i18n="Milliseconds between publishes.">Milliseconds between publishes.</div>
     </div>
   </div>
 
-  <div class="pv-h">Home Assistant entities</div>
+  <div class="pv-h" data-i18n="Home Assistant entities">Home Assistant entities</div>
   <div class="pv-sub">Choose which entity categories are published over MQTT Discovery.
     Disabling an entity removes it cleanly from Home Assistant without leaving an orphaned state.</div>
 
@@ -1325,15 +1325,15 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <details class="pv-d" id="cfg-fine" style="margin-top:16px">
     <summary>
-      <span>Fine-tune individual entities</span>
+      <span data-i18n="Fine-tune individual entities">Fine-tune individual entities</span>
       <span class="cur" id="cfg-fine-count">&mdash;</span>
     </summary>
     <div id="cfg-subents" style="padding:10px 0 20px"></div>
   </details>
 
   <div class="cfg-save">
-    <button id="cfg-save-btn" onclick="saveSettings()">Save &amp; restart</button>
-    <span class="cfg-msg" id="cfg-msg">Saving restarts the server. The dashboard reconnects on its own.</span>
+    <button id="cfg-save-btn" onclick="saveSettings()" data-i18n="Save &amp; restart">Save &amp; restart</button>
+    <span class="cfg-msg" id="cfg-msg" data-i18n="Saving restarts the server. The dashboard reconnects on its own.">Saving restarts the server. The dashboard reconnects on its own.</span>
   </div>
   </div>
   </div>
@@ -1344,21 +1344,21 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     <div class="prot-table">
       <div class="prot-row">
         <div class="prot-main">
-          <div class="prot-title" id="upd-title">Version</div>
+          <div class="prot-title" id="upd-title" data-i18n="Version">Version</div>
           <div class="prot-desc" id="upd-desc" hidden></div>
         </div>
         <div class="prot-status"><span class="pill idle" id="upd-pill">&mdash;</span></div>
       </div>
       <div class="prot-row">
         <div class="prot-main">
-          <div class="prot-title">Check daily</div>
-          <div class="prot-desc">Looks for a new release once a day.</div>
+          <div class="prot-title" data-i18n="Check daily">Check daily</div>
+          <div class="prot-desc" data-i18n="Looks for a new release once a day.">Looks for a new release once a day.</div>
         </div>
-        <div class="prot-status"><button type="button" class="pill idle" id="upd-auto" onclick="toggleAutoCheck()">Off</button></div>
+        <div class="prot-status"><button type="button" class="pill idle" id="upd-auto" onclick="toggleAutoCheck()" data-i18n="Off">Off</button></div>
       </div>
       <div class="prot-row">
         <div class="prot-main">
-          <div class="prot-title">Block TV software updates</div>
+          <div class="prot-title" data-i18n="Block TV software updates">Block TV software updates</div>
           <div class="prot-desc">Stops the TV installing LG's system updates, which can take away the access
             Glasshouse runs with. Apps and Glasshouse's own updates are unaffected.</div>
         </div>
@@ -1366,16 +1366,16 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
       </div>
       <div class="prot-row" id="tvapp-row" hidden>
         <div class="prot-main">
-          <div class="prot-title">App on the TV's home screen</div>
-          <div class="prot-desc" id="tvapp-desc">Opens this dashboard on the TV itself, driven by the remote.</div>
+          <div class="prot-title" data-i18n="App on the TV&#x27;s home screen">App on the TV's home screen</div>
+          <div class="prot-desc" id="tvapp-desc" data-i18n="Opens this dashboard on the TV itself, driven by the remote.">Opens this dashboard on the TV itself, driven by the remote.</div>
         </div>
         <div class="prot-status"><button type="button" class="pill idle" id="tvapp-btn" onclick="toggleTvApp()">&mdash;</button></div>
       </div>
     </div>
     <div class="btns" id="upd-btns">
-      <button type="button" id="upd-check" onclick="checkNow()">Check now</button>
-      <button type="button" id="upd-install" hidden onclick="installUpdate()">Install</button>
-      <button type="button" id="upd-rollback" hidden onclick="rollbackUpdate()">Roll back</button>
+      <button type="button" id="upd-check" onclick="checkNow()" data-i18n="Check now">Check now</button>
+      <button type="button" id="upd-install" hidden onclick="installUpdate()" data-i18n="Install">Install</button>
+      <button type="button" id="upd-rollback" hidden onclick="rollbackUpdate()" data-i18n="Roll back">Roll back</button>
     </div>
     <div class="upd-prog" id="upd-prog" hidden>
       <div class="upd-step" id="upd-step"></div>
@@ -1388,12 +1388,371 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
 <footer>
   <span id="uptime">&mdash;</span>
-  <span class="foot-end"><span id="clock">&mdash;</span><a id="version" hidden target="_blank" rel="noopener noreferrer"></a><a id="version-new" hidden target="_blank" rel="noopener noreferrer"></a><button type="button" class="theme-toggle" id="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">☾</button></span>
+  <span class="foot-end"><span id="clock">&mdash;</span><a id="version" hidden target="_blank" rel="noopener noreferrer"></a><a id="version-new" hidden target="_blank" rel="noopener noreferrer"></a><button type="button" class="theme-toggle" id="lang-toggle" title="Language / Idioma">EN</button> <button type="button" class="theme-toggle" id="theme-toggle" title="Toggle light / dark theme" aria-label="Toggle theme">☾</button></span>
 </footer>
 
 <script>
 const K = new URLSearchParams(location.search).get('k') || '';
 const q = id => document.getElementById(id);
+
+
+// ---- i18n (English fallback, Spanish for es-* browser languages) ----
+const I18N = (function () {
+  const ES = {
+"web dashboard": "panel web",
+"Control": "Control",
+"Metrics": "Métricas",
+"Apps": "Apps",
+"Privacy": "Privacidad",
+"OLED Care": "Cuidado OLED",
+"Service menu": "Menú de servicio",
+"Screensaver": "Salvapantallas",
+"Advanced": "Avanzado",
+"MQTT": "MQTT",
+"Server": "Servidor",
+"System": "Sistema",
+"Temperature": "Temperatura",
+"Ambient": "Ambiente",
+"Room light": "Luz ambiental",
+"Ambient sensor": "Sensor ambiental",
+"Storage": "Almacenamiento",
+"App space": "Espacio de apps",
+"GB free": "GB libres",
+"Flash wear": "Desgaste flash",
+"eMMC lifetime estimated": "vida útil eMMC estimada",
+"Pre-EOL status": "Estado pre-EOL",
+"Drive's own assessment": "valoración propia de la unidad",
+"Magic remote": "Mando Magic",
+"Battery": "Batería",
+"HDMI": "HDMI",
+"System info": "Información del sistema",
+"Operating system release version": "versión del sistema operativo",
+"Firmware": "Firmware",
+"TV software build version": "versión de software de la TV",
+"Processor": "Procesador",
+"SoC platform and generation": "plataforma y generación del SoC",
+"OLED Cell": "Celda OLED",
+"Panel silicon cell identifier": "identificador de la celda de silicio del panel",
+"TCON Firmware": "Firmware TCON",
+"Timing controller driving the panel": "controlador de temporización del panel",
+"Process memory": "Memoria de procesos",
+"Detailed CPU usage": "Uso detallado de CPU",
+"Panel": "Panel",
+"Panel life": "Vida del panel",
+"Total power on hours": "horas totales encendida",
+"hours": "horas",
+"Panel maintenance in": "Mantenimiento del panel en",
+"Pixel refresher in": "Refrescado de píxeles en",
+"Protections": "Protecciones",
+"Screen off": "Pantalla apagada",
+"Screen on": "Pantalla encendida",
+"Source": "Fuente",
+"Volume ·": "Volumen ·",
+"Vol −": "Vol −",
+"Vol +": "Vol +",
+"Mute": "Silencio",
+"Playback": "Reproducción",
+"Rewind": "Rebobinar",
+"Play / Pause": "Reproducir / Pausar",
+"Stop": "Detener",
+"Fast Fwd": "Avance rápido",
+"D-pad": "Cruceta",
+"Navigate the TV": "Navegar por la TV",
+"Back": "Atrás",
+"Home": "Inicio",
+"Sleep timer": "Temporizador de apagado",
+"Off": "Desactivado",
+"10 min": "10 min",
+"30 min": "30 min",
+"60 min": "60 min",
+"90 min": "90 min",
+"120 min": "120 min",
+"Picture": "Imagen",
+"Mode ·": "Modo ·",
+"Energy saving ·": "Ahorro energético ·",
+"Auto": "Auto",
+"Minimum": "Mínimo",
+"Medium": "Medio",
+"Maximum": "Máximo",
+"Sound": "Sonido",
+"Output ·": "Salida ·",
+"TV Speaker": "Altavoz de la TV",
+"HDMI ARC": "HDMI ARC",
+"Optical": "Óptico",
+"Headphone": "Auriculares",
+"Bluetooth": "Bluetooth",
+"Screen notification": "Notificación en pantalla",
+"Send": "Enviar",
+"Open a web page": "Abrir una página web",
+"Open": "Abrir",
+"Power": "Energía",
+"Power off": "Apagar",
+"Power on": "Encender",
+"Reboot": "Reiniciar",
+"Quick Boot": "Arranque rápido",
+"Wake-on-LAN": "Wake-on-LAN",
+"Display": "Pantalla",
+"LG logo": "Logo de LG",
+"Shows the LG logo as the TV switches on and off. LG calls this LG Logo Display.": "Muestra el logo de LG al encender y apagar. LG lo llama Pantalla de logo LG.",
+"Devices": "Dispositivos",
+"Auto device detection": "Detección automática de dispositivos",
+"Front lights": "Luces frontales",
+"Standby light": "Luz en espera",
+"The small light on the front of the TV that shows while it is switched off.": "La pequeña luz frontal que se ve con la TV apagada.",
+"Logo light": "Luz del logo",
+"The lit LG logo on the front of the TV, on models that have one.": "El logo de LG iluminado en el frontal, en modelos que lo tienen.",
+"Brightness": "Brillo",
+"Show it now": "Mostrar ahora",
+"Start screen saver": "Iniciar salvapantallas",
+"Note: if a firmware update is applied, the screen saver will be restored to the LG default.": "Nota: si se actualiza el firmware, el salvapantallas volverá al de LG por defecto.",
+"Apps & Home Screen Launcher": "Apps y lanzador de la pantalla de inicio",
+"Uninstall applications": "Desinstalar aplicaciones",
+"Loading installed apps…": "Cargando apps instaladas…",
+"Hide home screen system apps": "Ocultar apps de sistema de la pantalla de inicio",
+"Hide built-in LG apps (Gallery, Music, Sports, Always Ready, Alexa, etc.) from the TV's home launcher ribbon.": "Oculta las apps integradas de LG (Galería, Música, Deportes, Always Ready, Alexa, etc.) de la cinta de inicio de la TV.",
+"Off (Stock)": "Desactivado (original)",
+"On (Custom)": "Activado (personalizado)",
+"When enabled:": "Cuando está activado:",
+"Loading system apps…": "Cargando apps de sistema…",
+"Turn off background services": "Apagar servicios en segundo plano",
+"Loading background services…": "Cargando servicios en segundo plano…",
+"Saved web pages": "Páginas web guardadas",
+"Add to home screen": "Añadir a la pantalla de inicio",
+"Privacy & data collection": "Privacidad y recogida de datos",
+"Overview": "Resumen",
+"Switch it all off": "Desactivar todo",
+"Every setting, one by one": "Cada ajuste, uno a uno",
+"Ad & telemetry blocker": "Bloqueador de anuncios y telemetría",
+"Stops the TV reaching LG's ad, tracking and diagnostics servers.": "Impide que la TV llegue a los servidores de anuncios, seguimiento y diagnóstico de LG.",
+"Ads & telemetry": "Anuncios y telemetría",
+"Everything": "Todo",
+". To stop only system updates, use": ". Para detener solo las actualizaciones del sistema, usa",
+"Block TV software updates": "Bloquear actualizaciones de software de la TV",
+"Advertising identifier": "Identificador de publicidad",
+"Reset advertising ID": "Restablecer identificador de publicidad",
+"Clear ad cookies": "Borrar cookies de publicidad",
+"What LG is allowed to collect": "Qué puede recoger LG",
+"These are the agreements recorded on the TV.": "Estos son los acuerdos registrados en la TV.",
+"What’s running now": "Qué se está ejecutando ahora",
+"Recognition": "Reconocimiento",
+"Diagnostics services": "Servicios de diagnóstico",
+"MQTT & Home Assistant": "MQTT y Home Assistant",
+"Bridge status": "Estado del puente",
+"MQTT bridge": "Puente MQTT",
+"Broker": "Broker",
+"Broker address": "Dirección del broker",
+"Hostname or IP of the MQTT broker.": "Nombre de host o IP del broker MQTT.",
+"Port": "Puerto",
+"Left blank: 1883, or 8883 with TLS.": "En blanco: 1883, o 8883 con TLS.",
+"Username": "Usuario",
+"Blank for an anonymous broker.": "En blanco para broker anónimo.",
+"Password": "Contraseña",
+"Stored on the TV in plain text.": "Se guarda en la TV en texto plano.",
+"TLS": "TLS",
+"Verify certificate": "Verificar certificado",
+"Topics & identity": "Temas e identidad",
+"Topic prefix": "Prefijo de temas",
+"Must differ per TV. Publishes to <prefix>/telemetry.": "Debe ser distinto por TV. Publica en <prefijo>/telemetry.",
+"Discovery prefix": "Prefijo de descubrimiento",
+"Only change if Home Assistant was reconfigured.": "Cámbialo solo si reconfiguraste Home Assistant.",
+"Device ID": "ID del dispositivo",
+"Lowercase letters, digits and underscores.": "Letras minúsculas, dígitos y guiones bajos.",
+"Device name": "Nombre del dispositivo",
+"Shown as the device name in Home Assistant.": "Se muestra como nombre del dispositivo en Home Assistant.",
+"Telemetry interval": "Intervalo de telemetría",
+"Milliseconds between publishes.": "Milisegundos entre publicaciones.",
+"Home Assistant entities": "Entidades de Home Assistant",
+"Fine-tune individual entities": "Ajustar entidades individuales",
+"Save & restart": "Guardar y reiniciar",
+"Saving restarts the server. The dashboard reconnects on its own.": "Al guardar se reinicia el servidor. El panel se reconecta solo.",
+"Version": "Versión",
+"Check daily": "Comprobar a diario",
+"Looks for a new release once a day.": "Busca una nueva versión una vez al día.",
+"App on the TV's home screen": "App en la pantalla de inicio de la TV",
+"Opens this dashboard on the TV itself, driven by the remote.": "Abre este panel en la propia TV, controlado con el mando.",
+"Check now": "Comprobar ahora",
+"Install": "Instalar",
+"Roll back": "Revertir",
+"Active Standby": "En espera",
+"Completing Panel Maintenance (Short Cycle)": "Completando mantenimiento del panel (ciclo corto)",
+"NO THERMAL SENSOR": "SIN SENSOR TÉRMICO",
+"WARMING UP": "CALENTANDO",
+" mA · Platform ": " mA · Plataforma ",
+"m   ·   load ": "m   ·   carga ",
+"Live TV": "TV en directo",
+"Dismiss screen saver": "Desactivar salvapantallas",
+"Unauthorised — token missing or wrong": "No autorizado: falta el token o es incorrecto",
+"TV unreachable": "TV inalcanzable",
+"up to date": "actualizado",
+"not checked": "sin comprobar",
+"the check failed": "la comprobación falló",
+"Installed. The server is restarting - this page reconnects on its own.": "Instalado. El servidor se está reiniciando; esta página se reconecta sola.",
+"Roll back to v": "Revertir a v",
+"Updated to v": "Actualizado a v",
+"Rolled back to v": "Revertido a v",
+"Restarting the server": "Reiniciando el servidor",
+"That did not finish. The TV is still on v": "No terminó. La TV sigue en v",
+"The server has not come back. See Updating in the README to roll back.": "El servidor no ha vuelto. Consulta Updating en el README para revertir.",
+"Taking longer than usual - it can take up to two minutes.": "Está tardando más de lo habitual; puede tardar hasta dos minutos.",
+"Nothing newer to install.": "No hay nada nuevo que instalar.",
+"The update failed.": "La actualización falló.",
+"Not added": "No añadida",
+"Opens this dashboard on the TV itself, driven by the remote. Remove it to take the tile off the home screen.": "Abre este panel en la propia TV, controlado con el mando. Elimínala para quitar el mosaico de la pantalla de inicio.",
+"Adds a tile that opens this dashboard on the TV itself, driven by the remote.": "Añade un mosaico que abre este panel en la propia TV, controlado con el mando.",
+"Could not change it.": "No se pudo cambiar.",
+"The rollback failed.": "La reversión falló.",
+"Action failed": "La acción falló",
+"Reboot the TV now? It will be unavailable for about a minute.": "¿Reiniciar la TV ahora? No estará disponible unos minutos.",
+"Power off the TV now?": "¿Apagar la TV ahora?",
+"Disabled in config (allowPower: false).": "Desactivado en la config (allowPower: false).",
+"1 thing is still on": "1 cosa sigue activa",
+" things are still on": " cosas siguen activas",
+"Tracking and targeted ads are off": "El seguimiento y los anuncios dirigidos están desactivados",
+"Switching it all off keeps the TV’s features working. It can be undone under Advanced.": "Desactivarlo todo mantiene las funciones de la TV en marcha. Se puede deshacer en Avanzado.",
+"If an LG update switches anything back on, it shows here.": "Si una actualización de LG reactiva algo, aparece aquí.",
+"All switched off": "Todo desactivado",
+"Left on because they run features: ": "Se queda activo porque sostiene funciones: ",
+". They can be switched off under Advanced.": ". Se pueden desactivar en Avanzado.",
+"Switching off…": "Desactivando…",
+"Content recognition": "Reconocimiento de contenido",
+"LG’s ACR captures what’s on your screen to target ads at you.": "El ACR de LG captura lo que hay en tu pantalla para dirigirte anuncios.",
+"Not running": "No en ejecución",
+"Screen capturing": "Captura de pantalla",
+"Sampling frames from the screen for recognition.": "Muestrea fotogramas de la pantalla para el reconocimiento.",
+"Capturing": "Capturando",
+"Stopped": "Detenido",
+"Running": "En ejecución",
+"Advertising ID": "ID de publicidad",
+"This firmware does not answer the call that reads it.": "Este firmware no responde a la llamada que lo lee.",
+"The value is deliberately not displayed here.": "El valor se omite deliberadamente aquí.",
+"No identifier is currently assigned.": "No hay ningún identificador asignado.",
+"Assigned": "Asignado",
+"None": "Ninguno",
+"Limit ad tracking": "Limitar seguimiento publicitario",
+"Read from the same call, so it is unknown here.": "Se lee en la misma llamada, así que aquí se desconoce.",
+" unidentified flag": " bandera sin identificar",
+"Recorded by the TV, tied to no agreement on this firmware and not writable.": "Registrada por la TV, sin acuerdo asociado en este firmware y no escribible.",
+"All off": "Todo desactivado",
+"These write to the TV and survive a reboot. A flag records what the TV stored ": "Estas escriben en la TV y sobreviven al reinicio. Una bandera registra lo que la TV almacenó ",
+"reason given beside it.": "con su motivo junto a ella.",
+"nothing it is allowed to send. ": "nada de lo que se le permite enviar. ",
+"off across reboots.": "desactivado tras reinicios.",
+"question starts them, this panel included.": "los arranca, incluido este panel.",
+"Nothing is blocked. LG’s advertising and telemetry addresses work as normal.": "No hay nada bloqueado. Las direcciones de publicidad y telemetría de LG funcionan con normalidad.",
+"Device seen, no signal": "Dispositivo detectado, sin señal",
+"port live": "puerto activo",
+"port seen": "puerto visto",
+"Saved page": "Página guardada",
+"None yet": "Ninguna todavía",
+"1 page": "1 página",
+"Empty puts back its own title": "Vacío devuelve su título original",
+"Could not add it": "No se pudo añadir",
+"\" from the home screen?": "\" de la pantalla de inicio?",
+"Could not remove it": "No se pudo quitar",
+"Could not save it": "No se pudo guardar",
+"Installed app": "App instalada",
+" hidden of ": " ocultas de ",
+" apps visible": " apps visibles",
+"Hidden from home launcher ribbon": "Oculta de la cinta de inicio",
+"Visible on home launcher ribbon": "Visible en la cinta de inicio",
+" disabled of ": " deshabilitadas de ",
+"Disabled, still running": "Deshabilitada, aún en ejecución",
+"Could not update service: ": "No se pudo actualizar el servicio: ",
+"unknown error": "error desconocido",
+"Error updating service: ": "Error al actualizar el servicio: ",
+"Could not uninstall ": "No se pudo desinstalar ",
+"Error uninstalling ": "Error al desinstalar ",
+"Could not update tile: ": "No se pudo actualizar el mosaico: ",
+"Error updating tile: ": "Error al actualizar el mosaico: ",
+"Could not update tile hiding: ": "No se pudo actualizar la ocultación del mosaico: ",
+"Error updating tile hiding: ": "Error al actualizar la ocultación del mosaico: ",
+"Could not read the service menu state": "No se pudo leer el estado del menú de servicio",
+"Showing the cut-down menu": "Mostrando el menú reducido",
+"Showing the full menu": "Mostrando el menú completo",
+"Screen Shift": "Desplazamiento de pantalla",
+"Pixel orbiting": "Órbita de píxeles",
+"Nudges the whole picture by a pixel at a time so a static edge never sits on the same line for long. Costs nothing visually.": "Desplaza la imagen píxel a píxel para que un borde estático no permanezca en la misma línea. Sin coste visual.",
+"Logo Dimming": "Atenuación de logo",
+"Local dimming": "Atenuación local",
+"Dims only the static logos and banners a channel leaves in a corner, and leaves the rest of the picture alone.": "Atenúa solo los logos y carteles estáticos que un canal deja en una esquina, sin tocar el resto de la imagen.",
+"Temporal Peak Control": "Control temporal de picos",
+"Lowers overall brightness when a bright image is held, which is what makes a mostly-white screen fade after a few seconds. Switching it off keeps full brightness and puts more heat through the panel.": "Baja el brillo general cuando se mantiene una imagen brillante; por eso una pantalla blanca se atenúa tras unos segundos. Desactivarlo mantiene el brillo completo y calienta más el panel.",
+"Global Stress Reduction": "Reducción global de estrés",
+"Dims the whole screen when it detects a stationary element such as a HUD or news ticker. Switching it off stops the dimming and leaves that element burning in at full brightness.": "Atenúa toda la pantalla si detecta un elemento estático como un HUD o una marquesina. Desactivarlo detiene la atenuación y deja ese elemento fijo a brillo completo.",
+"Could not read the panel protections": "No se pudieron leer las protecciones del panel",
+"Not adjustable on this TV": "No ajustable en esta TV",
+"4-hour short cycle": "ciclo corto de 4 horas",
+"2,000-hour calibration": "calibración de 2.000 horas",
+"Switching this off removes a protection against burn-in. Continue?": "Desactivar esto quita una protección contra el burn-in. ¿Continuar?",
+"The TV is switching screen savers. The screen may stay dark for up to a minute, then it comes back on its own.": "La TV está cambiando de salvapantallas. La pantalla puede permanecer oscura hasta un minuto y luego vuelve sola.",
+"The screen saver can only be started while a webOS app is running, not from an HDMI input or Live TV.": "El salvapantallas solo puede iniciarse con una app webOS en ejecución, no desde un HDMI ni desde TV en directo.",
+"Could not read the screen savers": "No se pudieron leer los salvapantallas",
+"On this TV, switching to or from the LG default takes about a minute, and the screen goes dark while it does. ": "En esta TV, cambiar al valor de LG o volver a él tarda un minuto, y la pantalla se queda oscura durante el proceso. ",
+"reset the advertising ID": "restablecer el identificador de publicidad",
+"clear ad cookies": "borrar las cookies de publicidad",
+"Reset — the TV issued a new identifier.": "Restablecido: la TV emitió un nuevo identificador.",
+"Reset was accepted, but the identifier did not change.": "El restablecimiento se aceptó, pero el identificador no cambió.",
+"The TV publishes telemetry and accepts commands over MQTT.": "La TV publica telemetría y acepta comandos por MQTT.",
+"Nothing is published. The dashboard is unaffected.": "No se publica nada. El panel no se ve afectado.",
+"not yet": "aún no",
+"just now": "ahora mismo",
+" over TLS": " por TLS",
+"Publishing to ": "Publicando en ",
+". Last telemetry ": ". Última telemetría ",
+". Retrying every 5s.": ". Reintentando cada 5 s.",
+"The bridge is off. Nothing is published.": "El puente está desactivado. No se publica nada.",
+"Could not read settings": "No se pudieron leer los ajustes",
+"A password is set. Leave blank to keep it.": "Hay una contraseña guardada. Déjala en blanco para conservarla.",
+"Save failed": "Error al guardar",
+"Saved, but the server did not come back. Check the log on the TV.": "Guardado, pero el servidor no volvió. Revisa el registro en la TV.",
+"Theme: ": "Tema: ",
+" (click for ": " (clic para ",
+"Could not read HDMI state — ": "No se pudo leer el estado HDMI: ",
+"Could not read the process list — ": "No se pudo leer la lista de procesos: ",
+"Could not measure CPU usage — ": "No se pudo medir el uso de CPU: ",
+"On": "Activado",
+"s ago": " s",
+"m ago": " min",
+"h ago": " h",
+"auto": "auto",
+"dark": "oscuro",
+"light": "claro",
+"Short cycles completed": "Ciclos cortos completados",
+"Pixel refresher cycles": "Ciclos de refrescado de píxeles",
+"Refresher failure alerts": "Avisos de fallo del refrescado",
+"GSR stress events": "Eventos de estrés GSR",
+"\" from the TV?\\n\\nThis will permanently delete the application and its stored data.": "\" de la TV?\n\nEsto borrará permanentemente la aplicación y sus datos guardados.",
+"Unlock the full service menu?\\n\\nIt can change panel calibration and hardware settings, and the TV must be switched off and on again before this takes effect.": "¿Desbloquear el menú de servicio completo?\n\nPuede cambiar la calibración del panel y ajustes de hardware, y la TV debe apagarse y encenderse de nuevo para que surta efecto.",
+" LG\\'s recognition and advertising services are not listed: anything that asks them a ": " Los servicios de reconocimiento y publicidad de LG no se listan: cualquier cosa que los consulte ",
+" on": " activos",
+" of ": " de ",
+"Still on": "Aún activos",
+"switching this off also switches off ": "desactivar esto también desactiva ",
+"Uninstall \"": "Desinstalar \""
+};
+  let lang = (localStorage.getItem('lang') || navigator.language || 'en').toLowerCase();
+  lang = lang.indexOf('es') === 0 ? 'es' : 'en';
+  const dict = lang === 'es' ? ES : {};
+  function t(s) { return Object.prototype.hasOwnProperty.call(dict, s) ? dict[s] : s; }
+  function apply() {
+    const els = document.querySelectorAll('[data-i18n]');
+    for (let i = 0; i < els.length; i++) els[i].textContent = t(els[i].getAttribute('data-i18n'));
+  }
+  function initLangToggle() {
+    const btn = document.getElementById('lang-toggle');
+    if (!btn) return;
+    btn.textContent = lang.toUpperCase();
+    btn.addEventListener('click', function () {
+      localStorage.setItem('lang', lang === 'es' ? 'en' : 'es');
+      location.reload();
+    });
+  }
+  return {lang: lang, t: t, apply: apply, initLangToggle: initLangToggle};
+})();
+const t = I18N.t;
+
+I18N.apply();
+I18N.initLangToggle();
 
 // ---- theme toggle (light / dark) ----
 (function initTheme() {
@@ -1448,7 +1807,7 @@ const bytes = n => {
 /* Level is carried by fill and opacity, never by hue - so "hi" is a state
    class that brightens the row rather than turning it red. */
 const ROWS = [
-  { k: 'cpu',   label: 'Processor',  warn: 85 },
+  { k: 'cpu',   label: t('Processor'),  warn: 85 },
   { k: 'mem',   label: 'Memory',     warn: 90 },
   { k: 'swap',  label: 'Swap',       warn: 70 },
   /* Throughput and draw have no threshold to cross - warn: 101 was the tell.
@@ -1590,7 +1949,7 @@ function row(k, val, pct, sub, warn) {
 async function tick() {
   try {
     const r = await fetch(api('/api/stats'), { cache: 'no-store' });
-    if (!r.ok) throw new Error(r.status === 401 ? 'Unauthorised — token missing or wrong' : 'HTTP ' + r.status);
+    if (!r.ok) throw new Error(r.status === 401 ? t('Unauthorised — token missing or wrong') : 'HTTP ' + r.status);
     const d = await r.json();
     document.body.classList.remove('stale');
     q('err').style.display = 'none';
@@ -1609,15 +1968,15 @@ async function tick() {
     // something were being displayed.
     const ps = d.powerState || {};
     const o = d.oled || {};
-    pwStandby = ps.raw === 'Active Standby';
-    if (q('poff')) q('poff').textContent = pwStandby ? 'Power on' : 'Power off';
-    const isComp = !!(o.comp_status === 'Running' || (ps.raw === 'Active Standby' && o.hours_until_comp === 0));
+    pwStandby = ps.raw === t('Active Standby');
+    if (q('poff')) q('poff').textContent = pwStandby ? t('Power on') : t('Power off');
+    const isComp = !!(o.comp_status === t('Running') || (ps.raw === t('Active Standby') && o.hours_until_comp === 0));
     const stEl = q('state');
     stEl.classList.toggle('comp', isComp);
     stEl.classList.toggle('off', !isComp && ps.screenOn === false);
     if (isComp) {
-      stEl.querySelector('span').textContent = 'Active Standby';
-      q('source').textContent = 'Completing Panel Maintenance (Short Cycle)';
+      stEl.querySelector('span').textContent = t('Active Standby');
+      q('source').textContent = t('Completing Panel Maintenance (Short Cycle)');
     } else {
       stEl.querySelector('span').textContent = ps.label || '—';
       q('source').textContent = d.display_title || d.app_name || d.app || '—';
@@ -1647,7 +2006,7 @@ async function tick() {
       advPill('devdetect', 'btn_devdetect', d.deviceDetection);
       if (q('adv-devices')) q('adv-devices').hidden = d.deviceDetection === undefined;
       if (q('tl-cur')) {
-        q('tl-cur').textContent = st === 'off' ? 'Off' : `${st} min`;
+        q('tl-cur').textContent = st === 'off' ? t('Off') : `${st} min`;
       }
 
       q('ds-cur').textContent = pic.mode || '';
@@ -1700,9 +2059,9 @@ async function tick() {
       else { hist.push(d.temp); if (hist.length > 240) hist.shift(); }
     }
     trace(hist);
-    q('trange').textContent = noThermal ? 'NO THERMAL SENSOR'
+    q('trange').textContent = noThermal ? t('NO THERMAL SENSOR')
       : hist.length ? ('MIN ' + Math.min(...hist) + '   MAX ' + Math.max(...hist))
-      : 'WARMING UP';
+      : t('WARMING UP');
     q('mhz').textContent = d.mhz ? d.mhz + ' MHZ' : '';
 
     /* The core figures are positional, so the c0/c1 prefixes were four
@@ -1741,7 +2100,7 @@ async function tick() {
 
     const ma = (d.power && d.power.current_ma) || 0;
     row('draw', ma + '<small>mA</small>', Math.min(100, ma / 4),
-        d.power ? ('Processor ' + d.power.cpu_ma + ' mA · Platform ' + d.power.core_ma + ' mA') : '', 101);
+        d.power ? ('Processor ' + d.power.cpu_ma + t(' mA · Platform ') + d.power.core_ma + ' mA') : '', 101);
 
     // Hardware & System Specifications
     let hasHw = false;
@@ -1818,7 +2177,7 @@ async function tick() {
     if (d.inputs && !q('inputs').dataset.built) {
       q('inputs').innerHTML = Object.keys(d.inputs).map(k =>
         `<button id="in_${esc(k)}" onclick="c('input','${jsq(k)}')">${esc(d.inputs[k])}</button>`).join('') +
-        `<button id="in_livetv" onclick="c('input','livetv')">Live TV</button>`;
+        `<button id="in_livetv" onclick="c('input','livetv')">${t('Live TV')}</button>`;
       q('inputs').dataset.built = '1';
     }
 
@@ -1869,7 +2228,7 @@ async function tick() {
       // Rewriting the label replaces the text node under the pointer, which
       // costs the tooltip the same way rewriting the title does.
       setIfChanged(q('ss-toggle'), 'textContent',
-                   ssOn ? 'Dismiss screen saver' : 'Start screen saver');
+                   ssOn ? t('Dismiss screen saver') : t('Start screen saver'));
       q('ss-toggle').classList.toggle('on', ssOn);
       // Dismissing works from anywhere; only starting one needs an app.
       refuseScreensaver(q('ss-toggle'),
@@ -1918,7 +2277,7 @@ async function tick() {
     }
 
     const up = d.uptime, dd = Math.floor(up / 86400), hh = Math.floor(up % 86400 / 3600), mm = Math.floor(up % 3600 / 60);
-    q('uptime').textContent = 'Up ' + (dd ? dd + 'd ' : '') + hh + 'h ' + mm + 'm   ·   load ' + (d.loadavg || []).join(' ');
+    q('uptime').textContent = 'Up ' + (dd ? dd + 'd ' : '') + hh + 'h ' + mm + t('m   ·   load ') + (d.loadavg || []).join(' ');
     q('clock').textContent = new Date().toLocaleTimeString();
     setVersion(d.tvwebVersion);
     // Several groups stay hidden until the first payload says the TV has them,
@@ -1927,13 +2286,13 @@ async function tick() {
   } catch (e) {
     if (updRestarting) return;
     document.body.classList.add('stale');
-    if (Date.now() - lastOk > 6000) showErr(e.message || 'TV unreachable');
+    if (Date.now() - lastOk > 6000) showErr(e.message || t('TV unreachable'));
   }
 }
 
 // Releases are cut on the upstream repo, so the tag link points there.
 // The steps the picture service accepts, in the TV's own order.
-const ENERGY_STEPS = { auto: 'Auto', off: 'Off', min: 'Minimum', med: 'Medium', max: 'Maximum', screen_off: 'Screen off' };
+const ENERGY_STEPS = { auto: t('Auto'), off: t('Off'), min: t('Minimum'), med: t('Medium'), max: t('Maximum'), screen_off: t('Screen off') };
 
 const REPO = 'https://github.com/rorygallagher2024/lg-webos-dashboard';
 
@@ -1972,9 +2331,9 @@ function renderUpdate(d) {
     : d.state === 'offline' ? 'offline'
     : working ? d.state
     : d.available ? 'v' + d.latest
-    : d.state === 'current' ? 'up to date'
+    : d.state === 'current' ? t('up to date')
     : d.state === 'installed' ? 'restarting'
-    : 'not checked';
+    : t('not checked');
 
   desc.textContent = !d.available ? ''
     : d.viaHomebrewChannel
@@ -1984,7 +2343,7 @@ function renderUpdate(d) {
 
   const auto = q('upd-auto');
   auto.className = 'pill ' + (d.autoCheck ? 'good' : 'idle');
-  auto.textContent = d.autoCheck ? 'On' : 'Off';
+  auto.textContent = d.autoCheck ? t('On') : t('Off');
   auto.dataset.on = d.autoCheck ? '1' : '';
   auto.disabled = !d.writable;
 
@@ -1997,8 +2356,8 @@ function renderUpdate(d) {
     tb.disabled = !d.writable;
   }
 
-  msg.textContent = (d.state === 'error' || d.state === 'offline') ? (d.error || 'the check failed')
-    : d.state === 'installed' ? 'Installed. The server is restarting - this page reconnects on its own.'
+  msg.textContent = (d.state === 'error' || d.state === 'offline') ? (d.error || t('the check failed'))
+    : d.state === 'installed' ? t('Installed. The server is restarting - this page reconnects on its own.')
     : updArrival;
 
   chk.hidden = !d.writable;
@@ -2009,7 +2368,7 @@ function renderUpdate(d) {
   inst.dataset.v = d.latest || '';
   roll.hidden = !(d.rollbackTo && d.writable);
   roll.disabled = working || updBusy;
-  roll.textContent = 'Roll back to v' + d.rollbackTo;
+  roll.textContent = t('Roll back to v') + d.rollbackTo;
   roll.dataset.v = d.rollbackTo || '';
   if (q('upd-prog').hidden) q('upd-btns').hidden = chk.hidden && inst.hidden && roll.hidden;
 
@@ -2043,7 +2402,7 @@ function noteArrival(d) {
   p.delete('rolledback');
   history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : ''));
   if (d.installed === (up || back)) {
-    updArrival = up ? 'Updated to v' + up + '.' : 'Rolled back to v' + back + '.';
+    updArrival = up ? t('Updated to v') + up + '.' : t('Rolled back to v') + back + '.';
     q('upd-msg').textContent = updArrival;
   }
 }
@@ -2112,7 +2471,7 @@ async function awaitRestart(version, doneLabel, param, confirmed, oldVersion) {
   updRestarting = true;
   // The work is done by now; what is left is waiting.
   updProg.set(Math.max(updProg.pct, 60));
-  updProg.step('Restarting the server', 95, 20000);
+  updProg.step(t('Restarting the server'), 95, 20000);
   const t0 = Date.now();
   for (;;) {
     await new Promise(res => setTimeout(res, 1500));
@@ -2123,12 +2482,12 @@ async function awaitRestart(version, doneLabel, param, confirmed, oldVersion) {
       updBusy = false;
       updProg.show(false);
       renderUpdate(d);
-      q('upd-msg').textContent = 'That did not finish. The TV is still on v' + oldVersion + '.';
+      q('upd-msg').textContent = t('That did not finish. The TV is still on v') + oldVersion + '.';
       return;
     }
     const waited = Date.now() - t0;
-    q('upd-msg').textContent = waited > 240000 ? 'The server has not come back. See Updating in the README to roll back.'
-      : waited > 30000 ? 'Taking longer than usual - it can take up to two minutes.'
+    q('upd-msg').textContent = waited > 240000 ? t('The server has not come back. See Updating in the README to roll back.')
+      : waited > 30000 ? t('Taking longer than usual - it can take up to two minutes.')
       : '';
   }
   q('upd-msg').textContent = '';
@@ -2188,11 +2547,11 @@ async function installUpdate() {
   }, 1000);
   const r = await updControl('update');
   clearInterval(watch);
-  if (!r || (r.ok && r.updated)) return awaitRestart(v, 'Updated to v' + v, 'updated', !!r, from);
+  if (!r || (r.ok && r.updated)) return awaitRestart(v, t('Updated to v') + v, 'updated', !!r, from);
   updBusy = false;
   updProg.show(false);
   await loadUpdate();
-  q('upd-msg').textContent = r.ok ? (r.note || 'Nothing newer to install.') : (r.error || 'The update failed.');
+  q('upd-msg').textContent = r.ok ? (r.note || t('Nothing newer to install.')) : (r.error || t('The update failed.'));
 }
 
 async function toggleTvUpdates() {
@@ -2223,12 +2582,12 @@ function renderTvApp(d) {
   row.hidden = !(d && d.supported);
   if (!d || !d.supported) return;
   const btn = q('tvapp-btn');
-  btn.textContent = d.installed ? 'Added' : 'Not added';
+  btn.textContent = d.installed ? 'Added' : t('Not added');
   btn.className = 'pill ' + (d.installed ? 'good' : 'idle');
   btn.disabled = !d.writable || tvAppBusy;
   q('tvapp-desc').textContent = d.installed
-    ? 'Opens this dashboard on the TV itself, driven by the remote. Remove it to take the tile off the home screen.'
-    : 'Adds a tile that opens this dashboard on the TV itself, driven by the remote.';
+    ? t('Opens this dashboard on the TV itself, driven by the remote. Remove it to take the tile off the home screen.')
+    : t('Adds a tile that opens this dashboard on the TV itself, driven by the remote.');
 }
 
 async function loadTvApp() {
@@ -2248,7 +2607,7 @@ async function toggleTvApp() {
   btn.textContent = adding ? 'Adding\u2026' : 'Removing\u2026';
   const r = await c(adding ? 'tvAppInstall' : 'tvAppRemove');
   tvAppBusy = false;
-  if (!r || !r.ok) q('upd-msg').textContent = (r && r.error) || 'Could not change it.';
+  if (!r || !r.ok) q('upd-msg').textContent = (r && r.error) || t('Could not change it.');
   loadTvApp();
 }
 
@@ -2261,11 +2620,11 @@ async function rollbackUpdate() {
   updProg.show(true);
   updProg.step('Restoring v' + v, 45, 1500);
   const r = await updControl('updateRollback');
-  if (!r || r.ok) return awaitRestart(v, 'Rolled back to v' + v, 'rolledback', !!r, from);
+  if (!r || r.ok) return awaitRestart(v, t('Rolled back to v') + v, 'rolledback', !!r, from);
   updBusy = false;
   updProg.show(false);
   await loadUpdate();
-  q('upd-msg').textContent = r.error || 'The rollback failed.';
+  q('upd-msg').textContent = r.error || t('The rollback failed.');
 }
 
 function showErr(m) { const e = q('err'); e.textContent = m; e.style.display = 'block'; }
@@ -2277,7 +2636,7 @@ async function c(action, value) {
       body: JSON.stringify({ action, value })
     });
     const j = await r.json();
-    if (!j.ok) showErr(j.error || 'Action failed'); else q('err').style.display = 'none';
+    if (!j.ok) showErr(j.error || t('Action failed')); else q('err').style.display = 'none';
     setTimeout(tick, 320);
     return j;
   } catch (e) { showErr(e.message); }
@@ -2288,7 +2647,7 @@ function advPill(row, id, on) {
   if (r) r.hidden = on === undefined;
   if (!b || on === undefined) return;
   b.className = 'pill ' + (on ? 'good' : 'idle');
-  b.textContent = on ? 'On' : 'Off';
+  b.textContent = on ? t('On') : t('Off');
   b.dataset.on = on ? '1' : '';
 }
 function flip(id) { const el = q(id); return el && el.dataset.on ? 'off' : 'on'; }
@@ -2312,7 +2671,7 @@ async function sendToast() {
       btn.textContent = 'Sent';
       btn.classList.add('on');
       setTimeout(() => {
-        btn.textContent = 'Send';
+        btn.textContent = t('Send');
         btn.classList.remove('on');
         btn.disabled = false;
       }, 1400);
@@ -2340,7 +2699,7 @@ async function openUrl() {
         btn.classList.add('on');
       }
       setTimeout(() => {
-        btn.textContent = 'Open';
+        btn.textContent = t('Open');
         btn.classList.remove('on');
         btn.disabled = false;
       }, 1400);
@@ -2356,15 +2715,15 @@ let pwStandby = false;
 function pw(a) {
   if (a === 'powerOn') return c(a);
   const msg = a === 'reboot'
-    ? 'Reboot the TV now? It will be unavailable for about a minute.'
-    : 'Power off the TV now?';
+    ? t('Reboot the TV now? It will be unavailable for about a minute.')
+    : t('Power off the TV now?');
   if (confirm(msg)) c(a);
 }
 
 fetch(api('/api/caps')).then(r => r.json()).then(cp => {
   if (!cp.allowPower) {
     q('poff').disabled = q('prb').disabled = true;
-    q('pwnote').textContent = 'Disabled in config (allowPower: false).';
+    q('pwnote').textContent = t('Disabled in config (allowPower: false).');
   }
 }).catch(() => {});
 
@@ -2378,14 +2737,14 @@ function pvPill(on, goodWhenOff) {
   // For privacy, "off" is the desirable state, so the colouring is inverted
   // relative to the metrics above.
   const cls = goodWhenOff ? (on ? 'warn' : 'good') : (on ? 'bad' : 'idle');
-  return `<span class="pill ${cls}">${on ? 'On' : 'Off'}</span>`;
+  return `<span class="pill ${cls}">${on ? t('On') : t('Off')}</span>`;
 }
 
 function pvConsentPill(f, writable) {
   if (!writable) return pvPill(f.enabled, true);
   if (!f.settable) return pvPill(f.enabled, true).replace('class="pill ', 'class="pill fixed ');
   return `<button class="pill ${f.enabled ? 'warn' : 'good'}" data-key="${esc(f.key)}" ` +
-         `data-next="${f.enabled ? '0' : '1'}">${f.enabled ? 'On' : 'Off'}</button>`;
+         `data-next="${f.enabled ? '0' : '1'}">${f.enabled ? t('On') : t('Off')}</button>`;
 }
 
 function pvRow(name, detail, pillHtml) {
@@ -2404,27 +2763,27 @@ function renderSimple(d) {
   if (!sm) return;
   q('ps-dot').className = 'ps-dot ' + (sm.total ? 'warn' : 'good');
   q('ps-head').textContent = sm.total
-    ? (sm.total === 1 ? '1 thing is still on' : sm.total + ' things are still on')
-    : 'Tracking and targeted ads are off';
+    ? (sm.total === 1 ? t('1 thing is still on') : sm.total + t(' things are still on'))
+    : t('Tracking and targeted ads are off');
   q('ps-sub').textContent = sm.total
-    ? 'Switching it all off keeps the TV’s features working. It can be undone under Advanced.'
-    : 'If an LG update switches anything back on, it shows here.';
+    ? t('Switching it all off keeps the TV’s features working. It can be undone under Advanced.')
+    : t('If an LG update switches anything back on, it shows here.');
   q('ps-areas').innerHTML = sm.areas.map(a => {
     const n = a.items.length;
     return `<div class="ps-area">` +
-      `<span class="ps-st${n ? ' warn' : ''}">${n ? n + ' on' : 'Off'}</span>` +
+      `<span class="ps-st${n ? ' warn' : ''}">${n ? n + t(' on') : t('Off')}</span>` +
       `<div class="n">${esc(a.name)}</div><div class="d">${esc(a.detail)}</div>` +
-      (n ? `<div class="on"><b>Still on</b> &middot; ${a.items.map(i => esc(i.label)).join(', ')}</div>` : '') +
+      (n ? `<div class="on"><b>${t('Still on')}</b> &middot; ${a.items.map(i => esc(i.label)).join(', ')}</div>` : '') +
       `</div>`;
   }).join('');
   const go = q('ps-go');
   if (!go.dataset.busy) {
     go.disabled = !sm.total || d.consentWritable === false;
-    go.textContent = sm.total ? 'Switch it all off' : 'All switched off';
+    go.textContent = sm.total ? t('Switch it all off') : t('All switched off');
   }
   q('ps-keep').hidden = !sm.kept.length;
   q('ps-keep').textContent = sm.kept.length
-    ? 'Left on because they run features: ' + sm.kept.join(', ') + '. They can be switched off under Advanced.'
+    ? t('Left on because they run features: ') + sm.kept.join(', ') + t('. They can be switched off under Advanced.')
     : '';
 }
 
@@ -2432,7 +2791,7 @@ async function switchAllOff() {
   const go = q('ps-go'), msg = q('ps-msg');
   go.disabled = true;
   go.dataset.busy = '1';
-  go.textContent = 'Switching off…';
+  go.textContent = t('Switching off…');
   msg.textContent = '';
   const r = await c('privacyAllOff');
   delete go.dataset.busy;
@@ -2457,10 +2816,10 @@ async function loadPrivacy() {
      * pill beside it already says.
      */
     q('pv-live').innerHTML =
-      pvRow('Content recognition', 'LG’s ACR captures what’s on your screen to target ads at you.',
-          `<span class="pill ${a.active ? 'warn' : 'good'}">${a.active ? 'Running' : 'Not running'}</span>`) +
-      pvRow('Screen capturing', 'Sampling frames from the screen for recognition.',
-          `<span class="pill ${a.capturing ? 'warn' : 'good'}">${a.capturing ? 'Capturing' : 'Stopped'}</span>`);
+      pvRow(t('Content recognition'), t('LG’s ACR captures what’s on your screen to target ads at you.'),
+          `<span class="pill ${a.active ? 'warn' : 'good'}">${a.active ? t('Running') : t('Not running')}</span>`) +
+      pvRow(t('Screen capturing'), t('Sampling frames from the screen for recognition.'),
+          `<span class="pill ${a.capturing ? 'warn' : 'good'}">${a.capturing ? t('Capturing') : t('Stopped')}</span>`);
 
     // advertising id
     const ad = d.advertisingId || {};
@@ -2472,19 +2831,19 @@ async function loadPrivacy() {
     // available === false means the call does not exist on this firmware, which
     // is not the same answer as "no identifier assigned".
     const adOk = ad.available !== false;
-    q('pv-adid').innerHTML = pvRow('Advertising ID',
-      !adOk ? 'This firmware does not answer the call that reads it.'
-            : ad.present ? 'The value is deliberately not displayed here.'
-                         : 'No identifier is currently assigned.',
+    q('pv-adid').innerHTML = pvRow(t('Advertising ID'),
+      !adOk ? t('This firmware does not answer the call that reads it.')
+            : ad.present ? t('The value is deliberately not displayed here.')
+                         : t('No identifier is currently assigned.'),
       !adOk ? '<span class="pill idle">Not readable</span>'
-            : `<span class="pill ${ad.present ? 'warn' : 'good'}">${ad.present ? 'Assigned' : 'None'}</span>`);
+            : `<span class="pill ${ad.present ? 'warn' : 'good'}">${ad.present ? t('Assigned') : t('None')}</span>`);
     q('pv-lmt').innerHTML = pvRow(
-      ad.limitTrackingLabel || 'Limit ad tracking',
-      adOk ? (ad.limitTrackingDetail || '') : 'Read from the same call, so it is unknown here.',
+      ad.limitTrackingLabel || t('Limit ad tracking'),
+      adOk ? (ad.limitTrackingDetail || '') : t('Read from the same call, so it is unknown here.'),
       !adOk ? '<span class="pill idle">Unknown</span>'
             : d.consentWritable
-            ? `<button class="pill ${ad.limitTracking ? 'good' : 'warn'}" id="lmt-toggle" data-next="${ad.limitTracking ? '0' : '1'}">${ad.limitTracking ? 'On' : 'Off'}</button>`
-            : `<span class="pill ${ad.limitTracking ? 'good' : 'warn'}">${ad.limitTracking ? 'On' : 'Off'}</span>`);
+            ? `<button class="pill ${ad.limitTracking ? 'good' : 'warn'}" id="lmt-toggle" data-next="${ad.limitTracking ? '0' : '1'}">${ad.limitTracking ? t('On') : t('Off')}</button>`
+            : `<span class="pill ${ad.limitTracking ? 'good' : 'warn'}">${ad.limitTracking ? t('On') : t('Off')}</span>`);
     // The two ad actions go through the same service, so they cannot work either.
     for (const id of ['adid-reset', 'adcookies-clear']) {
       const btn = q(id);
@@ -2498,7 +2857,7 @@ async function loadPrivacy() {
     // A flag cannot be off while an agreement it shares stays accepted, so the
     // rows it takes with it are named before the click, not after.
     const shared = f => f.sharesWith && f.sharesWith.length
-      ? ` <span class="k">&middot; switching this off also switches off ${esc(f.sharesWith.join(', '))}</span>`
+      ? ` <span class="k">&middot; ${t('switching this off also switches off ')}${esc(f.sharesWith.join(', '))}</span>`
       : '';
     const rows = c.known.map(f => ({ ...f, name: f.label, detail: esc(f.detail || '') + shared(f) }))
       .concat((c.other || []).map(f => ({
@@ -2529,23 +2888,23 @@ async function loadPrivacy() {
       // heading above every row is worse than none.
       html += '<div class="pv-grp">' +
               (title ? `<div class="pv-g"><span>${esc(title)}</span>` +
-                       `<span class="c">${on} of ${groupTotal} on</span></div>` : '') +
+                       `<span class="c">${on}${t(' of ')}${groupTotal}${t(' on')}</span></div>` : '') +
               (note ? `<div class="pv-gn">${esc(note)}</div>` : '') +
               inGroup.map(f => pvRow(esc(f.name), f.detail, pvConsentPill(f, cw))).join('') +
               (anon.length ? pvRow(
-                anon.length + ' unidentified flag' + (anon.length === 1 ? '' : 's'),
-                'Recorded by the TV, tied to no agreement on this firmware and not writable.',
+                anon.length + t(' unidentified flag') + (anon.length === 1 ? '' : 's'),
+                t('Recorded by the TV, tied to no agreement on this firmware and not writable.'),
                 `<span class="pill fixed ${anon.some(f => f.enabled) ? 'warn' : 'good'}">` +
                   (anon.some(f => f.enabled)
                     ? anon.filter(f => f.enabled).length + ' on'
-                    : 'All off') + '</span>') : '') +
+                    : t('All off')) + '</span>') : '') +
               '</div>';
     }
     q('pv-consent').innerHTML = html || '<div class="d">Could not read the agreements file.</div>';
     q('pv-consent-note').innerHTML = cw
-      ? 'These write to the TV and survive a reboot. A flag records what the TV stored ' +
+      ? t('These write to the TV and survive a reboot. A flag records what the TV stored ') +
         '&mdash; it is not proof LG honours it. Dimmed rows are read-only, each for the ' +
-        'reason given beside it.'
+        t('reason given beside it.')
       : 'Controls are disabled in config.json, so these can only be read. Change them on the TV ' +
         'under <b>Settings &rarr; General &rarr; About This TV &rarr; User Agreements</b>.';
     /* A folded section still has to say where it stands, or folding it just
@@ -2565,7 +2924,7 @@ async function loadPrivacy() {
      */
     const dae = (d.daemons || []).filter(x => !x.onDemand);
     q('pv-daemons').innerHTML = dae.map(x => {
-      const state = x.running ? 'Running' : 'Stopped';
+      const state = x.running ? t('Running') : t('Stopped');
       const cls = x.running ? 'idle' : 'good';
       const note = x.heldDown ? ' <span class="k">&middot; kept stopped at boot</span>' : '';
       const pill = `<span class="pill ${cls}">${state}</span>`;
@@ -2580,11 +2939,11 @@ async function loadPrivacy() {
      */
     q('pv-running-note').innerHTML =
       'A service can be running with its permission switched off &mdash; it simply has ' +
-      'nothing it is allowed to send. ' +
+      t('nothing it is allowed to send. ') +
       'They are switched off in the Apps tab, under Turn off background services, which keeps them ' +
-      'off across reboots.' +
-      ' LG\'s recognition and advertising services are not listed: anything that asks them a ' +
-      'question starts them, this panel included.';
+      t('off across reboots.') +
+      t(' LG\'s recognition and advertising services are not listed: anything that asks them a ') +
+      t('question starts them, this panel included.');
 
     q('pv-running-cur').textContent = dae.length
       ? (dae.filter(x => x.running).length + liveOn) + ' of ' + total + ' running' : '';
@@ -2593,12 +2952,12 @@ async function loadPrivacy() {
     const ab = d.adblock || {};
     const mode = ab.mode || (ab.enabled ? 'full' : 'off');
     const AB = {
-      off:  { label: 'Off',
-              detail: 'Nothing is blocked. LG’s advertising and telemetry addresses work as normal.' },
-      ads:  { label: 'Ads & telemetry',
+      off:  { label: t('Off'),
+              detail: t('Nothing is blocked. LG’s advertising and telemetry addresses work as normal.') },
+      ads:  { label: t('Ads & telemetry'),
               detail: `Blocks advertising, tracking and diagnostics addresses. LG's app ` +
                       `store and software updates still work.` },
-      full: { label: 'Everything',
+      full: { label: t('Everything'),
               detail: `Also blocks LG's platform services, so the app store and software updates may stop working.` }
     }[mode] || {};
     q('adblock-detail').textContent = AB.detail || '';
@@ -2648,7 +3007,7 @@ function renderHdmiDiag(diag, colSpace) {
   if (diag) {
     if (diag.phy_mode) parts.push(esc(diag.phy_mode));
     if (diag.chroma) parts.push(esc(diag.chroma));
-    if (diag.hdcp && diag.hdcp !== 'None') parts.push('HDCP ' + esc(diag.hdcp.replace(/^HDCP\s*/i, '')));
+    if (diag.hdcp && diag.hdcp !== t('None')) parts.push('HDCP ' + esc(diag.hdcp.replace(/^HDCP\s*/i, '')));
   }
   if (colSpace) parts.push(esc(colSpace));
   if (diag) {
@@ -2680,7 +3039,7 @@ async function loadHdmi() {
         ? [s.resolution ? s.resolution.replace('x', '×') : null,
            s.refreshHz ? s.refreshHz + ' Hz' : null,
            s.interlaced ? 'interlaced' : null].filter(Boolean).join(' · ')
-        : 'Device seen, no signal';
+        : t('Device seen, no signal');
       const link = s
         ? [s.colorDepth, s.pixelClockMhz ? s.pixelClockMhz + ' MHz' : null]
             .filter(Boolean).join(' · ')
@@ -2692,7 +3051,7 @@ async function loadHdmi() {
         return `<div class="port empty"><div class="ptop">` +
                `<span class="pn num">${i.port}</span></div></div>`;
       }
-      const cls = i.active ? 'port live' : 'port seen';
+      const cls = i.active ? t('port live') : t('port seen');
       const state = i.active ? 'Active' : 'Idle';
       return `<div class="${cls}">` +
              `<div class="ptop"><span class="pn num">${i.port}</span>` +
@@ -2702,7 +3061,7 @@ async function loadHdmi() {
              `</div>`;
     }).join('');
   } catch (e) {
-    q('hdmi-grid').innerHTML = `<div class="sub">Could not read HDMI state — ${e.message}</div>`;
+    q('hdmi-grid').innerHTML = `<div class="sub">${t('Could not read HDMI state — ')}${e.message}</div>`;
   }
 }
 
@@ -2726,7 +3085,7 @@ async function loadProcesses() {
       `<div class="p-mb">${p.mb.toFixed(1)} MB</div></div>`).join('');
   } catch (e) {
     q('proc-list').innerHTML =
-      `<div class="sub">Could not read the process list — ${e.message}</div>`;
+      `<div class="sub">${t('Could not read the process list — ')}${e.message}</div>`;
   }
 }
 
@@ -2751,7 +3110,7 @@ async function loadCpu() {
       : '<div class="sub">Nothing used any CPU over the sample.</div>';
   } catch (e) {
     q('cpu-list').innerHTML =
-      `<div class="sub">Could not measure CPU usage — ${e.message}</div>`;
+      `<div class="sub">${t('Could not measure CPU usage — ')}${e.message}</div>`;
   } finally {
     cpuInFlight = false;
   }
@@ -2827,7 +3186,7 @@ function pageHost(url) {
 
 function renderSavedPages(d) {
   const pages = d.savedPages || [];
-  q('apps-pages-summary').textContent = !pages.length ? 'None yet' : pages.length === 1 ? '1 page' : pages.length + ' pages';
+  q('apps-pages-summary').textContent = !pages.length ? t('None yet') : pages.length === 1 ? t('1 page') : pages.length + ' pages';
   q('page-add').hidden = !d.writable;
   q('apps-pages-list').innerHTML = pages.map(p => {
     const id = esc(p.launchPointId);
@@ -2835,7 +3194,7 @@ function renderSavedPages(d) {
     return `<div class="prot-row" id="page-${id}">
       <div class="prot-main">
         <div class="prot-title">${esc(p.title)}</div>
-        <div class="prot-desc">${esc(where || 'Saved page')}${p.renamed ? ' &middot; renamed' : ''}</div>
+        <div class="prot-desc">${esc(where || t('Saved page'))}${p.renamed ? ' &middot; renamed' : ''}</div>
       </div>
       <div class="prot-status page-acts">
         <button type="button" class="pill idle" onclick="editPage('${id}')" ${d.writable ? '' : 'disabled'}>Edit</button>
@@ -2856,7 +3215,7 @@ function editPage(lpId) {
         <input type="text" id="page-url-${id}" maxlength="2048" autocomplete="off" spellcheck="false"
           placeholder="Web address" value="${esc(p.address)}" aria-label="Web address" ${cancel}>
         <input type="text" id="page-name-${id}" maxlength="60" autocomplete="off" spellcheck="false"
-          placeholder="${p.renamed ? 'Empty puts back its own title' : 'Name'}" value="${esc(p.title)}"
+          placeholder="${p.renamed ? t('Empty puts back its own title') : 'Name'}" value="${esc(p.title)}"
           aria-label="Name" ${cancel}>
         <button type="submit">Save</button>
         <button type="button" onclick="renderSavedPages(appsData)">Cancel</button>
@@ -2882,7 +3241,7 @@ async function addPage() {
     // Beside the field it is about, and in a sentence's case: the server's
     // messages are written to follow "Could not add it:" elsewhere.
     if (!r.ok || !j.ok) {
-      const e = j.error || 'Could not add it';
+      const e = j.error || t('Could not add it');
       msg.textContent = e.charAt(0).toUpperCase() + e.slice(1) + '.';
       url.focus();
     } else { url.value = ''; name.value = ''; }
@@ -2893,14 +3252,14 @@ async function addPage() {
 
 async function removePage(lpId) {
   const p = ((appsData && appsData.savedPages) || []).find(x => x.launchPointId === lpId);
-  if (!p || !confirm('Remove "' + p.title + '" from the home screen?')) return;
+  if (!p || !confirm('Remove "' + p.title + t('" from the home screen?'))) return;
   try {
     const r = await fetch(api('/api/apps/remove-page'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ launchPointId: lpId })
     });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok || !j.ok) showErr(j.error || 'Could not remove it');
+    if (!r.ok || !j.ok) showErr(j.error || t('Could not remove it'));
   } catch (e) { showErr(e.message); }
   loadApps();
 }
@@ -2917,7 +3276,7 @@ async function savePage(lpId) {
     const j = await r.json().catch(() => ({}));
     // A refused edit stays open with the reason, so nothing typed is lost.
     if (!r.ok || !j.ok) {
-      const e = j.error || 'Could not save it';
+      const e = j.error || t('Could not save it');
       msg.textContent = e.charAt(0).toUpperCase() + e.slice(1) + '.';
       return;
     }
@@ -2951,7 +3310,7 @@ function renderAppsPanel() {
           <img src="${iconUrl}" width="38" height="38" style="border-radius:8px;object-fit:contain;background:var(--w06);flex-shrink:0" onerror="this.style.display='none'">
           <div class="prot-main">
             <div class="prot-title">${title} <span class="prot-sub">&middot; ${id}</span></div>
-            <div class="prot-desc">${esc(meta || 'Installed app')}</div>
+            <div class="prot-desc">${esc(meta || t('Installed app'))}</div>
           </div>
           <div class="prot-status">
             <button type="button" class="pill bad" id="btn-uninstall-${id}" onclick="confirmUninstall('${id}', '${title}')" ${!d.writable ? 'disabled' : ''}>Uninstall</button>
@@ -2995,13 +3354,13 @@ function renderAppsPanel() {
       hiddenCount.style.display = 'none';
     } else {
       hiddenCount.style.display = '';
-      hiddenCount.textContent = numHidden > 0 ? numHidden + ' hidden of ' + tiles.length + ' apps' : 'All ' + tiles.length + ' apps visible';
+      hiddenCount.textContent = numHidden > 0 ? numHidden + t(' hidden of ') + tiles.length + ' apps' : 'All ' + tiles.length + t(' apps visible');
     }
   }
 
   if (tilesSummary) {
     if (!tileHidingEnabled) {
-      tilesSummary.textContent = 'Off';
+      tilesSummary.textContent = t('Off');
     } else {
       tilesSummary.textContent = numHidden > 0 ? numHidden + ' hidden' : tiles.length + ' apps';
     }
@@ -3022,7 +3381,7 @@ function renderAppsPanel() {
           <img src="${iconUrl}" width="38" height="38" style="border-radius:8px;object-fit:contain;background:var(--w06);flex-shrink:0" onerror="this.style.display='none'">
           <div class="prot-main">
             <div class="prot-title">${title} <span class="prot-sub">&middot; ${id}</span></div>
-            <div class="prot-desc">${isHidden ? 'Hidden from home launcher ribbon' : 'Visible on home launcher ribbon'}</div>
+            <div class="prot-desc">${isHidden ? t('Hidden from home launcher ribbon') : t('Visible on home launcher ribbon')}</div>
           </div>
           <div class="prot-status">
             <button type="button" class="pill ${isHidden ? 'warn' : 'good'}" id="btn-tile-${id}" onclick="toggleTileVisibility('${id}', ${!isHidden})" ${!d.writable ? 'disabled' : ''}>${isHidden ? 'Hidden' : 'Visible'}</button>
@@ -3045,7 +3404,7 @@ function renderAppsPanel() {
       svcsDisc.hidden = false;
       const numDisabled = svcs.filter(s => s.disabled).length;
       if (svcsSummary) {
-        svcsSummary.textContent = numDisabled > 0 ? numDisabled + ' disabled of ' + svcs.length : svcs.length + ' services';
+        svcsSummary.textContent = numDisabled > 0 ? numDisabled + t(' disabled of ') + svcs.length : svcs.length + ' services';
       }
       if (svcsList) {
         svcsList.innerHTML = svcs.map(svc => {
@@ -3063,7 +3422,7 @@ function renderAppsPanel() {
             </div>
             <div class="prot-status" style="display:flex;align-items:center;gap:10px">
               ${badge ? `<span class="pv-badge" style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--w06);color:var(--t2)">${badge}</span>` : ''}
-              <button type="button" class="pill ${isDisabled ? 'warn' : 'good'}" id="btn-svc-${id}" onclick="toggleService('${id}', ${!isDisabled})" ${!d.writable ? 'disabled' : ''}${stillRunning ? ' title="Switched off, but something on the TV has started it again."' : ''}>${stillRunning ? 'Disabled, still running' : isDisabled ? 'Disabled' : 'Active'}</button>
+              <button type="button" class="pill ${isDisabled ? 'warn' : 'good'}" id="btn-svc-${id}" onclick="toggleService('${id}', ${!isDisabled})" ${!d.writable ? 'disabled' : ''}${stillRunning ? ' title="Switched off, but something on the TV has started it again."' : ''}>${stillRunning ? t('Disabled, still running') : isDisabled ? 'Disabled' : 'Active'}</button>
             </div>
           </div>`;
         }).join('');
@@ -3096,19 +3455,19 @@ async function toggleService(serviceId, makeDisabled) {
         btn.disabled = false;
         btn.textContent = makeDisabled ? 'Active' : 'Disabled';
       }
-      alert('Could not update service: ' + ((d && d.error) || 'unknown error'));
+      alert(t('Could not update service: ') + ((d && d.error) || t('unknown error')));
     }
   } catch (e) {
     if (btn) {
       btn.disabled = false;
       btn.textContent = makeDisabled ? 'Active' : 'Disabled';
     }
-    alert('Error updating service: ' + e.message);
+    alert(t('Error updating service: ') + e.message);
   }
 }
 
 async function confirmUninstall(appId, appTitle) {
-  if (!confirm('Uninstall "' + appTitle + '" from the TV?\n\nThis will permanently delete the application and its stored data.')) {
+  if (!confirm(t('Uninstall "') + appTitle + t('" from the TV?\n\nThis will permanently delete the application and its stored data.'))) {
     return;
   }
   const btn = document.getElementById('btn-uninstall-' + appId);
@@ -3135,14 +3494,14 @@ async function confirmUninstall(appId, appTitle) {
         btn.disabled = false;
         btn.textContent = 'Uninstall';
       }
-      alert('Could not uninstall ' + appTitle + ': ' + ((d && d.error) || 'unknown error'));
+      alert(t('Could not uninstall ') + appTitle + ': ' + ((d && d.error) || t('unknown error')));
     }
   } catch (e) {
     if (btn) {
       btn.disabled = false;
       btn.textContent = 'Uninstall';
     }
-    alert('Error uninstalling ' + appTitle + ': ' + e.message);
+    alert(t('Error uninstalling ') + appTitle + ': ' + e.message);
   }
 }
 
@@ -3178,14 +3537,14 @@ async function toggleTileVisibility(appId, makeHidden) {
         btn.disabled = false;
         btn.textContent = makeHidden ? 'Visible' : 'Hidden';
       }
-      alert('Could not update tile: ' + ((d && d.error) || 'unknown error'));
+      alert(t('Could not update tile: ') + ((d && d.error) || t('unknown error')));
     }
   } catch (e) {
     if (btn) {
       btn.disabled = false;
       btn.textContent = makeHidden ? 'Visible' : 'Hidden';
     }
-    alert('Error updating tile: ' + e.message);
+    alert(t('Error updating tile: ') + e.message);
   }
 }
 
@@ -3208,11 +3567,11 @@ async function setTileHiding(enabled) {
       }
       await loadApps();
     } else {
-      alert('Could not update tile hiding: ' + ((d && d.error) || 'unknown error'));
+      alert(t('Could not update tile hiding: ') + ((d && d.error) || t('unknown error')));
       renderAppsPanel();
     }
   } catch (e) {
-    alert('Error updating tile hiding: ' + e.message);
+    alert(t('Error updating tile hiding: ') + e.message);
     renderAppsPanel();
   } finally {
     if (btnOff) btnOff.disabled = false;
@@ -3308,7 +3667,7 @@ async function loadServiceMenu() {
   try {
     d = await (await fetch(api('/api/servicemenu'), { cache: 'no-store' })).json();
   } catch (e) { showErr(e.message); return; }
-  if (!d || !d.ok) { showErr((d && d.error) || 'Could not read the service menu state'); return; }
+  if (!d || !d.ok) { showErr((d && d.error) || t('Could not read the service menu state')); return; }
 
   const dis = d.writable ? '' : 'disabled';
   let lockRow;
@@ -3324,7 +3683,7 @@ async function loadServiceMenu() {
     const locked = d.locked;
     lockRow = `<div class="oled-row guarded">
         <div class="oled-main">
-          <div class="oled-name">Unlock<span class="oled-sub">${locked ? 'Showing the cut-down menu' : 'Showing the full menu'}</span></div>
+          <div class="oled-name">Unlock<span class="oled-sub">${locked ? t('Showing the cut-down menu') : t('Showing the full menu')}</span></div>
           <div class="oled-desc">Unlocked, the menu shows every page rather than the handful LG leaves in.
             <strong>The TV has to be switched off and on again before this takes effect.</strong></div>
         </div>
@@ -3358,7 +3717,7 @@ document.addEventListener('click', async ev => {
     return;
   }
   const wantLocked = btn.dataset.next === '1';
-  if (!wantLocked && !confirm('Unlock the full service menu?\n\nIt can change panel calibration and hardware settings, and the TV must be switched off and on again before this takes effect.')) {
+  if (!wantLocked && !confirm(t('Unlock the full service menu?\n\nIt can change panel calibration and hardware settings, and the TV must be switched off and on again before this takes effect.'))) {
     btn.disabled = false;
     return;
   }
@@ -3369,17 +3728,17 @@ document.addEventListener('click', async ev => {
 let oledWritable = true;
 
 const OLED_ROWS = [
-  { key: 'screenShift', name: 'Screen Shift', sub: 'Pixel orbiting',
-    desc: 'Nudges the whole picture by a pixel at a time so a static edge never sits on the same line for long. Costs nothing visually.',
+  { key: 'screenShift', name: t('Screen Shift'), sub: t('Pixel orbiting'),
+    desc: t('Nudges the whole picture by a pixel at a time so a static edge never sits on the same line for long. Costs nothing visually.'),
     kind: 'shift' },
-  { key: 'logoDimming', name: 'Logo Dimming', sub: 'Local dimming',
-    desc: 'Dims only the static logos and banners a channel leaves in a corner, and leaves the rest of the picture alone.',
+  { key: 'logoDimming', name: t('Logo Dimming'), sub: t('Local dimming'),
+    desc: t('Dims only the static logos and banners a channel leaves in a corner, and leaves the rest of the picture alone.'),
     kind: 'logo' },
-  { key: 'tpc', name: 'Temporal Peak Control', sub: 'ASBL', guarded: true,
-    desc: 'Lowers overall brightness when a bright image is held, which is what makes a mostly-white screen fade after a few seconds. Switching it off keeps full brightness and puts more heat through the panel.',
+  { key: 'tpc', name: t('Temporal Peak Control'), sub: 'ASBL', guarded: true,
+    desc: t('Lowers overall brightness when a bright image is held, which is what makes a mostly-white screen fade after a few seconds. Switching it off keeps full brightness and puts more heat through the panel.'),
     kind: 'protection' },
-  { key: 'gsr', name: 'Global Stress Reduction', sub: 'GSR', guarded: true,
-    desc: 'Dims the whole screen when it detects a stationary element such as a HUD or news ticker. Switching it off stops the dimming and leaves that element burning in at full brightness.',
+  { key: 'gsr', name: t('Global Stress Reduction'), sub: 'GSR', guarded: true,
+    desc: t('Dims the whole screen when it detects a stationary element such as a HUD or news ticker. Switching it off stops the dimming and leaves that element burning in at full brightness.'),
     kind: 'protection' }
 ];
 
@@ -3388,7 +3747,7 @@ async function loadOledCare() {
   try {
     d = await (await fetch(api('/api/oledcare'), { cache: 'no-store' })).json();
   } catch (e) { showErr(e.message); return; }
-  if (!d || !d.ok) { showErr((d && d.error) || 'Could not read the panel protections'); return; }
+  if (!d || !d.ok) { showErr((d && d.error) || t('Could not read the panel protections')); return; }
   oledWritable = d.writable;
 
   const state = v => v === null || v === undefined ? null : !!v;
@@ -3398,11 +3757,11 @@ async function loadOledCare() {
     let pill, cls = (r.guarded && d.serviceControls) ? ' guarded' : '';
     if (r.kind === 'shift') {
       const on = /on/i.test(d.screenShift || '');
-      pill = `<button class="pill ${on ? 'good' : 'idle'}" data-oled="screenShift" data-next="${on ? 'off' : 'on'}">${on ? 'On' : 'Off'}</button>`;
+      pill = `<button class="pill ${on ? 'good' : 'idle'}" data-oled="screenShift" data-next="${on ? 'off' : 'on'}">${on ? t('On') : t('Off')}</button>`;
     } else if (r.kind === 'logo') {
       const v = String(d.logoDimming || 'off').toLowerCase();
       const label = v === 'strong' ? 'High' : v.charAt(0).toUpperCase() + v.slice(1);
-      pill = `<button class="pill ${v === 'off' ? 'idle' : 'good'}" data-oled="logoDimming" data-next="${v === 'off' ? 'light' : (v === 'light' ? 'strong' : 'off')}">${label}</button>`;
+      pill = `<button class="pill ${v === 'off' ? 'idle' : 'good'}" data-oled="logoDimming" data-next="${v === 'off' ? t('light') : (v === t('light') ? 'strong' : 'off')}">${label}</button>`;
     } else {
       const on = state(d[r.key]);
       if (on === null) {
@@ -3413,11 +3772,11 @@ async function loadOledCare() {
          * see or change it, which is what this says.
          */
         cls += ' silent';
-        pill = `<span class="oled-none">Not adjustable on this TV</span>`;
+        pill = `<span class="oled-none">${t('Not adjustable on this TV')}</span>`;
       } else if (!d.serviceControls) {
-        pill = `<span class="pill ${on ? 'good' : 'bad'} fixed">${on ? 'On' : 'Off'}</span>`;
+        pill = `<span class="pill ${on ? 'good' : 'bad'} fixed">${on ? t('On') : t('Off')}</span>`;
       } else {
-        pill = `<button class="pill ${on ? 'good' : 'bad'}" data-oled="${r.key}" data-next="${on ? '0' : '1'}">${on ? 'On' : 'Off'}</button>`;
+        pill = `<button class="pill ${on ? 'good' : 'bad'}" data-oled="${r.key}" data-next="${on ? '0' : '1'}">${on ? t('On') : t('Off')}</button>`;
       }
     }
     return `<div class="oled-row${cls}">
@@ -3436,13 +3795,13 @@ async function loadOledCare() {
   q('oc-hours').textContent = d.panelHours === null ? '—' : Number(d.panelHours).toLocaleString();
   q('oc-comp').textContent = hrs(d.hoursUntilComp) === null ? '—' : hrs(d.hoursUntilComp) + ' h';
   q('oc-refr').textContent = hrs(d.hoursUntilRefresher) === null ? '—' : hrs(d.hoursUntilRefresher) + ' h';
-  q('oc-comp-sub').textContent = d.compStatus ? d.compStatus : '4-hour short cycle';
-  q('oc-refr-sub').textContent = d.refresherStatus ? d.refresherStatus : '2,000-hour calibration';
+  q('oc-comp-sub').textContent = d.compStatus ? d.compStatus : t('4-hour short cycle');
+  q('oc-refr-sub').textContent = d.refresherStatus ? d.refresherStatus : t('2,000-hour calibration');
   const cyc = [];
-  if (d.compCycles !== null && d.compCycles !== undefined) cyc.push(`Short cycles completed <span>${d.compCycles.toLocaleString()}</span>`);
-  if (d.refresherCycles !== null && d.refresherCycles !== undefined) cyc.push(`Pixel refresher cycles <span>${d.refresherCycles.toLocaleString()}</span>`);
-  if (d.failureAlerts !== null && d.failureAlerts !== undefined) cyc.push(`Refresher failure alerts <span>${d.failureAlerts.toLocaleString()}</span>`);
-  if (d.gsrStressCount !== null && d.gsrStressCount !== undefined) cyc.push(`GSR stress events <span>${d.gsrStressCount.toLocaleString()}</span>`);
+  if (d.compCycles !== null && d.compCycles !== undefined) cyc.push(t('Short cycles completed') + ' <span>' + d.compCycles.toLocaleString() + '</span>');
+  if (d.refresherCycles !== null && d.refresherCycles !== undefined) cyc.push(t('Pixel refresher cycles') + ' <span>' + d.refresherCycles.toLocaleString() + '</span>');
+  if (d.failureAlerts !== null && d.failureAlerts !== undefined) cyc.push(t('Refresher failure alerts') + ' <span>' + d.failureAlerts.toLocaleString() + '</span>');
+  if (d.gsrStressCount !== null && d.gsrStressCount !== undefined) cyc.push(t('GSR stress events') + ' <span>' + d.gsrStressCount.toLocaleString() + '</span>');
   q('oc-cycles').innerHTML = cyc.map(x => `<div>${x}</div>`).join('');
   q('oled-warn').hidden = !d.serviceControls;
   q('oled-rows').querySelectorAll('button.pill').forEach(b => { b.disabled = !d.writable; });
@@ -3460,7 +3819,7 @@ document.addEventListener('click', async ev => {
     await c('logoDimming', next);
   } else {
     const on = next === '1';
-    if (!on && !confirm('Switching this off removes a protection against burn-in. Continue?')) {
+    if (!on && !confirm(t('Switching this off removes a protection against burn-in. Continue?'))) {
       btn.disabled = false;
       return;
     }
@@ -3475,9 +3834,9 @@ let ssSwitching = false;
 let ssSwitchPoll = null;
 
 const SS_SWITCHING =
-  'The TV is switching screen savers. The screen may stay dark for up to a minute, then it comes back on its own.';
+  t('The TV is switching screen savers. The screen may stay dark for up to a minute, then it comes back on its own.');
 const SS_ONLY_IN_APPS =
-  'The screen saver can only be started while a webOS app is running, not from an HDMI input or Live TV.';
+  t('The screen saver can only be started while a webOS app is running, not from an HDMI input or Live TV.');
 
 /*
  * Marks a button as refused, with the reason. Not `disabled`: a disabled button
@@ -3519,7 +3878,7 @@ async function loadScreensavers() {
   try {
     d = await (await fetch(api('/api/screensaver'))).json();
   } catch (e) { showErr(e.message); return; }
-  if (!d || !d.ok) { showErr((d && d.error) || 'Could not read the screen savers'); return; }
+  if (!d || !d.ok) { showErr((d && d.error) || t('Could not read the screen savers')); return; }
   ssCurrent = d.current;
   ssSwitching = !!d.switching;
   const locked = !d.writable || ssSwitching;
@@ -3547,8 +3906,8 @@ async function loadScreensavers() {
   q('ss-note').textContent = !d.writable
     ? 'Controls are disabled in config.json, so the screen saver cannot be changed from here.'
     : ssSwitching ? SS_SWITCHING
-    : (d.slowSwitch ? 'On this TV, switching to or from the LG default takes about a minute, and the screen goes dark while it does. ' : '')
-      + 'Note: if a firmware update is applied, the screen saver will be restored to the LG default.';
+    : (d.slowSwitch ? t('On this TV, switching to or from the LG default takes about a minute, and the screen goes dark while it does. ') : '')
+      + t('Note: if a firmware update is applied, the screen saver will be restored to the LG default.');
   ssWritable = d.writable;
   // The status poll sets it from here on; this just saves waiting for it.
   if (ssSwitching) refuseScreensaver(q('ss-toggle'), SS_SWITCHING);
@@ -3583,7 +3942,7 @@ document.addEventListener('click', async ev => {
 function togglePrivacy() { showTab(activeTab === 'privacy' ? 'control' : 'privacy'); }
 
 async function privAction(action) {
-  const nice = action === 'resetAdId' ? 'reset the advertising ID' : 'clear ad cookies';
+  const nice = action === 'resetAdId' ? t('reset the advertising ID') : t('clear ad cookies');
   if (!confirm('Really ' + nice + '?')) return;
   try {
     const r = await fetch(api('/api/control'), {
@@ -3591,12 +3950,12 @@ async function privAction(action) {
       body: JSON.stringify({ action })
     });
     const j = await r.json();
-    if (!j.ok) { showErr(j.error || 'Action failed'); return; }
+    if (!j.ok) { showErr(j.error || t('Action failed')); return; }
     if (action === 'resetAdId') {
       // The TV compared old and new for us; neither value came back.
       q('pv-adnote').textContent = j.changed
-        ? 'Reset — the TV issued a new identifier.'
-        : 'Reset was accepted, but the identifier did not change.';
+        ? t('Reset — the TV issued a new identifier.')
+        : t('Reset was accepted, but the identifier did not change.');
     }
   } catch (e) { showErr(e.message); return; }
   setTimeout(loadPrivacy, 800);
@@ -3619,8 +3978,8 @@ function cfgToggle(id) {
 function cfgSyncEnabled() {
   const on = q('cfg-enabled').classList.contains('on');
   q('cfg-enabled-note').textContent = on
-    ? 'The TV publishes telemetry and accepts commands over MQTT.'
-    : 'Nothing is published. The dashboard is unaffected.';
+    ? t('The TV publishes telemetry and accepts commands over MQTT.')
+    : t('Nothing is published. The dashboard is unaffected.');
 }
 
 // Certificate verification is meaningless without TLS, so it follows it.
@@ -3633,16 +3992,16 @@ const CFG_STATE = {
   connected:  { pill: 'good', label: 'Connected' },
   connecting: { pill: 'warn', label: 'Connecting' },
   error:      { pill: 'bad',  label: 'Error' },
-  disabled:   { pill: 'idle', label: 'Off' }
+  disabled:   { pill: 'idle', label: t('Off') }
 };
 
 function cfgAge(ms) {
-  if (ms == null) return 'not yet';
+  if (ms == null) return t('not yet');
   const s = Math.round(ms / 1000);
-  if (s < 5) return 'just now';
-  if (s < 60) return s + 's ago';
-  if (s < 3600) return Math.round(s / 60) + 'm ago';
-  return Math.round(s / 3600) + 'h ago';
+  if (s < 5) return t('just now');
+  if (s < 60) return s + t('s ago');
+  if (s < 3600) return Math.round(s / 60) + t('m ago');
+  return Math.round(s / 3600) + t('h ago');
 }
 
 function renderCfgStatus(st) {
@@ -3651,19 +4010,19 @@ function renderCfgStatus(st) {
   pill.className = 'pill ' + meta.pill;
   pill.textContent = meta.label;
 
-  const broker = st.broker + (st.tls ? ' over TLS' : '');
+  const broker = st.broker + (st.tls ? t(' over TLS') : '');
   let text;
   if (st.state === 'connected') {
-    text = 'Publishing to ' + broker + '. Last telemetry ' + cfgAge(st.lastPublishMs) + '.';
+    text = t('Publishing to ') + broker + t('. Last telemetry ') + cfgAge(st.lastPublishMs) + '.';
   } else if (st.state === 'connecting') {
     text = (st.detail ? st.detail.charAt(0).toUpperCase() + st.detail.slice(1) + '. ' : '') +
            'Reaching ' + broker + '.';
   } else if (st.state === 'error') {
-    text = broker + ': ' + st.detail + '. Retrying every 5s.';
+    text = broker + ': ' + st.detail + t('. Retrying every 5s.');
   } else {
     text = st.detail
       ? st.detail.charAt(0).toUpperCase() + st.detail.slice(1) + '.'
-      : 'The bridge is off. Nothing is published.';
+      : t('The bridge is off. Nothing is published.');
   }
   q('cfg-status-detail').textContent = text;
 }
@@ -3780,7 +4139,7 @@ async function loadSettings() {
   try {
     const r = await fetch(api('/api/settings'));
     const j = await r.json();
-    if (!j.ok) { cfgMsg(j.error || 'Could not read settings', 'bad'); return; }
+    if (!j.ok) { cfgMsg(j.error || t('Could not read settings'), 'bad'); return; }
     if (j.status) renderCfgStatus(j.status);
     const m = j.mqtt, d = j.device;
     q('cfg-host').value = m.host;
@@ -3789,8 +4148,8 @@ async function loadSettings() {
     q('cfg-pass').value = '';
     cfgPasswordSet = m.passwordSet;
     q('cfg-pass-hint').textContent = cfgPasswordSet
-      ? 'A password is set. Leave blank to keep it.'
-      : 'Stored on the TV in plain text.';
+      ? t('A password is set. Leave blank to keep it.')
+      : t('Stored on the TV in plain text.');
     q('cfg-prefix').value = m.topicPrefix;
     q('cfg-disc').value = m.discoveryPrefix;
     q('cfg-devid').value = d.id;
@@ -3807,7 +4166,7 @@ async function loadSettings() {
     renderEntitiesUI();
     q('cfg-save-btn').disabled = !j.writable;
     cfgMsg(j.writable
-      ? 'Saving restarts the server. The dashboard reconnects on its own.'
+      ? t('Saving restarts the server. The dashboard reconnects on its own.')
       : 'Controls are disabled in config.json, so settings cannot be changed from here.');
   } catch (e) { cfgMsg(e.message, 'bad'); }
 }
@@ -3847,7 +4206,7 @@ async function saveSettings() {
       body: JSON.stringify(body)
     });
     const j = await r.json();
-    if (!j.ok) { cfgMsg(j.error || 'Save failed', 'bad'); q('cfg-save-btn').disabled = false; return; }
+    if (!j.ok) { cfgMsg(j.error || t('Save failed'), 'bad'); q('cfg-save-btn').disabled = false; return; }
     cfgMsg('Saved. Restarting...');
     await waitForServer();
   } catch (e) {
@@ -3876,7 +4235,7 @@ async function waitForServer() {
       }
     } catch (e) { /* still down */ }
   }
-  cfgMsg('Saved, but the server did not come back. Check the log on the TV.', 'bad');
+  cfgMsg(t('Saved, but the server did not come back. Check the log on the TV.'), 'bad');
   q('cfg-save-btn').disabled = false;
 }
 
