@@ -1399,14 +1399,13 @@ const q = id => document.getElementById(id);
 (function initTheme() {
   const html = document.documentElement;
   const mq = matchMedia('(prefers-color-scheme: dark)');
+  // Browsers without prefers-color-scheme report the query as "not all";
+  // they default to dark, the theme the dashboard is designed around.
+  const mqSupported = mq.media !== 'not all';
   const urlTheme = new URLSearchParams(location.search).get('theme');
   let setting = urlTheme || localStorage.getItem('theme') || 'auto';
   if (setting !== 'auto' && setting !== 'dark' && setting !== 'light') setting = 'auto';
   apply();
-
-  // Browsers without prefers-color-scheme report the query as "not all";
-  // they default to dark, the theme the dashboard is designed around.
-  const mqSupported = mq.media !== 'not all';
 
   function resolved() {
     if (setting !== 'auto') return setting;
