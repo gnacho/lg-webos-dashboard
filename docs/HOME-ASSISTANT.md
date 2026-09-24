@@ -258,7 +258,7 @@ media_player:
 
 ## Switched off, and back on
 
-When the TV is switched off, its entities stay available and show a switched-off TV: **Power** reads off, readings of what is on screen (active app, player state, video signal, HDMI details) read `Off`, live measurements such as SoC temperature have no value, and settings that still hold, such as picture mode and volume, keep theirs. Entities only go unavailable if the server stops while the TV is on.
+When the TV is switched off, its entities stay available and show a switched-off TV: **Power** reads off, readings of what is on screen (active app, player state, video signal, HDMI details) read `Off`, live measurements such as SoC temperature have no value, and settings that still hold, such as picture mode and volume, keep theirs. Controls such as switches, selects and buttons are greyed out once the TV is asleep in standby, since nothing on the TV could act on them; while it is still up in Active Standby they keep working. Everything goes unavailable only if the server stops while the TV is on.
 
 A TV in standby is asleep and cannot receive commands, so it is switched back on over the network with Wake-on-LAN.
 
@@ -280,8 +280,10 @@ switch:
             data:
               mac: "AA:BB:CC:DD:EE:FF"
           # Wakes a TV that is still up in Active Standby, which ignores the
-          # packet above.
+          # packet above. Unavailable while the TV is asleep, hence the
+          # continue_on_error.
           - action: button.press
+            continue_on_error: true
             target:
               entity_id: button.lg_tv_power_on
         turn_off:
