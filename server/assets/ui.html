@@ -1737,7 +1737,20 @@ const I18N = (function () {
   function t(s) { return Object.prototype.hasOwnProperty.call(dict, s) ? dict[s] : s; }
   function apply() {
     const els = document.querySelectorAll('[data-i18n]');
-    for (let i = 0; i < els.length; i++) els[i].textContent = t(els[i].getAttribute('data-i18n'));
+    for (let i = 0; i < els.length; i++) {
+      const el = els[i];
+      const key = el.getAttribute('data-i18n');
+      const val = t(key);
+      let done = false;
+      for (let j = 0; j < el.childNodes.length; j++) {
+        const n = el.childNodes[j];
+        if (n.nodeType === 3) {
+          const m = n.nodeValue.match(/^(\s*)([\s\S]*?)(\s*)$/);
+          if (m && m[2] === key) { n.nodeValue = m[1] + val + m[3]; done = true; }
+        }
+      }
+      if (!done && !el.querySelector('*')) el.textContent = val;
+    }
   }
   function initLangToggle() {
     const btn = document.getElementById('lang-toggle');
