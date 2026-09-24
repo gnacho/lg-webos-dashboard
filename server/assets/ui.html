@@ -1404,8 +1404,14 @@ const q = id => document.getElementById(id);
   if (setting !== 'auto' && setting !== 'dark' && setting !== 'light') setting = 'auto';
   apply();
 
+  // Browsers without prefers-color-scheme report the query as "not all";
+  // they default to dark, the theme the dashboard is designed around.
+  const mqSupported = mq.media !== 'not all';
+
   function resolved() {
-    return setting === 'auto' ? (mq.matches ? 'dark' : 'light') : setting;
+    if (setting !== 'auto') return setting;
+    if (!mqSupported) return 'dark';
+    return mq.matches ? 'dark' : 'light';
   }
 
   function apply() {
