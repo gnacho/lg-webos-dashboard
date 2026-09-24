@@ -66,8 +66,10 @@
 [data-theme="light"]{
   --bg:#f5f5f5; --fg:0,0,0;
   --edge:rgba(var(--fg),.45);
-  --cool:#3a6fcf; --warm:#b8860b; --cand:#c27a1e;
-  --red:#d42020; --blue:#2050cc; --green:#1a9e44; --purple:#6b20cc;
+  /* Green and amber are also small text (pills, statuses): #1a9e44 and #c27a1e
+     were 3.2:1 on #f5f5f5, under the 4.5:1 AA needs; these are 4.7 and 4.6. */
+  --cool:#3a6fcf; --warm:#b8860b; --cand:#9c6218;
+  --red:#d42020; --blue:#2050cc; --green:#157f37; --purple:#6b20cc;
   --purple-t:#6b20cc;
   --btn-on-fg:#fff;
 }
@@ -100,9 +102,9 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:24p
 .mark{display:flex;flex-direction:column;gap:10px}
 .mark-name{font-family:'Outfit';font-weight:200;font-size:clamp(28px,3.8vw,40px);line-height:.95;
   letter-spacing:-.02em;color:var(--w100)}
-.mark-kind{color:var(--w40);white-space:nowrap}
-.mark-tv{display:flex;align-items:center;gap:12px;font-family:'Manrope';font-weight:500;font-size:11px;
-  letter-spacing:.2em;text-transform:uppercase;color:var(--w50)}
+.mark-kind{color:var(--w50);white-space:nowrap}
+.mark-tv{display:flex;align-items:center;gap:12px;font-family:'Manrope';font-weight:500;font-size:13px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--w60)}
 .mark-tv i{width:22px;height:1px;background:var(--w25)}
 .mark-tv #model{color:var(--w80);letter-spacing:.14em}
 
@@ -123,14 +125,16 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:24p
 
 .src{text-align:right}
 .src .t{font-family:'Outfit';font-weight:300;font-size:clamp(15px,1.8vw,19px);color:var(--w80)}
-.src.dim .t,.src.dim .stream-info{opacity:.55}
+/* Stale while the TV is off, so faded - but only to .8: at .55 the picture
+   mode fell to 3.4:1 on black, under AA for small text. */
+.src.dim .t,.src.dim .stream-info{opacity:.8}
 /* Panel state. A blanked screen is a normal state, not a fault, so it is
    carried by weight rather than by an alarm colour. */
 .st{font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--w60);
     display:flex;align-items:center;gap:7px;justify-content:flex-end;margin-bottom:4px}
 .st i{width:7px;height:7px;border-radius:50%;background:var(--w100);flex:none}
 .st.off i{background:transparent;box-shadow:inset 0 0 0 1px var(--w50)}
-.st.off{color:var(--w50)}
+.st.off{color:var(--w60)}
 .st.comp i{background:var(--cand);box-shadow:0 0 6px var(--cand)}
 .st.comp{color:var(--cand)}
 
@@ -142,13 +146,13 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:24p
   display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;
 }
 .stream-tag{
-  font-family:'Manrope',sans-serif;font-size:10.5px;font-weight:600;
+  font-family:'Manrope',sans-serif;font-size:11px;font-weight:600;
   letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;
   border-radius:2px;line-height:1.2;
 }
 .stream-tag.dv{color:var(--purple-t);border:1px solid rgba(181,123,255,.4);background:rgba(143,48,255,.1)}
 .stream-tag.hdr{color:var(--cand);border:1px solid rgba(255,176,79,.4);background:rgba(255,176,79,.1)}
-.stream-tag.sdr{color:var(--w60);border:1px solid var(--w25);background:var(--w06)}
+.stream-tag.sdr{color:var(--w80);border:1px solid var(--w25);background:var(--w06)}
 .stream-mode{
   font-family:'Manrope',sans-serif;font-size:12px;font-weight:400;
   color:var(--w70);letter-spacing:.02em;
@@ -179,7 +183,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:24p
 .r{display:grid;grid-template-columns:clamp(118px,15%,176px) 1fr 84px;gap:14px;align-items:center;
    padding:15px 0;border-bottom:1px solid var(--w06)}
 .r .v{font-family:'Outfit';font-weight:200;font-size:26px;color:var(--w100);text-align:right;line-height:1}
-.r .v small{font-size:13px;color:var(--w50);margin-left:4px;font-family:'Manrope';font-weight:400}
+.r .v small{font-size:13px;color:var(--w60);margin-left:4px;font-family:'Manrope';font-weight:400}
 .track{height:2px;background:var(--w06);position:relative;overflow:hidden}
 .track b{position:absolute;inset:0 auto 0 0;background:var(--w60);transition:width .45s cubic-bezier(.4,0,.2,1),background .5s ease}
 
@@ -194,7 +198,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:24p
 /* ---- panel block: the second thing worth looking at ---- */
 
 .n{font-family:'Outfit';font-weight:200;font-size:clamp(52px,9vw,90px);color:var(--w100);line-height:.9;letter-spacing:-.02em}
-.n em{font-style:normal;color:var(--w50);font-size:.26em;letter-spacing:.14em;margin-left:12px;font-family:'Manrope';font-weight:500}
+.n em{font-style:normal;color:var(--w60);font-size:.26em;letter-spacing:.14em;margin-left:12px;font-family:'Manrope';font-weight:500}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:26px;margin-top:26px}
 .cols .v{font-family:'Outfit';font-weight:300;font-size:24px;color:var(--w100);margin-top:6px}
 .cols .sub{overflow:visible;text-overflow:clip}
@@ -207,7 +211,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:24p
 .tabs::-webkit-scrollbar{display:none}
 .tabs button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
       font-family:'Manrope';font-weight:500;font-size:12px;letter-spacing:.14em;
-      text-transform:uppercase;color:var(--w50);padding:12px 16px;cursor:pointer;
+      text-transform:uppercase;color:var(--w60);padding:12px 16px;cursor:pointer;
       white-space:nowrap;margin-bottom:-1px}
 .tabs button:hover{color:var(--w80)}
 @media (max-width:560px){ .tabs button{padding:12px 10px;letter-spacing:.1em} }
@@ -291,7 +295,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:24p
 .disc>summary::after{content:'+';font-size:17px;line-height:1;color:var(--w60)}
 .disc[open]>summary::after{content:'\2212'}
 .disc>summary:hover{color:var(--w80)}
-.disc>summary .cur{font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--w60);margin-left:auto;margin-right:12px}
+.disc>summary .cur{font-size:13px;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--w60);margin-left:auto;margin-right:12px}
 .disc .set{margin-top:12px}
 .playback-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:11px}
 .app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:7px;margin-top:11px}
@@ -352,9 +356,9 @@ button.btn-off:hover{color:var(--w60);border-color:var(--w12);background:transpa
 .oled-row:last-child{border-bottom:0}
 .oled-main{max-width:56ch}
 .oled-name{font-size:15px}
-.oled-sub{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--w35);
+.oled-sub{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--w60);
           margin-left:8px}
-.oled-desc{font-size:13px;color:var(--w50);margin-top:7px;line-height:1.5}
+.oled-desc{font-size:13px;color:var(--w60);margin-top:7px;line-height:1.5}
 .oled-ctl{flex:0 0 auto;display:flex;gap:8px;align-items:center}
 .oled-ctl .pill{min-width:96px}
 /* The service-menu ones are set apart: they are the reason the warning below
@@ -368,12 +372,13 @@ button.btn-off:hover{color:var(--w60);border-color:var(--w12);background:transpa
 @media(min-width:1020px){.oled-split{grid-template-columns:minmax(280px,0.8fr) 1.6fr;gap:52px}}
 .oled-split .grp{margin-bottom:18px}
 .oled-split .oled-row:first-child{padding-top:0}
-.oc-cycles{margin-top:26px;font-size:13px;color:var(--w50);line-height:1.8}
+.oc-cycles{margin-top:26px;font-size:13px;color:var(--w60);line-height:1.8}
 .oc-cycles span{color:var(--w80)}
-.oled-none{font-size:12px;letter-spacing:.06em;color:var(--w35);white-space:nowrap}
-/* A protection this set will not talk about is still worth describing, but it
-   should not compete with the ones that answer. */
-.oled-row.silent .oled-name,.oled-row.silent .oled-desc{color:var(--w35)}
+.oled-none{font-size:12px;letter-spacing:.06em;color:var(--w60);white-space:nowrap}
+/* A protection this TV will not talk about is still worth describing, but it
+   should not compete with the ones that answer: its name steps down to the
+   description's shade, the dimmest that still reads at AA. */
+.oled-row.silent .oled-name,.oled-row.silent .oled-desc{color:var(--w60)}
 
 
 /* ---- privacy pane ---- */
@@ -406,10 +411,19 @@ button.btn-off:hover{color:var(--w60);border-color:var(--w12);background:transpa
          border-color:var(--green);cursor:default;opacity:1}
 .ss-name{font-size:15px;letter-spacing:.02em;display:flex;align-items:center;
          justify-content:space-between;gap:12px}
-.ss-desc{font-size:13px;color:var(--w50);margin-top:7px;max-width:46ch}
+.ss-desc{font-size:13px;color:var(--w60);margin-top:7px;max-width:46ch}
 .ss-card.on .ss-name{color:var(--green)}
 .ss-tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
 .ss-level-row{margin-top:22px;max-width:760px}
+/* The choice on the left, and what to do with it - brightness, starting it,
+   the firmware note - beside it on a wide screen rather than below the list. */
+@media(min-width:1020px){
+  .ss-split{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:clamp(36px,4vw,56px);
+            align-items:start}
+  .ss-split .ss-list{max-width:none}
+  .ss-side{margin-top:22px;display:flex;flex-direction:column;gap:22px}
+  #sspane .ss-side>*{margin-top:0}
+}
 .ss-level-lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--w60);
               margin-bottom:8px}
 .ss-level-row .btns{display:flex;gap:10px;max-width:340px}
@@ -457,12 +471,14 @@ button.pill:hover:not([disabled]){background:rgba(var(--fg),.08)}
 button.pill[disabled]{cursor:default;opacity:.45}
 /* A flag the panel will not write keeps its colour - the value still matters -
    but has to read as inert next to 19 rows that respond to a click. */
-.pill.fixed{opacity:.45}
+/* Read-only: a dashed edge says it cannot be pressed. It was 45% opacity,
+   which took an amber pill to 2.9:1 on black and 1.8:1 on the light theme. */
+.pill.fixed{border-style:dashed}
 .pv-g{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--w60);
       margin:22px 0 2px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .pv-g:first-child{margin-top:4px}
-.pv-g .c{letter-spacing:0;text-transform:none;color:var(--w35);font-size:12px;white-space:nowrap}
-.pv-gn{font-size:13px;color:var(--w50);max-width:58ch;margin:4px 0 2px}
+.pv-g .c{letter-spacing:0;text-transform:none;color:var(--w60);font-size:12px;white-space:nowrap}
+.pv-gn{font-size:13px;color:var(--w60);max-width:58ch;margin:4px 0 2px}
 /* The raw flag name, kept visible on rows that now show a friendlier one: it is
    what the API, the TV and the issue tracker all call it. */
 .pv-row .k{color:var(--w35)}
@@ -511,6 +527,17 @@ button.pill[disabled]{cursor:default;opacity:.45}
 .pv-sec{margin-bottom:26px}
 /* The Advanced tab's later sections sit apart from the table above them. */
 .adv-sec{margin-top:clamp(34px,4.5vw,48px)}
+/* The Advanced and Server tabs' settings, side by side in two columns where
+   they fit, so a description sits beside its switch instead of running the
+   full width away from it. Text at the Privacy tab's sizes (15px names, 13px
+   descriptions): the shared 13/12px of .prot-row read small here, where the
+   descriptions carry the substance. */
+#advpane .prot-table,#serverpane .prot-table{display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:clamp(30px,4vw,52px)}
+#advpane .prot-row,#serverpane .prot-row{align-items:flex-start;padding:16px 0}
+#advpane .prot-title,#serverpane .prot-title{font-size:15px;font-weight:500;letter-spacing:0;color:var(--w100)}
+#advpane .prot-desc,#serverpane .prot-desc{font-size:13px;line-height:1.5;margin-top:4px;max-width:none}
+#advpane .prot-status,#serverpane .prot-status{padding-top:2px}
 #pv-adv{margin-top:clamp(36px,5vw,56px)}
 #pv-adv>summary{border-top:0;min-height:0;align-items:center}
 #pv-adv[open]>summary{margin-bottom:22px}
@@ -528,7 +555,7 @@ button.pill[disabled]{cursor:default;opacity:.45}
 }
 .cfg-f input:focus{border-color:var(--w100)}
 .cfg-f input::placeholder{color:var(--w60)}
-.cfg-f .hint{font-size:12px;color:var(--w35);line-height:1.4}
+.cfg-f .hint{font-size:13px;color:var(--w60);line-height:1.45}
 .cfg-toggles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));
   gap:8px;max-width:840px;margin-top:14px}
 /* State and switch to one side, the form it describes to the other. The left
@@ -593,7 +620,7 @@ button.pill[disabled]{cursor:default;opacity:.45}
 @media (max-width:420px){.ports{grid-template-columns:1fr}}
 #err{margin-top:18px;font-size:14px;color:var(--red);border-left:2px solid var(--red);padding:9px 13px;background:var(--w06);display:none}
 @media (max-width:620px){.src{text-align:left}.hero{gap:22px}}
-footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--w50);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--w60);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 /* The separator rides on the link so both appear only once a version is known. */
 #version{text-transform:none;color:inherit;text-decoration:none}
 #version::before{content:'|';margin:0 .55em;opacity:.45}
@@ -632,7 +659,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 }
 .prot-title .prot-sub{font-weight:400;color:var(--w60);font-size:12px}
 .prot-desc{
-  font-size:12px;color:var(--w60);margin-top:3px;line-height:1.45;
+  font-size:13px;color:var(--w60);margin-top:3px;line-height:1.45;
   max-width:62ch;
 }
 .prot-status{flex-shrink:0}
@@ -1056,7 +1083,9 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 </section>
 
 <section class="priv panel" id="sspane" role="tabpanel" hidden>
+  <div class="ss-split">
   <div id="ss-list" class="ss-list"></div>
+  <div class="ss-side">
   <div class="ss-level-row" id="ss-level-row" hidden>
     <div class="ss-level-lbl">Brightness</div>
     <div class="btns" id="ss-level"></div>
@@ -1070,6 +1099,8 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
   </div>
 
   <div class="pv-note" id="ss-note">Note: if a firmware update is applied, the screen saver will be restored to the LG default.</div>
+  </div>
+  </div>
 </section>
 
 <section class="priv panel" id="appspane" role="tabpanel" hidden>
