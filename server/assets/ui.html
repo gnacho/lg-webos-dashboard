@@ -1395,31 +1395,50 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 const K = new URLSearchParams(location.search).get('k') || '';
 const q = id => document.getElementById(id);
 
-// ---- theme toggle (light / dark) ----
+// ---- theme toggle (auto / dark / light) ----
 (function initTheme() {
   const html = document.documentElement;
+  const mq = matchMedia('(prefers-color-scheme: dark)');
   const urlTheme = new URLSearchParams(location.search).get('theme');
-  const stored = urlTheme || localStorage.getItem('theme');
-  const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = stored || (prefersDark ? 'dark' : 'light');
-  applyTheme(theme);
+  let setting = urlTheme || localStorage.getItem('theme') || 'auto';
+  if (setting !== 'auto' && setting !== 'dark' && setting !== 'light') setting = 'auto';
+  apply();
 
-  function applyTheme(t) {
+  function resolved() {
+    return setting === 'auto' ? (mq.matches ? 'dark' : 'light') : setting;
+  }
+
+  function apply() {
+    const t = resolved();
     if (t === 'light') html.setAttribute('data-theme', 'light');
     else html.removeAttribute('data-theme');
     const btn = q('theme-toggle');
-    if (btn) btn.textContent = t === 'light' ? '☀' : '☾';
+    if (btn) {
+      btn.textContent = setting === 'auto' ? '◐' : (t === 'light' ? '☀' : '☾');
+      const label = 'Theme: ' + setting + ' (click for ' + nextSetting() + ')';
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+    }
     const mc = document.querySelector('meta[name="theme-color"]');
     if (mc) mc.content = t === 'light' ? '#f5f5f5' : '#000000';
   }
+
+  function nextSetting() {
+    const order = ['auto', 'dark', 'light'];
+    return order[(order.indexOf(setting) + 1) % order.length];
+  }
+
+  function onMediaChange() { if (setting === 'auto') apply(); }
+  if (mq.addEventListener) mq.addEventListener('change', onMediaChange);
+  else if (mq.addListener) mq.addListener(onMediaChange);   // Chrome <= 68 (webOS 5.x)
 
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('#theme-toggle');
     if (!btn) return;
     e.preventDefault();
-    const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    localStorage.setItem('theme', next);
-    applyTheme(next);
+    setting = nextSetting();
+    localStorage.setItem('theme', setting);
+    apply();
   });
 })();
 const api = p => p + (K ? (p.includes('?') ? '&' : '?') + 'k=' + encodeURIComponent(K) : '');
