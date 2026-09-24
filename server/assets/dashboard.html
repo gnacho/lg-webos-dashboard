@@ -366,7 +366,7 @@ function optionRows(d) {
   if (d.deviceDetection !== undefined) {
     r.push(head('Devices'));
     r.push(toggle('Auto device detection', d.deviceDetection, 'deviceDetection',
-      'Finds a cable or satellite box so the Magic Remote can control it. Newer TVs do it by looking up every address on your home network each time they switch on. Switched off, the scans stop and the remote no longer controls a set-top box.'));
+      'Finds devices to show on the Home Dashboard and control: a set-top box, and smart lights, plugs and switches such as Philips Hue, LIFX and TP-Link Kasa. Newer TVs look up every address on your home network each time they switch on to do it. Switched off, the scans stop and the TV no longer finds devices by itself.'));
   }
   if (lights.standby !== undefined || lights.hasLogo) {
     r.push(head('Front lights'));

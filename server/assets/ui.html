@@ -1026,10 +1026,11 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     <div class="prot-row" id="row-devdetect" hidden>
       <div class="prot-main">
         <div class="prot-title">Auto device detection</div>
-        <div class="prot-desc">Finds a cable or satellite box connected to the TV so the Magic Remote can control it.
-          To do that, newer TVs look up every address on your home network each time they switch on, hundreds of
-          requests that show up on a network-wide ad blocker such as Pi-hole. Switched off, the scans stop and the
-          remote no longer controls a set-top box.</div>
+        <div class="prot-desc">Lets the TV find devices at home that it can show on its Home Dashboard and control:
+          a set-top box on an HDMI input, and smart lights, plugs and switches on your network, such as Philips Hue,
+          LIFX and TP-Link Kasa. On newer TVs it looks up every address on your home network each time the TV switches
+          on, which a network-wide ad blocker such as Pi-hole shows as hundreds of requests. Switched off, the scans
+          stop and the TV no longer finds devices by itself.</div>
       </div>
       <div class="prot-status"><button type="button" class="pill idle" id="btn_devdetect" onclick="toggleDeviceDetection()">&mdash;</button></div>
     </div>

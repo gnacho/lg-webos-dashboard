@@ -1065,8 +1065,9 @@ function collectStats(cb) {
     if (logo !== undefined) out.lgLogo = logo === 'on' || logo === true;
 
   /*
-   * LG's universal control (UEI QuickSet), which looks for a set-top box the
-   * Magic Remote can control. On a C2 (webOS 9.2) its iconnectivity service
+   * LG's device detection (UEI QuickSet), which finds a set-top box and smart
+   * lights, plugs and switches for the Home Dashboard. On a C2 (webOS 9.2) its
+   * iconnectivity service
    * reverse-looks-up every address on the local network, three times over,
    * each time the TV switches on: 759 lookups in two minutes, and none with
    * this off. Asked on its own so a TV without it does not lose the rest.
