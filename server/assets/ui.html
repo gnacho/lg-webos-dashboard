@@ -1409,18 +1409,18 @@ const q = id => document.getElementById(id);
   }
 
   function apply() {
-    const t = resolved();
-    if (t === 'light') html.setAttribute('data-theme', 'light');
+    const mode = resolved();
+    if (mode === 'light') html.setAttribute('data-theme', 'light');
     else html.removeAttribute('data-theme');
     const btn = q('theme-toggle');
     if (btn) {
-      btn.textContent = setting === 'auto' ? '◐' : (t === 'light' ? '☀' : '☾');
+      btn.textContent = setting === 'auto' ? '◐' : (mode === 'light' ? '☀' : '☾');
       const label = 'Theme: ' + setting + ' (click for ' + nextSetting() + ')';
       btn.title = label;
       btn.setAttribute('aria-label', label);
     }
     const mc = document.querySelector('meta[name="theme-color"]');
-    if (mc) mc.content = t === 'light' ? '#f5f5f5' : '#000000';
+    if (mc) mc.content = mode === 'light' ? '#f5f5f5' : '#000000';
   }
 
   function nextSetting() {
