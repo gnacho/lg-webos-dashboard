@@ -499,12 +499,13 @@ button.pill[disabled]{cursor:default;opacity:.45}
 .ps-dot.good{background:var(--green);box-shadow:0 0 0 6px color-mix(in srgb,var(--green) 18%,transparent)}
 .ps-dot.warn{background:var(--cand);box-shadow:0 0 0 6px color-mix(in srgb,var(--cand) 18%,transparent)}
 .ps-head{font-family:'Outfit';font-weight:300;font-size:clamp(26px,3.4vw,36px);color:var(--w100);line-height:1.15}
-/* Overview and Advanced are the tab's two sections, so Advanced's summary
-   takes the same header treatment as Overview (the System tab's col-sec):
-   the thin face over a rule, with the fold control at its right. */
+/* Overview and Advanced are the tab's two sections and share one header: the
+   thin face over a rule, Advanced's with its fold control at the right. */
+.pv-sec,#pv-adv>summary{font-family:'Outfit';font-weight:300;font-size:clamp(20px,2.2vw,25px);
+  letter-spacing:.005em;color:var(--w100);border-bottom:1px solid var(--w25);padding:0 0 12px}
+.pv-sec{margin-bottom:26px}
 #pv-adv{margin-top:clamp(36px,5vw,56px)}
-#pv-adv>summary{font-size:clamp(20px,2.2vw,25px);letter-spacing:.005em;color:var(--w100);
-  border-top:0;border-bottom:1px solid var(--w25);padding:0 0 12px;min-height:0;align-items:center}
+#pv-adv>summary{border-top:0;min-height:0;align-items:center}
 #pv-adv[open]>summary{margin-bottom:22px}
 .pv-note{font-size:13px;color:var(--w60);border-left:2px solid var(--w25);padding:10px 14px;margin:16px 0;max-width:64ch}
 .cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(232px,100%),1fr));
@@ -1036,7 +1037,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <section class="priv panel" id="privpane" role="tabpanel" hidden>
   <div class="lbl">Privacy &amp; data collection</div>
 
-  <div class="col-sec">Overview</div>
+  <div class="pv-sec">Overview</div>
   <div class="ps" id="ps">
     <div class="ps-state">
       <span class="ps-dot" id="ps-dot"></span>
