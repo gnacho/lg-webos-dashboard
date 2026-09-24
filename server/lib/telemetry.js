@@ -1064,6 +1064,13 @@ function collectStats(cb) {
     var logo = ot && ot.settings && ot.settings.lgLogoDisplay;
     if (logo !== undefined) out.lgLogo = logo === 'on' || logo === true;
 
+  // LG's Always Ready: holds the TV in Active Standby when switched off, so
+  // this server stays reachable. A C2 on webOS 9.2 has it; a B8 on 4.4 does not.
+  lunaCachedFn('com.webos.service.settings/getSystemSettings',
+       { category: 'general', keys: ['alwaysOn'] }, 60000, function (gn) {
+    var ar = gn && gn.settings && gn.settings.alwaysOn;
+    if (ar !== undefined) out.alwaysReady = ar === 'on' || ar === true;
+
   lunaCachedFn('com.palm.connectionmanager/getStatus', {}, 60000, function (cm) {
     var w = cm && cm.wifi;
     out.ssid = (w && w.ssid) ? w.ssid : null;
@@ -1184,6 +1191,7 @@ function collectStats(cb) {
         });
       }
     );
+  });
   });
   });
   });

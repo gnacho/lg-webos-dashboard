@@ -746,6 +746,18 @@ function doControl(action, value, cb) {
      * tvpowerd subscribes to the key, so writing it is all LG's menu does.
      * Only on firmware that has it: a C2 on webOS 9.2 does, a B8 on 4.4 does not.
      */
+    /*
+     * LG's Always Ready (general/alwaysOn). Switched off, a C2 then stays in
+     * Active Standby with the screen dark and this server running, where it
+     * otherwise sleeps within ~2 minutes. Measured on an OLED42C24LA: 12.5W,
+     * against about 0W in plain standby.
+     */
+    case 'alwaysReady':
+      var arOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
+      return luna('com.webos.service.settings/setSystemSettings',
+                  { category: 'general', settings: { alwaysOn: arOn ? 'on' : 'off' } },
+                  function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
+
     case 'lgLogo':
       var logoOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
       return luna('com.webos.service.settings/setSystemSettings',
