@@ -2134,6 +2134,9 @@ function setupHomeAssistant() {
     return publishRaw.call(mqttClient, topic, message, retain);
   };
 
+  // Entities that send commands, which need the server awake to receive them.
+  var CONTROL_TYPES = { 'switch': 1, 'select': 1, 'number': 1, 'button': 1, 'text': 1 };
+
   function publishDiscovery() {
     ha.clearRetired(function (topic, payload, retain) {
       mqttClient.publish(topic, payload, retain);
@@ -2176,8 +2179,9 @@ function setupHomeAssistant() {
       conf.unique_id = devId + '_' + item.id;
       conf.device = devInfo;
       conf.availability_topic = statusTopic;
-      // "off" is a switched-off TV, which is still there to report on.
-      conf.availability_template = "{{ 'offline' if value == 'offline' else 'online' }}";
+      conf.availability_template = CONTROL_TYPES[item.type]
+        ? "{{ 'online' if value in ['online', 'off'] else 'offline' }}"
+        : "{{ 'offline' if value == 'offline' else 'online' }}";
       conf.payload_available = 'online';
       conf.payload_not_available = 'offline';
 
@@ -2227,11 +2231,12 @@ function setupHomeAssistant() {
 
   /*
    * Switched off is a state of the TV, not a loss of it. While the TV is off
-   * the status reads "off", which Home Assistant's availability template
-   * counts as available, and the entities show a switched-off TV rather than
-   * going unavailable. The will follows it: the connection drops when the TV
-   * sleeps, and the broker then publishes "off"; while the TV is on, a dropped
-   * connection means the server died, and the will says "offline".
+   * but still up (Active Standby, for Always Ready or panel compensation) the
+   * status reads "off"; once it sleeps the broker publishes the will,
+   * "asleep". Readings stay available through both and show a switched-off
+   * TV. Controls stay available while "off", since the server can still act,
+   * and not while "asleep", when a command would reach nothing. While the TV
+   * is on, a dropped connection means the server died: the will is "offline".
    */
   var tvOff = false;
   function statusPayload() { return tvOff ? 'off' : 'online'; }
@@ -2244,7 +2249,7 @@ function setupHomeAssistant() {
       publishTelemetry();
     }
     // After the publishes above: on a B8 the TV can be asleep within 5s.
-    mqttClient.setWill(off ? 'off' : 'offline');
+    mqttClient.setWill(off ? 'asleep' : 'offline');
   }
   liveState.state.onChange(function (ev) {
     if (ev.group === 'power' && ev.key === 'systemOn' && typeof ev.value === 'boolean') setTvOff(!ev.value);
