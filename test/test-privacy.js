@@ -33,6 +33,31 @@ test('with the ad blocker off the table carries no ad hosts', function () {
   assert.ok(!sinkholed(privacy.adBlockHostsTable('off'), 'ad.lgsmartad.com'));
 });
 
+test('the summary counts what is on, and leaves voice, LG Channels and fixed flags alone', function () {
+  var sm = privacy.simpleSummary({
+    consentWritable: true,
+    consent: { known: [
+      { key: 'acrAllowed', group: 'watching', enabled: true, settable: true, label: 'Screen content recognition' },
+      { key: 'voiceAllowed', group: 'watching', enabled: true, settable: true, label: 'Voice recordings' },
+      { key: 'customAdAllowed', group: 'advertising', enabled: false, settable: true },
+      { key: 'remoteDiagAllowed', group: 'analytics', enabled: true, settable: false },
+      { key: 'chpAllowed', group: 'services', enabled: true, settable: true, label: 'LG Channels' }
+    ], other: [] },
+    acr: { active: true },
+    advertisingId: { available: true, limitTracking: true },
+    adblock: { mode: 'ads' },
+    daemons: [{ name: 'uploadd', label: 'Diagnostics uploader', stoppable: true, running: false },
+              { name: 'rdxd', label: 'Diagnostics collector', stoppable: true, running: true }]
+  });
+  var by = {};
+  sm.areas.forEach(function (a) { by[a.id] = a.items; });
+  assert.strictEqual(by.watching.length, 2);
+  assert.strictEqual(by.ads.length, 0);
+  assert.deepEqual(by.reports.map(function (i) { return i.service; }), ['rdxd']);
+  assert.strictEqual(sm.total, 3);
+  assert.deepEqual(sm.kept, ['Voice recordings', 'LG Channels']);
+});
+
 test('the table still carries the marker the mount is detected by', function () {
   assert.ok(privacy.adBlockHostsTable('ads').indexOf('lg-webos-dashboard') !== -1);
 });

@@ -633,6 +633,32 @@ function doControl(action, value, cb) {
       }
       return privacy.setAdBlock(abMode, function (res) { cb(res); });
 
+    /*
+     * Everything the Privacy tab's summary counts as still on, switched off
+     * one at a time through the actions above. Read fresh, so it acts on the
+     * TV as it is now rather than on what a dashboard last saw. The ad block
+     * goes first: it takes effect at once and covers the rest while they change.
+     */
+    case 'privacyAllOff':
+      privacy.clearCache();
+      return privacy.collectPrivacy(function (p) {
+        var todo = [];
+        p.simple.areas.forEach(function (a) { todo = todo.concat(a.items); });
+        todo.sort(function (x, y) { return (y.action === 'setAdBlock' ? 1 : 0) - (x.action === 'setAdBlock' ? 1 : 0); });
+        var failed = [];
+        (function next(i) {
+          if (i >= todo.length) {
+            privacy.clearCache();
+            return cb({ ok: !failed.length, done: todo.length - failed.length, failed: failed,
+                        error: failed.length ? 'could not switch off: ' + failed.join(', ') : undefined });
+          }
+          var t = todo[i];
+          var after = function (r) { if (!r || !r.ok) failed.push(t.label); next(i + 1); };
+          if (t.service) return servicesModule.toggleService(t.service, true, after);
+          doControl(t.action, t.value, after);
+        })(0);
+      });
+
     case 'resetAdId':
       return privacy.resetAdId(cb);
 

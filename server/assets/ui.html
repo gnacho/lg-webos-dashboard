@@ -475,6 +475,38 @@ button.pill[disabled]{cursor:default;opacity:.45}
 .pv-d[open]>summary::after{content:'\2212'}
 .pv-d>summary .cur{margin-left:auto;font-family:'Manrope';font-weight:500;font-size:12px;
   letter-spacing:.12em;text-transform:uppercase;color:var(--w60);white-space:nowrap}
+.ps{margin:0}
+/* Three areas side by side where they fit, rather than the two-column flow
+   the long lists use, which split a row's "still on" line from its row. */
+#ps-areas{column-count:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:0 clamp(30px,4vw,52px);margin-top:18px}
+/* Read-outs, not controls: no border or box, so nothing here looks pressable
+   beside the outlined toggles further down. The dot repeats the headline's. */
+.ps-area{padding:18px 0 20px;border-top:1px solid var(--w12)}
+.ps-st{display:inline-flex;align-items:center;gap:10px;font-family:'Manrope';font-weight:600;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--green)}
+.ps-st::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;
+  box-shadow:0 0 0 4px color-mix(in srgb,currentColor 20%,transparent)}
+.ps-st.warn{color:var(--cand)}
+.ps-area .n{font-family:'Outfit';font-weight:300;font-size:clamp(19px,2vw,22px);color:var(--w100);
+  line-height:1.2;margin:12px 0 6px}
+.ps-area .d{font-size:13px;line-height:1.5;color:var(--w60);max-width:38ch}
+.ps-area .on{font-size:13px;line-height:1.5;color:var(--w80);margin-top:10px;max-width:38ch}
+.ps-area .on b{font-weight:500;color:var(--cand)}
+.ps-state{display:flex;gap:16px;align-items:center;margin-bottom:10px}
+.ps-dot{width:14px;height:14px;border-radius:50%;flex:none;background:var(--w25);
+  box-shadow:0 0 0 6px color-mix(in srgb,var(--w25) 18%,transparent)}
+.ps-dot.good{background:var(--green);box-shadow:0 0 0 6px color-mix(in srgb,var(--green) 18%,transparent)}
+.ps-dot.warn{background:var(--cand);box-shadow:0 0 0 6px color-mix(in srgb,var(--cand) 18%,transparent)}
+.ps-head{font-family:'Outfit';font-weight:300;font-size:clamp(26px,3.4vw,36px);color:var(--w100);line-height:1.15}
+/* Overview and Advanced are the tab's two sections and share one header: the
+   thin face over a rule, Advanced's with its fold control at the right. */
+.pv-sec,#pv-adv>summary{font-family:'Outfit';font-weight:300;font-size:clamp(20px,2.2vw,25px);
+  letter-spacing:.005em;color:var(--w100);border-bottom:1px solid var(--w25);padding:0 0 12px}
+.pv-sec{margin-bottom:26px}
+#pv-adv{margin-top:clamp(36px,5vw,56px)}
+#pv-adv>summary{border-top:0;min-height:0;align-items:center}
+#pv-adv[open]>summary{margin-bottom:22px}
 .pv-note{font-size:13px;color:var(--w60);border-left:2px solid var(--w25);padding:10px 14px;margin:16px 0;max-width:64ch}
 .cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(232px,100%),1fr));
   gap:18px 20px;max-width:840px;margin-top:4px}
@@ -1012,6 +1044,26 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <section class="priv panel" id="privpane" role="tabpanel" hidden>
   <div class="lbl">Privacy &amp; data collection</div>
 
+  <div class="pv-sec">Overview</div>
+  <div class="ps" id="ps">
+    <div class="ps-state">
+      <span class="ps-dot" id="ps-dot"></span>
+      <div>
+        <div class="ps-head" id="ps-head">&mdash;</div>
+        <div class="pv-sub" id="ps-sub" style="margin-bottom:0;max-width:none"></div>
+      </div>
+    </div>
+    <div class="pv-list" id="ps-areas"></div>
+    <div class="btns" style="max-width:520px;margin-top:18px">
+      <button type="button" id="ps-go" onclick="switchAllOff()">Switch it all off</button>
+    </div>
+    <div class="sub" id="ps-msg" style="margin-top:12px"></div>
+    <div class="pv-note" id="ps-keep" hidden></div>
+  </div>
+
+  <details class="pv-d" id="pv-adv">
+  <summary>Advanced <span class="cur">Every setting, one by one</span></summary>
+
   <div class="pv-top">
     <div>
       <div class="pv-h">Ad &amp; telemetry blocker</div>
@@ -1062,6 +1114,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     <div class="pv-grp"><div class="pv-g"><span>Diagnostics services</span></div><div id="pv-daemons"></div></div>
   </div>
   <div class="pv-note" id="pv-running-note"></div>
+  </details>
   </details>
 </section>
 
@@ -2233,11 +2286,59 @@ function pvRow(name, detail, pillHtml) {
          `<div class="d">${detail}</div></div><div>${pillHtml}</div></div>`;
 }
 
+/*
+ * The short view the tab leads with. The server works out what is still on,
+ * so this and the TV dashboard count the same things; the rest of the tab
+ * sits under Advanced, unchanged.
+ */
+function renderSimple(d) {
+  const sm = d.simple;
+  q('ps').hidden = !sm;
+  if (!sm) return;
+  q('ps-dot').className = 'ps-dot ' + (sm.total ? 'warn' : 'good');
+  q('ps-head').textContent = sm.total
+    ? (sm.total === 1 ? '1 thing is still on' : sm.total + ' things are still on')
+    : 'Tracking and targeted ads are off';
+  q('ps-sub').textContent = sm.total
+    ? 'Switching it all off keeps the TV’s features working. It can be undone under Advanced.'
+    : 'If an LG update switches anything back on, it shows here.';
+  q('ps-areas').innerHTML = sm.areas.map(a => {
+    const n = a.items.length;
+    return `<div class="ps-area">` +
+      `<span class="ps-st${n ? ' warn' : ''}">${n ? n + ' on' : 'Off'}</span>` +
+      `<div class="n">${esc(a.name)}</div><div class="d">${esc(a.detail)}</div>` +
+      (n ? `<div class="on"><b>Still on</b> &middot; ${a.items.map(i => esc(i.label)).join(', ')}</div>` : '') +
+      `</div>`;
+  }).join('');
+  const go = q('ps-go');
+  if (!go.dataset.busy) {
+    go.disabled = !sm.total || d.consentWritable === false;
+    go.textContent = sm.total ? 'Switch it all off' : 'All switched off';
+  }
+  q('ps-keep').hidden = !sm.kept.length;
+  q('ps-keep').textContent = sm.kept.length
+    ? 'Left on because they run features: ' + sm.kept.join(', ') + '. They can be switched off under Advanced.'
+    : '';
+}
+
+async function switchAllOff() {
+  const go = q('ps-go'), msg = q('ps-msg');
+  go.disabled = true;
+  go.dataset.busy = '1';
+  go.textContent = 'Switching off…';
+  msg.textContent = '';
+  const r = await c('privacyAllOff');
+  delete go.dataset.busy;
+  msg.textContent = r && r.ok ? 'Done.' : '';
+  loadPrivacy();
+}
+
 async function loadPrivacy() {
   try {
     const r = await fetch(api('/api/privacy'), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    renderSimple(d);
 
     /* The heading is what this section is about; the description explains it
        and the rows report it. Previously the heading was generic and the ACR
