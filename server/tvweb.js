@@ -1758,9 +1758,26 @@ var server = http.createServer(function (req, res) {
     });
   }
 
-  if (pathname === '/api/apps/rename' && req.method === 'POST') {
+  if (pathname === '/api/apps/add-page' && req.method === 'POST') {
     return readJsonBody(req, res, function (body) {
-      appsModule.renameSavedPage(body && body.launchPointId, body && body.title, function (r) {
+      appsModule.addSavedPage(body && body.address, body && body.title, function (r) {
+        send(res, r && r.ok ? 200 : 400, JSON.stringify(r));
+      });
+    });
+  }
+
+  if (pathname === '/api/apps/remove-page' && req.method === 'POST') {
+    return readJsonBody(req, res, function (body) {
+      appsModule.removeSavedPage(body && body.launchPointId, function (r) {
+        send(res, r && r.ok ? 200 : 400, JSON.stringify(r));
+      });
+    });
+  }
+
+  // /api/apps/rename is the name it had in 0.55.0, when only the title changed.
+  if ((pathname === '/api/apps/edit-page' || pathname === '/api/apps/rename') && req.method === 'POST') {
+    return readJsonBody(req, res, function (body) {
+      appsModule.editSavedPage(body && body.launchPointId, body && body.title, body && body.address, function (r) {
         send(res, r && r.ok ? 200 : 400, JSON.stringify(r));
       });
     });

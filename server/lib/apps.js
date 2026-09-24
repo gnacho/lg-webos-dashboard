@@ -697,10 +697,49 @@ function readPageTitles() {
 }
 
 /*
- * Only the name on the tile changes: the page, its address and the tile's id
- * stay as they were. An empty name puts back the title the browser gave it.
+ * A name the browser could reach: a domain ending in letters (bbc.co.uk), an
+ * IPv4 address (a device on the network) or localhost. "12345" parses as a
+ * host but is none of these.
  */
-function renameSavedPage(launchPointId, title, cb) {
+function isWebHost(host) {
+  var h = String(host).toLowerCase();
+  if (h === 'localhost') return true;
+  var ip = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+  if (ip) return ip.slice(1).every(function (n) { return +n <= 255; });
+  return /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(h);
+}
+
+/*
+ * The address a saved page opens, with https:// assumed when none is given.
+ * Only http(s): anything else would be handed to the browser as written, and
+ * the dashboard is reachable by everyone on the network.
+ */
+function pageUrl(address) {
+  var url = String(address || '').trim();
+  if (url && !/^[a-z][a-z0-9+.-]*:/i.test(url)) url = 'https://' + url;
+  var m = /^https?:\/\/([^\/?#:\s]+)(:\d{1,5})?([\/?#][^\s]*)?$/i.exec(url);
+  if (!m || !isWebHost(m[1])) return null;
+  return { url: url, host: m[1].replace(/^www\./i, '') };
+}
+
+var BAD_ADDRESS = 'enter a web address, such as bbc.co.uk';
+
+function findSavedPage(lpId, cb) {
+  lunaFn('com.webos.applicationManager/listLaunchPoints', {}, function (r) {
+    var lps = (r && r.launchPoints) || [];
+    for (var i = 0; i < lps.length; i++) {
+      if (lps[i].launchPointId === lpId && lps[i].lptype === 'bookmark' && lps[i].id === BROWSER_ID) return cb(lps[i]);
+    }
+    cb(null);
+  });
+}
+
+/*
+ * The tile keeps its id and its place on the home screen: updateLaunchPoint
+ * takes a new title and a new address alike. An empty name puts back the title
+ * the browser gave the page. An address left out is kept as it is.
+ */
+function editSavedPage(launchPointId, title, address, cb) {
   if (!configObj || !configObj.allowControl) {
     return cb({ ok: false, error: 'Control is disabled in server configuration' });
   }
@@ -708,26 +747,74 @@ function renameSavedPage(launchPointId, title, cb) {
   var name = String(title == null ? '' : title).replace(/\s+/g, ' ').trim();
   if (!lpId) return cb({ ok: false, error: 'missing page' });
   if (name.length > 60) return cb({ ok: false, error: 'names are limited to 60 characters' });
+  var target = null;
+  if (address != null && String(address).trim()) {
+    target = pageUrl(address);
+    if (!target) return cb({ ok: false, error: BAD_ADDRESS });
+  }
 
-  lunaFn('com.webos.applicationManager/listLaunchPoints', {}, function (r) {
-    var lp = null, lps = (r && r.launchPoints) || [];
-    for (var i = 0; i < lps.length; i++) {
-      if (lps[i].launchPointId === lpId && lps[i].lptype === 'bookmark' && lps[i].id === BROWSER_ID) lp = lps[i];
-    }
+  findSavedPage(lpId, function (lp) {
     if (!lp) return cb({ ok: false, error: 'that saved page is no longer on the TV' });
-
     var originals = readPageTitles();
     if (!name) {
-      if (!originals.hasOwnProperty(lpId)) return cb({ ok: true, title: lp.title });
-      name = originals[lpId];
+      name = originals.hasOwnProperty(lpId) ? originals[lpId] : lp.title;
       delete originals[lpId];
-    } else if (!originals.hasOwnProperty(lpId)) {
+    } else if (name !== lp.title && !originals.hasOwnProperty(lpId)) {
       originals[lpId] = lp.title;
     }
-    lunaFn('com.webos.applicationManager/updateLaunchPoint', { launchPointId: lpId, title: name }, function (u) {
-      if (!u || u.returnValue !== true) return cb({ ok: false, error: 'the TV would not rename it' });
+    var change = { launchPointId: lpId, title: name };
+    if (target) {
+      var params = {};
+      for (var k in (lp.params || {})) params[k] = lp.params[k];
+      params.target = target.url;
+      change.params = params;
+    }
+    lunaFn('com.webos.applicationManager/updateLaunchPoint', change, function (u) {
+      if (!u || u.returnValue !== true) return cb({ ok: false, error: 'the TV would not change it' });
       try { fs.writeFileSync(PAGE_TITLES_FILE, JSON.stringify(originals), 'utf8'); } catch (e) {}
-      cb({ ok: true, title: name });
+      cb({ ok: true, title: name, address: target ? target.url : undefined });
+    });
+  });
+}
+
+/*
+ * The same tile the browser makes when a page is saved from it.
+ */
+function addSavedPage(address, title, cb) {
+  if (!configObj || !configObj.allowControl) {
+    return cb({ ok: false, error: 'Control is disabled in server configuration' });
+  }
+  var target = pageUrl(address);
+  if (!target) return cb({ ok: false, error: BAD_ADDRESS });
+  var name = String(title == null ? '' : title).replace(/\s+/g, ' ').trim() || target.host;
+  if (name.length > 60) return cb({ ok: false, error: 'names are limited to 60 characters' });
+  lunaFn('com.webos.applicationManager/addLaunchPoint',
+         { id: BROWSER_ID, title: name, params: { target: target.url } }, function (r) {
+    if (!r || r.returnValue !== true) return cb({ ok: false, error: 'the TV would not add it' });
+    cb({ ok: true, launchPointId: r.launchPointId, title: name });
+  });
+}
+
+/*
+ * Takes the tile off the home screen, as the TV's own remove does: the browser
+ * and anything else installed are untouched, and no app is opened or closed.
+ */
+function removeSavedPage(launchPointId, cb) {
+  if (!configObj || !configObj.allowControl) {
+    return cb({ ok: false, error: 'Control is disabled in server configuration' });
+  }
+  var lpId = String(launchPointId || '');
+  if (!lpId) return cb({ ok: false, error: 'missing page' });
+  findSavedPage(lpId, function (lp) {
+    if (!lp) return cb({ ok: false, error: 'that saved page is no longer on the TV' });
+    lunaFn('com.webos.applicationManager/removeLaunchPoint', { launchPointId: lpId }, function (x) {
+      if (!x || x.returnValue !== true) return cb({ ok: false, error: 'the TV would not remove it' });
+      var originals = readPageTitles();
+      if (originals.hasOwnProperty(lpId)) {
+        delete originals[lpId];
+        try { fs.writeFileSync(PAGE_TITLES_FILE, JSON.stringify(originals), 'utf8'); } catch (e) {}
+      }
+      cb({ ok: true });
     });
   });
 }
@@ -797,7 +884,10 @@ module.exports = {
   unhideTile: unhideTile,
   unhideAllTiles: unhideAllTiles,
   uninstallApp: uninstallApp,
-  renameSavedPage: renameSavedPage,
+  editSavedPage: editSavedPage,
+  removeSavedPage: removeSavedPage,
+  addSavedPage: addSavedPage,
+  isWebHost: isWebHost,
   restartSam: restartSam,
   readHiddenAppsList: readHiddenAppsList,
   writeHiddenAppsList: writeHiddenAppsList,
