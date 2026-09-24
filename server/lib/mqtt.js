@@ -143,6 +143,11 @@ MiniMQTT.prototype.connect = function() {
       console.log('mqtt: disconnected from ' + self.opts.host + ':' + (self.opts.port || (self.opts.tls ? 8883 : 1883)));
       self.emit('close');
     }
+    if (self.rewill) {
+      self.rewill = false;
+      self.closing = false;
+      return self.connect();
+    }
     if (!self.closing) self.retryTimer = setTimeout(function() { self.connect(); }, 5000);
   });
 
@@ -260,6 +265,19 @@ MiniMQTT.prototype.disconnect = function() {
       this.client.end();
     } catch (e) {}
   }
+};
+
+/*
+ * A will is fixed when the connection is made, so changing it means a clean
+ * disconnect - which the broker does not answer with the old will - and a new
+ * connection carrying the new one. Unconnected, the next connect takes it up.
+ */
+MiniMQTT.prototype.setWill = function(payload) {
+  if (!this.opts.will || this.opts.will.payload === payload) return;
+  this.opts.will.payload = payload;
+  if (!this.client || !this.connected) return;
+  this.rewill = true;
+  this.disconnect();
 };
 
 MiniMQTT.toBuffer = toBuffer;

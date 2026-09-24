@@ -2176,6 +2176,8 @@ function setupHomeAssistant() {
       conf.unique_id = devId + '_' + item.id;
       conf.device = devInfo;
       conf.availability_topic = statusTopic;
+      // "off" is a switched-off TV, which is still there to report on.
+      conf.availability_template = "{{ 'offline' if value == 'offline' else 'online' }}";
       conf.payload_available = 'online';
       conf.payload_not_available = 'offline';
 
@@ -2223,12 +2225,40 @@ function setupHomeAssistant() {
   var lastPicSig = '';
   var lastCapSig = '';
 
+  /*
+   * Switched off is a state of the TV, not a loss of it. While the TV is off
+   * the status reads "off", which Home Assistant's availability template
+   * counts as available, and the entities show a switched-off TV rather than
+   * going unavailable. The will follows it: the connection drops when the TV
+   * sleeps, and the broker then publishes "off"; while the TV is on, a dropped
+   * connection means the server died, and the will says "offline".
+   */
+  var tvOff = false;
+  function statusPayload() { return tvOff ? 'off' : 'online'; }
+  function setTvOff(off) {
+    if (off === tvOff) return;
+    tvOff = off;
+    console.log('mqtt: TV switched ' + (off ? 'off' : 'on') + ' - status ' + statusPayload());
+    if (mqttClient.connected) {
+      mqttClient.publish(statusTopic, statusPayload(), true);
+      publishTelemetry();
+    }
+    // After the publishes above: on a B8 the TV can be asleep within 5s.
+    mqttClient.setWill(off ? 'off' : 'offline');
+  }
+  liveState.state.onChange(function (ev) {
+    if (ev.group === 'power' && ev.key === 'systemOn' && typeof ev.value === 'boolean') setTvOff(!ev.value);
+  });
+
   function publishTelemetry() {
     if (!mqttClient.connected) return;
-    mqttClient.publish(statusTopic, 'online', true);
+    mqttClient.publish(statusTopic, statusPayload(), true);
     telemetry.collectStats(function(s) {
       liveState.reconcile(s);
-      mqttClient.publish(telemetryTopic, JSON.stringify(s), false);
+      s.tvOff = tvOff;
+      // Retained, so Home Assistant restarting reads the TV as it last was
+      // rather than every entity as unknown.
+      mqttClient.publish(telemetryTopic, JSON.stringify(s), true);
       MQTT_STATUS.lastPublish = Date.now();
       /*
        * The picture modes a set will accept change with the source's dynamic
@@ -2266,7 +2296,7 @@ function setupHomeAssistant() {
     flushMqttErrorRepeats();
     console.log('mqtt: connected to ' + CONFIG.mqtt.host + ':' + mqttClient.opts.port +
                 (useTls ? ' (tls)' : ' (plaintext)'));
-    mqttClient.publish(statusTopic, 'online', true);
+    mqttClient.publish(statusTopic, statusPayload(), true);
     // Republish the in-memory state because broker retention is not assumed.
     stateMqtt.publishSnapshot();
     // Do not assert a guessed screen state before the TV reports one.

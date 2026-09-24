@@ -86,6 +86,7 @@ var HA_ENTITIES = [
   { id: 'restart', type: 'button', name: 'Restart', cat: 'controls' },
   { id: 'power_off', type: 'button', name: 'Power Off', cat: 'controls' },
   { id: 'power_on', type: 'button', name: 'Power On', cat: 'controls' },
+  { id: 'power', type: 'binary_sensor', name: 'Power', cat: 'controls' },
 
   // OLED Care
   { id: 'oled_panel_hours', type: 'sensor', name: 'OLED Panel Hours', cat: 'oled' },
@@ -1083,6 +1084,45 @@ function buildEntities(opts) {
       });
     }
 
+  entities.push({
+    type: 'binary_sensor', id: 'power',
+    payload: {
+      name: 'Power',
+      state_topic: telemetryTopic,
+      value_template: '{{ "OFF" if value_json.tvOff else "ON" }}',
+      device_class: 'power'
+    }
+  });
+
+  return withOffStates(entities);
+}
+
+/*
+ * What each entity shows while the TV is switched off (telemetry's tvOff).
+ * A reading of what is on screen says Off; a live measurement has none, which
+ * is Home Assistant's own way of showing no reading (and leaves a gap in a
+ * graph rather than a flat line); network traffic is zero. Settings and facts
+ * that stay true while the TV is off - picture mode, volume, panel hours,
+ * model - are left showing their last value.
+ */
+var OFF_TEXT = ['active_app', 'play_state', 'dynamic_range', 'video_signal', 'hdmi_link_mode',
+                'hdmi_chroma', 'hdmi_hdcp', 'video_colorimetry', 'panel_dimming'];
+var OFF_NONE = ['soc_temperature', 'cpu_load', 'memory_usage', 'swap_usage', 'wifi_signal', 'gpu_clock',
+                'ambient_light', 'soc_current', 'hdmi_cable_errors'];
+var OFF_ZERO = ['download_rate', 'upload_rate'];
+var OFF_BINARY = ['hdmi_allm', 'hdmi_vrr', 'screen_saver_active', 'oled_asbl_dimmer'];
+
+function withOffStates(entities) {
+  var when = {};
+  OFF_TEXT.forEach(function (id) { when[id] = '"Off"'; });
+  OFF_NONE.forEach(function (id) { when[id] = 'none'; });
+  OFF_ZERO.forEach(function (id) { when[id] = '0'; });
+  OFF_BINARY.forEach(function (id) { when[id] = '"OFF"'; });
+  entities.forEach(function (e) {
+    var t = e.payload && e.payload.value_template;
+    var m = t && when.hasOwnProperty(e.id) && /^\{\{([\s\S]*)\}\}$/.exec(t.trim());
+    if (m) e.payload.value_template = '{{ ' + when[e.id] + ' if value_json.tvOff else (' + m[1].trim() + ') }}';
+  });
   return entities;
 }
 
