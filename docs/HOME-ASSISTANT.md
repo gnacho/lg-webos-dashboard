@@ -47,6 +47,7 @@ Categories:
 | `button` | `button.lg_tv_restart` | Restart TV | Reboots the TV (requires `allowPower: true`) |
 | `button` | `button.lg_tv_power_off` | Power Off TV | Powers off the TV (requires `allowPower: true`) |
 | `button` | `button.lg_tv_power_on` | Power On TV | Turns the TV back on from Active Standby, while it is still finishing panel compensation; in plain standby the bridge is offline (requires `allowPower: true`) |
+| `binary_sensor` | `binary_sensor.lg_tv_power` | Power | On while the TV is on, off while it is switched off or in standby |
 
 Playback reaches an HDMI source over CEC, where the TV has only one key for both halves of play/pause. Pause and Play / Pause behave as expected there; Play toggles rather than only resuming. On the built-in apps all four are exact.
 
@@ -186,7 +187,7 @@ action:
 
 Home Assistant Core does not offer native MQTT discovery for `media_player` platforms. To group all the discovered volume, mute, power, playback, and source controls into a single native media player card:
 
-Add the following to your `configuration.yaml`:
+Add the following to `configuration.yaml`. Power uses the `LG TV` switch from [Switched off, and back on](#switched-off-and-back-on).
 
 ```yaml
 media_player:
@@ -196,13 +197,13 @@ media_player:
     children: []
     commands:
       turn_on:
-        service: wake_on_lan.send_magic_packet
-        data:
-          mac: "YOUR_TV_MAC_ADDRESS"
-      turn_off:
-        service: button.press
+        service: switch.turn_on
         target:
-          entity_id: button.lg_tv_power_off
+          entity_id: switch.lg_tv
+      turn_off:
+        service: switch.turn_off
+        target:
+          entity_id: switch.lg_tv
       volume_up:
         service: mqtt.publish
         data:
@@ -246,7 +247,7 @@ media_player:
         data:
           option: "{{ source }}"
     attributes:
-      state: switch.lg_tv_display_panel
+      state: switch.lg_tv
       is_volume_muted: switch.lg_tv_mute
       volume_level: number.lg_tv_volume
       source: select.lg_tv_input_source
@@ -255,17 +256,41 @@ media_player:
 
 ---
 
-## Wake-on-LAN (WoL) Setup
+## Switched off, and back on
 
-When the TV enters standby mode, the Linux kernel and Node daemon shut down. To turn the TV on directly from Home Assistant:
+When the TV is switched off, its entities stay available and show a switched-off TV: **Power** reads off, readings of what is on screen (active app, player state, video signal, HDMI details) read `Off`, live measurements such as SoC temperature have no value, and settings that still hold, such as picture mode and volume, keep theirs. Controls such as switches, selects and buttons are greyed out once the TV is asleep in standby, since nothing on the TV could act on them; while it is still up in Active Standby they keep working. Everything goes unavailable only if the server stops while the TV is on.
 
-1. Enable **LG QuickStart+** on the TV:
-   * **Settings &rarr; General &rarr; Quick Start+ &rarr; On**
-2. Enable **Mobile TV On / Turn on via Wi-Fi/LAN**:
-   * **Settings &rarr; General &rarr; Mobile TV On &rarr; Turn on via Wi-Fi** (or Wired)
-3. In Home Assistant, add the `wake_on_lan` integration to your `configuration.yaml`:
-   ```yaml
-   wake_on_lan:
-   ```
-4. Now the `wake_on_lan.send_magic_packet` action will wake the TV from deep standby.
+A TV in standby is asleep and cannot receive commands, so it is switched back on over the network with Wake-on-LAN.
 
+1. Turn on **Wake-on-LAN** on the TV: in the web dashboard under **Control &rarr; Advanced**, on the TV dashboard under **System &rarr; Power**, or in LG's menu under **Settings &rarr; General &rarr; Mobile TV On**. Wake-on-LAN works over Ethernet and, on most models, Wi-Fi.
+2. In Home Assistant, add the **Wake on LAN** integration (**Settings &rarr; Devices &amp; services &rarr; Add integration &rarr; Wake on LAN**) with the TV's MAC address. The address is listed under **Connections** on the TV's device page in Home Assistant, and as the **MAC Address** sensor.
+
+This creates a button that wakes the TV from standby. To make one switch that shows whether the TV is on and turns it on or off, add a template switch to `configuration.yaml`, with the TV's MAC address:
+
+```yaml
+switch:
+  - platform: template
+    switches:
+      lg_tv:
+        friendly_name: "LG TV"
+        value_template: "{{ is_state('binary_sensor.lg_tv_power', 'on') }}"
+        turn_on:
+          # Wakes a TV that is asleep in standby.
+          - action: wake_on_lan.send_magic_packet
+            data:
+              mac: "AA:BB:CC:DD:EE:FF"
+          # Wakes a TV that is still up in Active Standby, which ignores the
+          # packet above. Unavailable while the TV is asleep, hence the
+          # continue_on_error.
+          - action: button.press
+            continue_on_error: true
+            target:
+              entity_id: button.lg_tv_power_on
+        turn_off:
+          - action: button.press
+            target:
+              entity_id: button.lg_tv_power_off
+        icon_template: mdi:television
+```
+
+The `wake_on_lan.send_magic_packet` action needs `wake_on_lan:` in `configuration.yaml` if the integration was not added through the UI. Entity IDs start with the device name, `lg_tv` by default; a TV with its own name in `config.json` uses that instead.
