@@ -119,7 +119,7 @@ From a browser you can navigate the TV, change inputs, control playback and volu
 * Screen blanking, sleep timer, on-screen notifications, and power and restart.
 * Opening a web page on the TV: type an address and the TV's browser takes it.
 
-The **Advanced** tab, `/?tab=advanced`, holds the TV's own settings that LG keeps several menus deep: Quick Boot, Wake-on-LAN, the LG logo shown at power on and off, and the front lights. Each setting appears only on TVs that have it. On the TV itself they are under **System**.
+The **Advanced** tab, `/?tab=advanced`, holds the TV's own settings that LG keeps several menus deep: Quick Boot, Wake-on-LAN, the LG logo shown at power on and off, auto device detection, and the front lights. Auto device detection finds devices the TV can show on its Home Dashboard and control, from a set-top box to smart lights, plugs and switches; on newer TVs it does so by looking up every address on the home network each time the TV switches on, and switching it off stops those lookups. Each setting appears only on TVs that have it. On the TV itself they are under **System**.
 
 ### Telemetry and diagnostics
 

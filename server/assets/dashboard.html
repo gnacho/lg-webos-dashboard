@@ -363,6 +363,11 @@ function optionRows(d) {
     logo.press = 'Press OK to ' + (d.lgLogo ? 'hide' : 'show') + ' it';
     r.push(logo);
   }
+  if (d.deviceDetection !== undefined) {
+    r.push(head('Devices'));
+    r.push(toggle('Auto device detection', d.deviceDetection, 'deviceDetection',
+      'Finds devices to show on the Home Dashboard and control: a set-top box, and smart lights, plugs and switches such as Philips Hue, LIFX and TP-Link Kasa. Newer TVs look up every address on your home network each time they switch on to do it. Switched off, the scans stop and the TV no longer finds devices by itself.'));
+  }
   if (lights.standby !== undefined || lights.hasLogo) {
     r.push(head('Front lights'));
     if (lights.standby !== undefined)
@@ -1334,6 +1339,8 @@ function activate() {
       return startSaverAfterRelease();
     case 'quickBoot':
       return send({ action: 'quickBoot', value: !r.on }, r.on ? 'Quick Boot turned off' : 'Quick Boot turned on');
+    case 'deviceDetection':
+      return send({ action: 'deviceDetection', value: !r.on }, r.on ? 'Device detection turned off' : 'Device detection turned on');
     case 'lgLogo':
       return send({ action: 'lgLogo', value: !r.on }, r.on ? 'LG logo hidden' : 'LG logo shown');
     case 'wakeOnLan':

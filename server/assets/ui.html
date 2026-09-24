@@ -1021,6 +1021,21 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     </div>
   </div>
 
+  <div class="pv-sec adv-sec" id="adv-devices" hidden>Devices</div>
+  <div class="prot-table">
+    <div class="prot-row" id="row-devdetect" hidden>
+      <div class="prot-main">
+        <div class="prot-title">Auto device detection</div>
+        <div class="prot-desc">Lets the TV find devices at home that it can show on its Home Dashboard and control:
+          a set-top box on an HDMI input, and smart lights, plugs and switches on your network, such as Philips Hue,
+          LIFX and TP-Link Kasa. On newer TVs it looks up every address on your home network each time the TV switches
+          on, which a network-wide ad blocker such as Pi-hole shows as hundreds of requests. Switched off, the scans
+          stop and the TV no longer finds devices by itself.</div>
+      </div>
+      <div class="prot-status"><button type="button" class="pill idle" id="btn_devdetect" onclick="toggleDeviceDetection()">&mdash;</button></div>
+    </div>
+  </div>
+
   <div class="pv-sec adv-sec">Front lights</div>
   <div class="prot-table">
     <div class="prot-row" id="row-standby" hidden>
@@ -1598,6 +1613,8 @@ async function tick() {
       advPill('standby', 'lt_standby', lights.standby);
       advPill('logolight', 'lt_logo', lights.hasLogo ? lights.logo : undefined);
       if (q('adv-display')) q('adv-display').hidden = d.lgLogo === undefined;
+      advPill('devdetect', 'btn_devdetect', d.deviceDetection);
+      if (q('adv-devices')) q('adv-devices').hidden = d.deviceDetection === undefined;
       if (q('tl-cur')) {
         q('tl-cur').textContent = st === 'off' ? 'Off' : `${st} min`;
       }
@@ -2247,6 +2264,7 @@ function toggleLight(which) { c(which, flip(which === 'standbyLight' ? 'lt_stand
 function toggleQuickBoot() { c('quickBoot', flip('btn_quickboot')); }
 function toggleLgLogo() { c('lgLogo', flip('btn_lglogo')); }
 function toggleWol() { c('wakeOnLan', flip('btn_wol')); }
+function toggleDeviceDetection() { c('deviceDetection', flip('btn_devdetect')); }
 
 function toggleMute() { c('mute', !muted); }
 async function sendToast() {
