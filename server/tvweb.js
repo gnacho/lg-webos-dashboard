@@ -37,6 +37,7 @@ var mqttStateModule = require('./lib/mqtt-state');
 var notifications = require('./lib/notifications');
 var lunaTransport = require('./lib/luna');
 var say = require('./lib/say');
+var lgSettings = require('./lib/lgsettings');
 var msg = say.msg;
 var luna = lunaTransport.call;
 
@@ -313,7 +314,8 @@ function mapPowerState(raw) {
   return { raw: raw || null, label: raw || 'Unknown', systemOn: false, screenOn: false };
 }
 
-privacy.init({ luna: luna, lunaCached: lunaCached, config: CONFIG });
+lgSettings.init({ luna: luna, lunaCached: lunaCached, clearLunaCache: clearLunaCache });
+privacy.init({ luna: luna, lunaCached: lunaCached, config: CONFIG, lgSettings: lgSettings });
 oled.init({ luna: luna, config: CONFIG });
 appsModule.init({ luna: luna, config: CONFIG });
 servicesModule.init({ stateDir: __dirname });
@@ -370,6 +372,7 @@ controls.init({
   services: servicesModule,
   screensavers: screensavers,
   apps: appsModule,
+  lgSettings: lgSettings,
   updater: updater,
   tvApp: tvApp,
   restartSelf: restartSelf,
