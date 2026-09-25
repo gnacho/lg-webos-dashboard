@@ -981,7 +981,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <section class="priv panel" id="svcpane" role="tabpanel" hidden>
   <div id="svc-rows"></div>
 
-  <div class="oled-warn">
+  <div class="oled-warn" data-i18n="The service menu is LG's own engineering menu. It can change panel calibration and hardware settings that the normal menus deliberately keep out of reach, and some of them are not easy to put back. Opening it asks for the PIN on the TV.">
     The service menu is LG's own engineering menu. It can change panel
     calibration and hardware settings that the normal menus deliberately keep
     out of reach, and some of them are not easy to put back. Opening it asks for
@@ -1053,7 +1053,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     <div class="prot-row" id="row-devdetect" hidden>
       <div class="prot-main">
         <div class="prot-title" data-i18n="Auto device detection">Auto device detection</div>
-        <div class="prot-desc">Lets the TV find devices at home that it can show on its Home Dashboard and control:
+        <div class="prot-desc" data-i18n="Lets the TV find devices at home that it can show on its Home Dashboard and control: a set-top box on an HDMI input, and smart lights, plugs and switches on your network, such as Philips Hue, LIFX and TP-Link Kasa. On newer TVs it looks up every address on your home network each time the TV switches on, which a network-wide ad blocker such as Pi-hole shows as hundreds of requests. Switched off, the scans stop and the TV no longer finds devices by itself.">Lets the TV find devices at home that it can show on its Home Dashboard and control:
           a set-top box on an HDMI input, and smart lights, plugs and switches on your network, such as Philips Hue,
           LIFX and TP-Link Kasa. On newer TVs it looks up every address on your home network each time the TV switches
           on, which a network-wide ad blocker such as Pi-hole shows as hundreds of requests. Switched off, the scans
@@ -1109,7 +1109,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <details class="pv-d" id="disc-installed-apps" open>
     <summary data-i18n="Uninstall applications">Uninstall applications <span class="cur" id="apps-installed-summary"></span></summary>
-    <div class="pv-sub">Store downloads and user-installed applications. Click Uninstall to permanently remove the application and free up internal eMMC flash storage space.</div>
+    <div class="pv-sub" data-i18n="Store downloads and user-installed applications. Click Uninstall to permanently remove the application and free up internal eMMC flash storage space.">Store downloads and user-installed applications. Click Uninstall to permanently remove the application and free up internal eMMC flash storage space.</div>
     <div class="prot-table" id="apps-installed-list">
       <div class="sub" style="padding:16px 0" data-i18n="Loading installed apps…">Loading installed apps&hellip;</div>
     </div>
@@ -1123,7 +1123,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
       <button type="button" id="tile-hiding-on" onclick="setTileHiding(true)" data-i18n="On (Custom)">On (Custom)</button>
     </div>
     <div class="sub" id="apps-hidden-count" style="margin-top:8px">&mdash;</div>
-    <div class="pv-note" id="tile-hiding-warning" style="margin-top:12px" hidden><b data-i18n="When enabled:">When enabled:</b> On each cold boot of your TV, this can cause a brief 1-second blank screen or input refresh before returning to your active HDMI source.</div>
+    <div class="pv-note" id="tile-hiding-warning" style="margin-top:12px" hidden><b data-i18n="When enabled:">When enabled:</b><span data-i18n="On each cold boot of your TV, this can cause a brief 1-second blank screen or input refresh before returning to your active HDMI source.">On each cold boot of your TV, this can cause a brief 1-second blank screen or input refresh before returning to your active HDMI source.</span></div>
     <div class="prot-table" id="apps-tiles-list" style="margin-top:16px">
       <div class="sub" style="padding:16px 0" data-i18n="Loading system apps…">Loading system apps&hellip;</div>
     </div>
@@ -1131,7 +1131,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <details class="pv-d" id="disc-system-services" open hidden>
     <summary data-i18n="Turn off background services">Turn off background services <span class="cur" id="apps-services-summary"></span></summary>
-    <div class="pv-sub">Non-essential background services discovered on this TV. Disable unnecessary services to reduce memory usage, eliminate background telemetry, and speed up boot times.</div>
+    <div class="pv-sub" data-i18n="Non-essential background services discovered on this TV. Disable unnecessary services to reduce memory usage, eliminate background telemetry, and speed up boot times.">Non-essential background services discovered on this TV. Disable unnecessary services to reduce memory usage, eliminate background telemetry, and speed up boot times.</div>
     <div class="prot-table" id="apps-services-list">
       <div class="sub" style="padding:16px 0" data-i18n="Loading background services…">Loading background services&hellip;</div>
     </div>
@@ -1139,7 +1139,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <details class="pv-d" id="disc-saved-pages" open>
     <summary data-i18n="Saved web pages">Saved web pages <span class="cur" id="apps-pages-summary"></span></summary>
-    <div class="pv-sub">Web pages on the TV's home screen, each opening in its browser. A page saved
+    <div class="pv-sub" data-i18n="Web pages on the TV's home screen, each opening in its browser. A page saved from the browser takes its whole title as its name, so a long one can be given a shorter name here. Pages can also be added, pointed at a new address, or removed.">Web pages on the TV's home screen, each opening in its browser. A page saved
       from the browser takes its whole title as its name, so a long one can be given a shorter name
       here. Pages can also be added, pointed at a new address, or removed.</div>
     <div class="prot-table" id="apps-pages-list"></div>
@@ -1186,15 +1186,14 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
         <button id="ab-full" onclick="setAdBlockMode('full')" data-i18n="Everything">Everything</button>
       </div>
       <div class="sub" id="adblock-detail" style="margin-top:12px">&mdash;</div>
-      <div class="pv-note"><b data-i18n="Everything">Everything</b> also blocks the servers the Content Store installs
-        from and LG delivers firmware through, so on that setting <b>the app store and updates
-        may stop working</b data-i18n=". To stop only system updates, use">. To stop only system updates, use <b data-i18n="Block TV software updates">Block TV software updates</b>
-        in the Server tab.</div>
+      <div class="pv-note"><b data-i18n="Everything">Everything</b><span data-i18n=" also blocks the servers the Content Store installs from and LG delivers firmware through, so on that setting "> also blocks the servers the Content Store installs
+        from and LG delivers firmware through, so on that setting </span><b data-i18n="the app store and updates may stop working">the app store and updates
+        may stop working</b><span data-i18n=". To stop only system updates, use">. To stop only system updates, use </span><b data-i18n="Block TV software updates">Block TV software updates</b><span data-i18n=" in the Server tab."> in the Server tab.</span></div>
     </div>
 
     <div>
       <div class="pv-h" data-i18n="Advertising identifier">Advertising identifier</div>
-      <div class="pv-sub">A unique ID your TV hands to advertisers so they can recognise it and
+      <div class="pv-sub" data-i18n="A unique ID your TV hands to advertisers so they can recognise it and target ads at you. Resetting it breaks the link to any profile built from past activity.">A unique ID your TV hands to advertisers so they can recognise it and
         target ads at you. Resetting it breaks the link to any profile built from past activity.</div>
       <div id="pv-adid"></div>
       <div id="pv-lmt"></div>
@@ -1208,7 +1207,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <details class="pv-d">
   <summary data-i18n="What LG is allowed to collect">What LG is allowed to collect <span class="cur" id="pv-consent-cur"></span></summary>
-  <div class="pv-sub" data-i18n="These are the agreements recorded on the TV.">These are the agreements recorded on the TV. <b>Off is the private
+  <div class="pv-sub" data-i18n="These are the agreements recorded on the TV.">These are the agreements recorded on the TV. <b data-i18n="Off is the private setting.">Off is the private
     setting.</b></div>
   <div id="pv-consent" class="pv-list"></div>
   <div class="pv-note" id="pv-consent-note"></div>
@@ -1216,7 +1215,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <details class="pv-d">
   <summary data-i18n="What’s running now">What&rsquo;s running now <span class="cur" id="pv-running-cur"></span></summary>
-  <div class="pv-sub">What LG's collection machinery is doing at this moment, which is a
+  <div class="pv-sub" data-i18n="What LG's collection machinery is doing at this moment, which is a separate question from what it is permitted to collect.">What LG's collection machinery is doing at this moment, which is a
     separate question from what it is permitted to collect.</div>
   <!-- The feature and the process behind it are different questions: ACR can
        report "not running" while acr2 is alive, which read as a contradiction
@@ -1251,7 +1250,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 
   <div class="cfg-main">
   <div class="pv-h" style="margin-top:0" data-i18n="Broker">Broker</div>
-  <div class="pv-sub">Where this TV publishes its telemetry. Home Assistant picks the
+  <div class="pv-sub" data-i18n="Where this TV publishes its telemetry. Home Assistant picks the entities up automatically once the broker is reachable.">Where this TV publishes its telemetry. Home Assistant picks the
     entities up automatically once the broker is reachable.</div>
 
   <div class="cfg-grid">
@@ -1281,13 +1280,13 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
     <button id="cfg-tls" onclick="cfgToggle('cfg-tls')" data-i18n="TLS">TLS</button>
     <button id="cfg-verify" onclick="cfgToggle('cfg-verify')" data-i18n="Verify certificate">Verify certificate</button>
   </div>
-  <div class="pv-note">Without TLS the username and password cross the network in
+  <div class="pv-note" data-i18n="Without TLS the username and password cross the network in cleartext. The config file is readable by anything with root on this TV, so use a broker account restricted to these topics rather than a shared one.">Without TLS the username and password cross the network in
     cleartext. The config file is readable by anything with root on this TV, so use a
     broker account restricted to these topics rather than a shared one.</div>
 
   <div class="pv-h" data-i18n="Topics &amp; identity">Topics &amp; identity</div>
-  <div class="pv-sub">Changing the device ID orphans any entities Home Assistant has
-    already created &mdash; it appears as a second device rather than renaming the first.</div>
+  <div class="pv-sub" data-i18n="Changing the device ID orphans any entities Home Assistant has already created - it appears as a second device rather than renaming the first.">Changing the device ID orphans any entities Home Assistant has
+    already created - it appears as a second device rather than renaming the first.</div>
 
   <div class="cfg-grid">
     <div class="cfg-f">
@@ -1318,7 +1317,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
   </div>
 
   <div class="pv-h" data-i18n="Home Assistant entities">Home Assistant entities</div>
-  <div class="pv-sub">Choose which entity categories are published over MQTT Discovery.
+  <div class="pv-sub" data-i18n="Choose which entity categories are published over MQTT Discovery. Disabling an entity removes it cleanly from Home Assistant without leaving an orphaned state.">Choose which entity categories are published over MQTT Discovery.
     Disabling an entity removes it cleanly from Home Assistant without leaving an orphaned state.</div>
 
   <div class="pv-table" id="cfg-ents"></div>
@@ -1359,7 +1358,7 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
       <div class="prot-row">
         <div class="prot-main">
           <div class="prot-title" data-i18n="Block TV software updates">Block TV software updates</div>
-          <div class="prot-desc">Stops the TV installing LG's system updates, which can take away the access
+          <div class="prot-desc" data-i18n="Stops the TV installing LG's system updates, which can take away the access Glasshouse runs with. Apps and Glasshouse's own updates are unaffected.">Stops the TV installing LG's system updates, which can take away the access
             Glasshouse runs with. Apps and Glasshouse's own updates are unaffected.</div>
         </div>
         <div class="prot-status"><button type="button" class="pill idle" id="upd-tvblock" onclick="toggleTvUpdates()">&mdash;</button></div>
@@ -1398,7 +1397,7 @@ const q = id => document.getElementById(id);
 
 // ---- i18n (English fallback, Spanish for es-* browser languages) ----
 const I18N = (function () {
-  const ES = {"LG default":"LG por defecto","The screen saver the TV shipped with.":"El salvapantallas con el que vino la TV.","Clock":"Reloj","A digital clock on black, moving to a new position every minute.":"Un reloj digital sobre negro, que cambia de posición cada minuto.","Starfield":"Campo estelar","A drifting cosmic starscape with occasional shooting stars.":"Un paisaje cósmico a la deriva con ocasionales estrellas fugaces.","Fireworks":"Fuegos artificiales","Bursts of colour on black, a few seconds apart.":"Estallidos de color sobre negro, cada pocos segundos.","Bokeh":"Bokeh","Soft circles of light drifting in and out on black.":"Círculos suaves de luz que aparecen y se desvanecen sobre negro.","Panel vitals":"Vitalidad del panel","The TV's own readings - panel hours, pixel refresher countdown, temperature.":"Las lecturas de la TV: horas de panel, cuenta atrás del refrescado y temperatura.","Screen recognition":"Reconocimiento de pantalla","LG identifying what you watch, to target ads at you.":"LG identifica lo que ves para dirigirte anuncios.","Ad tracking":"Seguimiento publicitario","Advertisers tracking the TV across apps, to target ads at you.":"Anunciantes que rastrean la TV entre apps para dirigirte anuncios.","Usage reports":"Informes de uso","Usage and diagnostic reports sent to LG, and data passed to other companies.":"Informes de uso y diagnóstico enviados a LG, y datos cedidos a otras empresas.","Note: the last two are normally reachable only from the TV's service menu. They exist to protect the panel from burn-in, and switching them off makes permanent image retention more likely. Doing so may affect your warranty.":"Nota: los dos últimos solo son accesibles desde el menú de servicio de la TV. Existen para proteger el panel del burn-in; desactivarlos hace más probable la retención permanente de imagen. Hacerlo puede afectar a la garantía.","Switching off puts the TV into a light sleep rather than shutting it down, so it comes back in under 2 seconds instead of about 25. LG calls this Quick Start+.":"Al apagar, la TV entra en un sueño ligero en lugar de apagarse del todo, así que vuelve en menos de 2 segundos en vez de unos 25. LG lo llama Quick Start+.","Lets Home Assistant, a phone or another device on the network switch the TV on from standby. The Home Assistant guide shows how to set it up. LG calls this Mobile TV On.":"Permite que Home Assistant, un teléfono u otro dispositivo de la red enciendan la TV desde el standby. La guía de Home Assistant explica cómo configurarlo. LG lo llama Mobile TV On.","High":"Intenso","Light":"Suave"," of ":"de"," busy · ":"ocupada ·","active":"activos","kept stopped at boot":"se mantiene detenido al arrancar","Web address, such as bbc.co.uk/weather":"Dirección web, por ejemplo bbc.co.uk/weather","GB used": "GB usados","MUTED": "SILENCIADO","MAINTENANCE": "MANTENIMIENTO","STANDBY": "EN ESPERA"," · Firmware: ": " · Firmware: "," · Bluetooth: ": " · Bluetooth: ","MIN": "MÍN","MAX": "MÁX","LG TV": "TV LG","Glasshouse · ": "Glasshouse · ","Controls are disabled in config.json.": "Los controles están desactivados en config.json.","is out. Update Glasshouse in the Homebrew Channel; the server follows within a few minutes, keeping the config, ad blocker and screen saver.": "disponible. Actualiza Glasshouse en el Homebrew Channel; el servidor se actualiza en unos minutos, conservando la config, el bloqueador y el salvapantallas.","is out. Installing it replaces the server and restarts it; the config, ad blocker and screen saver are kept.": "disponible. Al instalarla se reemplaza y reinicia el servidor; se conservan la config, el bloqueador y el salvapantallas.","Blocked": "Bloqueadas","Allowed": "Permitidas","Install v": "Instalar v","Downloading v": "Descargando v","Installing v": "Instalando v","Added": "Añadida","Adding\\u2026": "Añadiendo\\u2026","Removing\\u2026": "Quitando\\u2026","Take the dashboard off the TV's home screen?": "¿Quitar el panel de la pantalla de inicio de la TV?","Put v": "Poner v"," back?": "¿volver?","Restoring v": "Restaurando v","Sent": "Enviado","Opened": "Abierta","Not readable": "No legible","Unknown": "Desconocido","Could not read the agreements file.": "No se pudo leer el archivo de acuerdos.","— it is not proof LG honours it. Dimmed rows are read-only, each for the": "- no es prueba de que LG lo respete. Las filas atenuadas son de solo lectura, cada una por el","Controls are disabled in config.json, so these can only be read. Change them on the TV": "Los controles están desactivados en config.json; solo se pueden leer. Cambia en la TV","under <b>Settings &rarr; General &rarr; About This TV &rarr; User Agreements</b>.": "en <b>Ajustos &rarr; General &rarr; Acerca de esta TV &rarr; Acuerdos de usuario</b>.","· kept stopped at boot": "· se mantiene detenido al arrancar","A service can be running with its permission switched off — it simply has": "Un servicio puede estar en ejecución con su permiso desactivado - simplemente no tiene","They are switched off in the Apps tab, under Turn off background services, which keeps them": "Se desactivan en la pestaña Apps, en Apagar servicios en segundo plano, que los mantiene","Blocks advertising, tracking and diagnostics addresses. LG's app": "Bloquea direcciones de publicidad, seguimiento y diagnóstico de LG. La app","store and software updates still work.": "store y las actualizaciones de software siguen funcionando.","Also blocks LG's platform services, so the app store and software updates may stop working.": "También bloquea los servicios de plataforma de LG; la app store y las actualizaciones podrían dejar de funcionar.","Could not load privacy information —": "No se pudo cargar la información de privacidad -","errors": "errores","Active": "Activo","Idle": "Inactivo","running ·": "en ejecución ·","MB resident": "MB residente","Measuring\\u2026": "Midiendo\\u2026","% busy ·": "% ocupada ·","Nothing used any CPU over the sample.": "Nada usó CPU durante la muestra.","Web address": "Dirección web","Name": "Nombre","Could not add it:": "No se pudo añadir:","No removable apps found on the TV.": "No hay apps desinstalables en la TV.","No eligible system apps found.": "No hay apps de sistema aplicables.","Hidden": "Oculta","Visible": "Visible","Disabled": "Deshabilitado","Switched off, but something on the TV has started it again.": "Desactivado, pero algo en la TV lo ha vuelto a arrancar.","Updating…": "Actualizando…","Uninstalling…": "Desinstalando…","Uninstall": "Desinstalar","Hiding…": "Ocultando…","Restoring…": "Restaurando…","Locked": "Bloqueado","Unlocked": "Desbloqueado","In use": "En uso","Dim": "Tenue","Bright": "Brillante","Controls are disabled in config.json, so the screen saver cannot be changed from here.": "Los controles están desactivados en config.json; el salvapantallas no se puede cambiar desde aquí.","Reaching": "Contactando","Enabled": "Activado","Saving...": "Guardando...","Saved. Restarting...": "Guardado. Reiniciando...","Applied.": "Aplicado.","Controls are disabled in config.json, so settings cannot be changed from here.": "Los controles están desactivados en config.json; los ajustes no se pueden cambiar desde aquí.","Up ": "Activa ",
+  const ES = {"LG default":"LG por defecto","The screen saver the TV shipped with.":"El salvapantallas con el que vino la TV.","Clock":"Reloj","A digital clock on black, moving to a new position every minute.":"Un reloj digital sobre negro, que cambia de posición cada minuto.","Starfield":"Campo estelar","A drifting cosmic starscape with occasional shooting stars.":"Un paisaje cósmico a la deriva con ocasionales estrellas fugaces.","Fireworks":"Fuegos artificiales","Bursts of colour on black, a few seconds apart.":"Estallidos de color sobre negro, cada pocos segundos.","Bokeh":"Bokeh","Soft circles of light drifting in and out on black.":"Círculos suaves de luz que aparecen y se desvanecen sobre negro.","Panel vitals":"Vitalidad del panel","The TV's own readings - panel hours, pixel refresher countdown, temperature.":"Las lecturas de la TV: horas de panel, cuenta atrás del refrescado y temperatura.","Screen recognition":"Reconocimiento de pantalla","LG identifying what you watch, to target ads at you.":"LG identifica lo que ves para dirigirte anuncios.","Ad tracking":"Seguimiento publicitario","Advertisers tracking the TV across apps, to target ads at you.":"Anunciantes que rastrean la TV entre apps para dirigirte anuncios.","Usage reports":"Informes de uso","Usage and diagnostic reports sent to LG, and data passed to other companies.":"Informes de uso y diagnóstico enviados a LG, y datos cedidos a otras empresas.","Note: the last two are normally reachable only from the TV's service menu. They exist to protect the panel from burn-in, and switching them off makes permanent image retention more likely. Doing so may affect your warranty.":"Nota: los dos últimos solo son accesibles desde el menú de servicio de la TV. Existen para proteger el panel del burn-in; desactivarlos hace más probable la retención permanente de imagen. Hacerlo puede afectar a la garantía.","Switching off puts the TV into a light sleep rather than shutting it down, so it comes back in under 2 seconds instead of about 25. LG calls this Quick Start+.":"Al apagar, la TV entra en un sueño ligero en lugar de apagarse del todo, así que vuelve en menos de 2 segundos en vez de unos 25. LG lo llama Quick Start+.","Lets Home Assistant, a phone or another device on the network switch the TV on from standby. The Home Assistant guide shows how to set it up. LG calls this Mobile TV On.":"Permite que Home Assistant, un teléfono u otro dispositivo de la red enciendan la TV desde el standby. La guía de Home Assistant explica cómo configurarlo. LG lo llama Mobile TV On.","High":"Intenso","Light":"Suave"," of ":"de","busy ·":"ocupada ·","active":"activos","kept stopped at boot":"se mantiene detenido al arrancar","Web address, such as bbc.co.uk/weather":"Dirección web, por ejemplo bbc.co.uk/weather","GB used": "GB usados","MUTED": "SILENCIADO","MAINTENANCE": "MANTENIMIENTO","STANDBY": "EN ESPERA"," · Firmware: ": " · Firmware: "," · Bluetooth: ": " · Bluetooth: ","MIN": "MÍN","MAX": "MÁX","LG TV": "TV LG","Glasshouse · ": "Glasshouse · ","Controls are disabled in config.json.": "Los controles están desactivados en config.json."," is out. Update Glasshouse in the Homebrew Channel; the server follows within a few minutes, keeping the config, ad blocker and screen saver.": " disponible. Actualiza Glasshouse en el Homebrew Channel; el servidor se actualiza en unos minutos, conservando la config, el bloqueador y el salvapantallas."," is out. Installing it replaces the server and restarts it; the config, ad blocker and screen saver are kept.": " disponible. Al instalarla se reemplaza y reinicia el servidor; se conservan la config, el bloqueador y el salvapantallas.","Blocked": "Bloqueadas","Allowed": "Permitidas","Install v": "Instalar v","Downloading v": "Descargando v","Installing v": "Instalando v","Added": "Añadida","Adding\\u2026": "Añadiendo\\u2026","Removing\\u2026": "Quitando\\u2026","Take the dashboard off the TV's home screen?": "¿Quitar el panel de la pantalla de inicio de la TV?","Put v": "Poner v"," back?": "¿volver?","Restoring v": "Restaurando v","Sent": "Enviado","Opened": "Abierta","Not readable": "No legible","Unknown": "Desconocido","Could not read the agreements file.": "No se pudo leer el archivo de acuerdos."," - it is not proof LG honours it. Dimmed rows are read-only, each for the ": "- no es prueba de que LG lo respete. Las filas atenuadas son de solo lectura, cada una por el ","Controls are disabled in config.json, so these can only be read. Change them on the TV ": "Los controles están desactivados en config.json; solo se pueden leer. Cambia en la TV ","under <b>Settings &rarr; General &rarr; About This TV &rarr; User Agreements</b>.": "en <b>Ajustos &rarr; General &rarr; Acerca de esta TV &rarr; Acuerdos de usuario</b>.","· kept stopped at boot": "· se mantiene detenido al arrancar","A service can be running with its permission switched off - it simply has ": "Un servicio puede estar en ejecución con su permiso desactivado - simplemente no tiene ","They are switched off in the Apps tab, under Turn off background services, which keeps them ": "Se desactivan en la pestaña Apps, en Apagar servicios en segundo plano, que los mantiene ","Blocks advertising, tracking and diagnostics addresses. LG's app store and software updates still work.": "Bloquea direcciones de publicidad, seguimiento y diagnóstico de LG. La app store y las actualizaciones de software siguen funcionando.","Also blocks LG's platform services, so the app store and software updates may stop working.": "También bloquea los servicios de plataforma de LG; la app store y las actualizaciones podrían dejar de funcionar.","Could not load privacy information - ": "No se pudo cargar la información de privacidad - ","errors": "errores","Active": "Activo","Idle": "Inactivo","running ·": "en ejecución ·","MB resident": "MB residente","Measuring\\u2026": "Midiendo\\u2026","% busy ·": "% ocupada ·","Nothing used any CPU over the sample.": "Nada usó CPU durante la muestra.","Web address": "Dirección web","Name": "Nombre","Could not add it:": "No se pudo añadir:","No removable apps found on the TV.": "No hay apps desinstalables en la TV.","No eligible system apps found.": "No hay apps de sistema aplicables.","Hidden": "Oculta","Visible": "Visible","Disabled": "Deshabilitado","Switched off, but something on the TV has started it again.": "Desactivado, pero algo en la TV lo ha vuelto a arrancar.","Updating…": "Actualizando…","Uninstalling…": "Desinstalando…","Uninstall": "Desinstalar","Hiding…": "Ocultando…","Restoring…": "Restaurando…","Locked": "Bloqueado","Unlocked": "Desbloqueado","In use": "En uso","Dim": "Tenue","Bright": "Brillante","Controls are disabled in config.json, so the screen saver cannot be changed from here.": "Los controles están desactivados en config.json; el salvapantallas no se puede cambiar desde aquí.","Reaching": "Contactando","Enabled": "Activado","Saving...": "Guardando...","Saved. Restarting...": "Guardado. Reiniciando...","Applied.": "Aplicado.","Controls are disabled in config.json, so settings cannot be changed from here.": "Los controles están desactivados en config.json; los ajustes no se pueden cambiar desde aquí.","Up ": "Activa ",
 "Memory": "Memoria", "Swap": "Swap", "Network": "Red", "Current": "Actual", "Connected": "Conectado", "Connecting": "Conectando", "Error": "Error",
 "web dashboard": "panel web",
 "Control": "Control",
@@ -1724,12 +1723,172 @@ const I18N = (function () {
 "GSR stress events": "Eventos de estrés GSR",
 "\" from the TV?\\n\\nThis will permanently delete the application and its stored data.": "\" de la TV?\n\nEsto borrará permanentemente la aplicación y sus datos guardados.",
 "Unlock the full service menu?\\n\\nIt can change panel calibration and hardware settings, and the TV must be switched off and on again before this takes effect.": "¿Desbloquear el menú de servicio completo?\n\nPuede cambiar la calibración del panel y ajustes de hardware, y la TV debe apagarse y encenderse de nuevo para que surta efecto.",
-" LG\\'s recognition and advertising services are not listed: anything that asks them a ": " Los servicios de reconocimiento y publicidad de LG no se listan: cualquier cosa que los consulte ",
+" LG's recognition and advertising services are not listed: anything that asks them a ": " Los servicios de reconocimiento y publicidad de LG no se listan: cualquier cosa que los consulte ",
 " on": " activos",
 " of ": " de ",
 "Still on": "Aún activos",
 "switching this off also switches off ": "desactivar esto también desactiva ",
-"Uninstall \"": "Desinstalar \""
+"Uninstall \"": "Desinstalar \"",
+"Unlock": "Desbloquear",
+"This TV does not lock its service menu, so there is nothing to unlock. Newer firmware shows a cut-down menu until it is unlocked.": "Esta TV no bloquea su menú de servicio, así que no hay nada que desbloquear. El firmware más reciente muestra un menú reducido hasta que se desbloquea.",
+"Not locked on this TV": "Sin bloqueo en esta TV",
+"Unlocked, the menu shows every page rather than the handful LG leaves in.": "Una vez desbloqueado, el menú muestra todas las páginas en lugar del reducido que deja LG.",
+"The TV has to be switched off and on again before this takes effect.": "La TV debe apagarse y encenderse de nuevo para que surta efecto.",
+"On the TV screen": "En la pantalla de la TV",
+"Puts the menu on the TV, where it asks for a four-digit PIN - usually 0413, though it varies by model and region. EZ Adjust is the picture and panel menu; In Start is the wider one.": "Muestra el menú en la TV, que pide un PIN de cuatro dígitos - normalmente 0413, aunque varía según el modelo y la región. EZ Adjust es el menú de imagen y panel; In Start es el más amplio.",
+"The service menu is LG's own engineering menu. It can change panel calibration and hardware settings that the normal menus deliberately keep out of reach, and some of them are not easy to put back. Opening it asks for the PIN on the TV.": "El menú de servicio es el menú de ingeniería de LG. Puede cambiar la calibración del panel y ajustes de hardware que los menús normales mantienen deliberadamente fuera de alcance, y algunos no son fáciles de dejar como estaban. Al abrirlo, pide el PIN en la TV.",
+"Store downloads and user-installed applications. Click Uninstall to permanently remove the application and free up internal eMMC flash storage space.": "Descargas de la tienda y aplicaciones instaladas por el usuario. Pulsa Desinstalar para eliminar la aplicación de forma permanente y liberar espacio en la memoria flash eMMC interna.",
+"Non-essential background services discovered on this TV. Disable unnecessary services to reduce memory usage, eliminate background telemetry, and speed up boot times.": "Servicios en segundo plano no esenciales detectados en esta TV. Desactiva los innecesarios para reducir el uso de memoria, eliminar telemetría en segundo plano y acelerar los arranques.",
+"Web pages on the TV's home screen, each opening in its browser. A page saved from the browser takes its whole title as its name, so a long one can be given a shorter name here. Pages can also be added, pointed at a new address, or removed.": "Páginas web en la pantalla de inicio de la TV; cada una se abre en su navegador. Una página guardada desde el navegador toma todo su título como nombre, así que uno largo puede acortarse aquí. También se pueden añadir páginas, cambiar su dirección o eliminarlas.",
+"On each cold boot of your TV, this can cause a brief 1-second blank screen or input refresh before returning to your active HDMI source.": "En cada arranque en frío de la TV puede causar un parpadeo de un segundo o un refresco de la entrada antes de volver a la fuente HDMI activa.",
+" also blocks the servers the Content Store installs from and LG delivers firmware through, so on that setting ": " también bloquea los servidores desde los que se instala la Content Store y por los que LG entrega el firmware, así que con ese ajuste ",
+"the app store and updates may stop working": "la tienda de apps y las actualizaciones pueden dejar de funcionar",
+" in the Server tab.": " en la pestaña Servidor.",
+"A unique ID your TV hands to advertisers so they can recognise it and target ads at you. Resetting it breaks the link to any profile built from past activity.": "Un identificador único que la TV entrega a los anunciantes para que la reconozcan y te dirijan anuncios. Restablecerlo rompe el vínculo con cualquier perfil creado a partir de la actividad pasada.",
+"Off is the private setting.": "Desactivado es el ajuste privado.",
+"What LG's collection machinery is doing at this moment, which is a separate question from what it is permitted to collect.": "Lo que el sistema de recogida de LG está haciendo en este momento, una pregunta distinta de lo que se le permite recoger.",
+"Where this TV publishes its telemetry. Home Assistant picks the entities up automatically once the broker is reachable.": "Dónde publica esta TV su telemetría. Home Assistant detecta las entidades automáticamente en cuanto el broker es accesible.",
+"Without TLS the username and password cross the network in cleartext. The config file is readable by anything with root on this TV, so use a broker account restricted to these topics rather than a shared one.": "Sin TLS, el usuario y la contraseña cruzan la red en texto claro. El fichero de configuración es legible por cualquier cosa con root en esta TV, así que usa una cuenta de broker restringida a estos temas en lugar de una compartida.",
+"Changing the device ID orphans any entities Home Assistant has already created - it appears as a second device rather than renaming the first.": "Cambiar el ID del dispositivo deja huérfanas las entidades que Home Assistant ya ha creado - aparece como un segundo dispositivo en lugar de renombrar el primero.",
+"Choose which entity categories are published over MQTT Discovery. Disabling an entity removes it cleanly from Home Assistant without leaving an orphaned state.": "Elige qué categorías de entidades se publican por MQTT Discovery. Desactivar una entidad la elimina de Home Assistant limpiamente, sin dejar un estado huérfano.",
+"Stops the TV installing LG's system updates, which can take away the access Glasshouse runs with. Apps and Glasshouse's own updates are unaffected.": "Impide que la TV instale las actualizaciones del sistema de LG, que pueden eliminar el acceso del que depende Glasshouse. Las apps y las actualizaciones propias de Glasshouse no se ven afectadas.",
+"Lets the TV find devices at home that it can show on its Home Dashboard and control: a set-top box on an HDMI input, and smart lights, plugs and switches on your network, such as Philips Hue, LIFX and TP-Link Kasa. On newer TVs it looks up every address on your home network each time the TV switches on, which a network-wide ad blocker such as Pi-hole shows as hundreds of requests. Switched off, the scans stop and the TV no longer finds devices by itself.": "Permite que la TV encuentre dispositivos en casa que pueda mostrar en su panel de inicio y controlar: un descodificador en una entrada HDMI, y luces, enchufes e interruptores inteligentes de tu red, como Philips Hue, LIFX o TP-Link Kasa. En las TV más recientes consulta cada dirección de tu red doméstica cada vez que la TV se enciende, lo que un bloqueador de anuncios de toda la red como Pi-hole muestra como cientos de peticiones. Desactivado, los escaneos cesan y la TV ya no encuentra dispositivos por sí sola.",
+"Standby": "En espera",
+"Starting up": "Iniciando",
+"Screen Saver": "Salvapantallas",
+": no active input": ": sin entrada activa",
+" running": " en ejecución",
+"Uploads crash logs, diagnostic traces, and usage telemetry to LG servers.": "Sube registros de fallos, trazas de diagnóstico y telemetría de uso a los servidores de LG.",
+"Continuously logs diagnostic traces, core dumps, and event data to internal flash memory.": "Registra continuamente trazas de diagnóstico, volcados de núcleo y datos de eventos en la memoria flash interna.",
+"Scans and indexes on-screen audio/video content for advertising and viewing habit telemetry.": "Explora e indexa el contenido de audio y vídeo de la pantalla para publicidad y telemetría de hábitos de visionado.",
+"Pushes marketing notifications, promotional popups, and feature tips to the TV interface.": "Envía notificaciones de marketing, ventanas promocionales y consejos de funciones a la interfaz de la TV.",
+"Ships system log messages to remote servers.": "Envía mensajes del registro del sistema a servidores remotos.",
+"Screen content recognition": "Reconocimiento del contenido de pantalla",
+"Lets LG identify what is on your screen to profile your viewing": "Permite a LG identificar lo que hay en tu pantalla para perfilar tu visionado",
+"Screen recognition (GDPR consent)": "Reconocimiento de pantalla (consentimiento RGPD)",
+"The EU consent record for screen content recognition": "El registro de consentimiento de la UE para el reconocimiento del contenido de pantalla",
+"Ads based on what you watch": "Anuncios según lo que ves",
+"Uses recognised screen content to target advertising": "Usa el contenido reconocido de la pantalla para dirigir la publicidad",
+"Personalised advertising": "Publicidad personalizada",
+"Tailors the ads shown on your TV to you": "Adapta a ti los anuncios que se muestran en la TV",
+"Personalised advertising (secondary flag)": "Publicidad personalizada (bandera secundaria)",
+"A second personalised-advertising consent record": "Un segundo registro de consentimiento de publicidad personalizada",
+"Advertising cookies": "Cookies de publicidad",
+"Stores cookies used for ad tracking": "Guarda cookies usadas para el seguimiento publicitario",
+"Sharing your data with other companies": "Compartir tus datos con otras empresas",
+"Passes your usage data to third parties": "Cede tus datos de uso a terceros",
+"Additional usage data": "Datos de uso adicionales",
+"Extra analytics beyond what the TV needs to work": "Analítica adicional a lo que la TV necesita para funcionar",
+"Remote diagnostics upload": "Subida de diagnóstico remoto",
+"Lets LG collect and upload diagnostic reports from your TV": "Permite a LG recoger y subir informes de diagnóstico de tu TV",
+"Voice recordings": "Grabaciones de voz",
+"Allows voice data to be collected and processed": "Permite recoger y procesar datos de voz",
+"Voice recordings (secondary flag)": "Grabaciones de voz (bandera secundaria)",
+"A second voice-data consent record": "Un segundo registro de consentimiento de datos de voz",
+"Screen recognition (master consent)": "Reconocimiento de pantalla (consentimiento maestro)",
+"Accepted under Acuerdo de Información de Visionado, Transferencia de información fuera del EEE and Condiciones de uso.": "Aceptado bajo Acuerdo de Información de Visionado, Transferencia de información fuera del EEE y Condiciones de uso.",
+"Accepted under Transferencia de información fuera del EEE and Condiciones de uso.": "Aceptado bajo Transferencia de información fuera del EEE y Condiciones de uso.",
+"Terms of Use and Privacy Policy": "Condiciones de uso y política de privacidad",
+"Acceptance of network use.": "Aceptación del uso de red.",
+"Advertising": "Publicidad",
+"What the TV watches and hears": "Lo que la TV ve y escucha",
+"Analytics and sharing": "Analítica y compartición",
+"LG services": "Servicios de LG",
+"No published description": "Sin descripción publicada",
+"Set on the TV itself": "Activado en la propia TV",
+"The TV records these, but LG publishes nothing about them.": "La TV registra estas opciones, pero LG no publica nada sobre ellas.",
+"Acceptance records rather than collection choices. Changed in the TV's own menus, under Settings › General › About This TV › User Agreements.": "Registros de aceptación, no opciones de recogida. Se cambian en los menús de la propia TV, en Ajustes › General › Acerca de esta TV › Acuerdos de usuario.",
+"Content recognition service": "Servicio de reconocimiento de contenido",
+"Identifies what is on screen": "Identifica lo que hay en pantalla",
+"Advertising service": "Servicio de publicidad",
+"Fetches and displays ads on the TV": "Obtiene y muestra anuncios en la TV",
+"Diagnostics uploader": "Subida de diagnóstico",
+"Sends diagnostic data to LG": "Envía datos de diagnóstico a LG",
+"Diagnostics collector": "Recopilación de diagnóstico",
+"Gathers crash and diagnostic reports": "Reúne informes de fallos y diagnóstico",
+"When on, apps are asked not to use this ID to profile you.": "Activado, se pide a las apps que no usen este ID para perfilarte.",
+"Controls & Media": "Controles y multimedia",
+"OLED Care": "Cuidado OLED",
+"Video & HDMI Signal": "Vídeo y señal HDMI",
+"System & Telemetry": "Sistema y telemetría",
+"Diagnostics & Settings": "Diagnóstico y ajustes",
+"Power, volume, mute, playback buttons, apps, and input sources.": "Botones de energía, volumen, silencio, reproducción, apps y fuentes de entrada.",
+"Panel on-time, pixel refresher countdowns, and burn-in protections.": "Horas de panel, cuentas atrás del refrescado de píxeles y protecciones contra el burn-in.",
+"Active picture mode, dynamic range, refresh rate, VRR, ALLM, and link mode.": "Modo de imagen activo, rango dinámico, tasa de refresco, VRR, ALLM y modo de enlace.",
+"CPU, RAM, swap, SoC temperature, network rates, and storage health.": "CPU, RAM, swap, temperatura del SoC, tasas de red y salud del almacenamiento.",
+"Remote battery, audio format, standby LED, sleep timer, and ad blocker.": "Batería del mando, formato de audio, LED en espera, temporizador de apagado y bloqueador de anuncios.",
+"entity": "entidad",
+"entities": "entidades",
+"of": "de",
+"active": "activas",
+"Display Panel": "Panel de pantalla",
+"Volume": "Volumen",
+"Input Source": "Fuente de entrada",
+"Screen Notification": "Notificación en pantalla",
+"Picture Mode (Select)": "Modo de imagen (selección)",
+"Energy Saving Step": "Paso de ahorro energético",
+"Sound Output": "Salida de sonido",
+"Application": "Aplicación",
+"Active App": "App activa",
+"Player State": "Estado del reproductor",
+"Play": "Reproducir",
+"Pause": "Pausar",
+"Screen Saver": "Salvapantallas",
+"Screen Saver Active": "Salvapantallas activo",
+"Screen Saver Mode": "Modo de salvapantallas",
+"Restart": "Reiniciar",
+"Power Off": "Apagar",
+"Power On": "Encender",
+"OLED Panel Hours": "Horas de panel OLED",
+"Hours Since Compensation": "Horas desde la compensación",
+"Hours Until Compensation": "Horas hasta la compensación",
+"Hours Since Pixel Refresher": "Horas desde el refrescado de píxeles",
+"Hours Until Pixel Refresher": "Horas hasta el refrescado de píxeles",
+"Compensation Status": "Estado de la compensación",
+"Pixel Refresher Status": "Estado del refrescado de píxeles",
+"Logo Luminance Adjustment": "Ajuste de luminancia del logo",
+"Compensation Cycles Completed": "Ciclos de compensación completados",
+"Pixel Refresher Cycles Completed": "Ciclos de refrescado completados",
+"Panel Maintenance Alerts": "Avisos de mantenimiento del panel",
+"ASBL Dimming Active": "Atenuación ASBL activa",
+"Pixel Refresher on Next Standby": "Refrescado de píxeles en el próximo standby",
+"OLED Cell Type": "Tipo de celda OLED",
+"T-Con Firmware": "Firmware T-Con",
+"Dynamic Range": "Rango dinámico",
+"Picture Mode": "Modo de imagen",
+"OLED Light": "Luz OLED",
+"Video Signal": "Señal de vídeo",
+"HDMI Link Mode": "Modo de enlace HDMI",
+"HDMI Chroma": "Croma HDMI",
+"HDMI HDCP Version": "Versión HDCP HDMI",
+"HDMI Cable Physical Errors": "Errores físicos del cable HDMI",
+"HDMI ALLM": "ALLM HDMI",
+"HDMI VRR": "VRR HDMI",
+"Colorimetry": "Colorimetría",
+"Panel Dimming": "Atenuación del panel",
+"Ambient Light": "Luz ambiental",
+"SoC Temperature": "Temperatura SoC",
+"CPU Usage": "Uso de CPU",
+"Memory Usage": "Uso de memoria",
+"Swap Usage": "Uso de swap",
+"Wi-Fi Signal": "Señal Wi-Fi",
+"Download Rate": "Velocidad de descarga",
+"Upload Rate": "Velocidad de subida",
+"Flash Storage Health": "Salud del almacenamiento flash",
+"Flash Wear Level": "Nivel de desgaste flash",
+"SoC Current": "Corriente SoC",
+"SoC Architecture": "Arquitectura SoC",
+"GPU Clock": "Reloj GPU",
+"App Storage Available": "Almacenamiento de apps disponible",
+"MAC Address": "Dirección MAC",
+"Uptime": "Tiempo en marcha",
+"Audio Output": "Salida de audio",
+"Magic Remote Battery": "Batería del Magic Remote",
+"Standby Light": "Luz en espera",
+"Logo Light": "Luz del logo",
+"Ad Blocker": "Bloqueador de anuncios",
+"tvweb Version": "Versión de tvweb",
+"Server Update": "Actualización del servidor"
 };
   let lang = (localStorage.getItem('lang') || navigator.language || 'en').toLowerCase();
   lang = lang.indexOf('es') === 0 ? 'es' : 'en';
@@ -1994,7 +2153,7 @@ async function tick() {
       stEl.querySelector('span').textContent = t('Active Standby');
       q('source').textContent = t('Completing Panel Maintenance (Short Cycle)');
     } else {
-      stEl.querySelector('span').textContent = ps.label || '—';
+      stEl.querySelector('span').textContent = t(ps.label || '—');
       q('source').textContent = d.display_title || d.app_name || d.app || '—';
     }
     q('source').parentElement.classList.toggle('dim', ps.screenOn === false && !isComp);
@@ -2338,7 +2497,7 @@ function renderUpdate(d) {
   const pill = q('upd-pill'), desc = q('upd-desc'), msg = q('upd-msg');
   const inst = q('upd-install'), roll = q('upd-rollback'), chk = q('upd-check');
   updInstalled = d.installed;
-  q('upd-title').textContent = 'Version ' + d.installed;
+  q('upd-title').textContent = t('Version') + ' ' + d.installed;
 
   const working = d.state === 'checking' || d.state === 'downloading' || d.state === 'installing';
   pill.className = 'pill ' + (d.state === 'error' ? 'bad'
@@ -2784,12 +2943,12 @@ function renderSimple(d) {
   q('ps-sub').textContent = sm.total
     ? t('Switching it all off keeps the TV’s features working. It can be undone under Advanced.')
     : t('If an LG update switches anything back on, it shows here.');
-  q('ps-areas').innerHTML = sm.areas.map(a => {
+    q('ps-areas').innerHTML = sm.areas.map(a => {
     const n = a.items.length;
     return `<div class="ps-area">` +
       `<span class="ps-st${n ? ' warn' : ''}">${n ? n + t(' on') : t('Off')}</span>` +
       `<div class="n">${esc(t(a.name))}</div><div class="d">${esc(t(a.detail))}</div>` +
-      (n ? `<div class="on"><b>${t('Still on')}</b> &middot; ${a.items.map(i => esc(i.label)).join(', ')}</div>` : '') +
+      (n ? `<div class="on"><b>${t('Still on')}</b> &middot; ${a.items.map(i => esc(t(i.label))).join(', ')}</div>` : '') +
       `</div>`;
   }).join('');
   const go = q('ps-go');
@@ -2799,7 +2958,7 @@ function renderSimple(d) {
   }
   q('ps-keep').hidden = !sm.kept.length;
   q('ps-keep').textContent = sm.kept.length
-    ? t('Left on because they run features: ') + sm.kept.join(', ') + t('. They can be switched off under Advanced.')
+    ? t('Left on because they run features: ') + sm.kept.map(k => t(k)).join(', ') + t('. They can be switched off under Advanced.')
     : '';
 }
 
@@ -2854,8 +3013,8 @@ async function loadPrivacy() {
       !adOk ? '<span class="pill idle">' + t('Not readable') + '</span>'
             : `<span class="pill ${ad.present ? 'warn' : 'good'}">${ad.present ? t('Assigned') : t('None')}</span>`);
     q('pv-lmt').innerHTML = pvRow(
-      ad.limitTrackingLabel || t('Limit ad tracking'),
-      adOk ? (ad.limitTrackingDetail || '') : t('Read from the same call, so it is unknown here.'),
+      t(ad.limitTrackingLabel || 'Limit ad tracking'),
+      adOk ? t(ad.limitTrackingDetail || '') : t('Read from the same call, so it is unknown here.'),
       !adOk ? '<span class="pill idle">' + t('Unknown') + '</span>'
             : d.consentWritable
             ? `<button class="pill ${ad.limitTracking ? 'good' : 'warn'}" id="lmt-toggle" data-next="${ad.limitTracking ? '0' : '1'}">${ad.limitTracking ? t('On') : t('Off')}</button>`
@@ -2875,11 +3034,11 @@ async function loadPrivacy() {
     const shared = f => f.sharesWith && f.sharesWith.length
       ? ` <span class="k">&middot; ${t('switching this off also switches off ')}${esc(f.sharesWith.join(', '))}</span>`
       : '';
-    const rows = c.known.map(f => ({ ...f, name: f.label, detail: esc(f.detail || '') + shared(f) }))
+    const rows = c.known.map(f => ({ ...f, name: t(f.label), detail: esc(t(f.detail || '')) + shared(f) }))
       .concat((c.other || []).map(f => ({
         ...f,
-        name: f.label || f.key,
-        detail: esc(f.detail || '') + shared(f)
+        name: f.label ? t(f.label) : f.key,
+        detail: esc(t(f.detail || '')) + shared(f)
       })));
     let html = '';
     for (const [id, title, note] of (d.consentGroups || [['unknown', '']])) {
@@ -2903,9 +3062,9 @@ async function loadPrivacy() {
       // A server that predates the grouping sends no titles; one unlabelled
       // heading above every row is worse than none.
       html += '<div class="pv-grp">' +
-              (title ? `<div class="pv-g"><span>${esc(title)}</span>` +
+              (title ? `<div class="pv-g"><span>${esc(t(title))}</span>` +
                        `<span class="c">${on}${t(' of ')}${groupTotal}${t(' on')}</span></div>` : '') +
-              (note ? `<div class="pv-gn">${esc(note)}</div>` : '') +
+              (note ? `<div class="pv-gn">${esc(t(note))}</div>` : '') +
               inGroup.map(f => pvRow(esc(f.name), f.detail, pvConsentPill(f, cw))).join('') +
               (anon.length ? pvRow(
                 anon.length + t(' unidentified flag') + (anon.length === 1 ? '' : 's'),
@@ -2919,7 +3078,7 @@ async function loadPrivacy() {
     q('pv-consent').innerHTML = html || '<div class="d">' + t('Could not read the agreements file.') + '</div>';
     q('pv-consent-note').innerHTML = cw
       ? t('These write to the TV and survive a reboot. A flag records what the TV stored ') +
-        t('— it is not proof LG honours it. Dimmed rows are read-only, each for the ') +
+        t(' - it is not proof LG honours it. Dimmed rows are read-only, each for the ') +
         t('reason given beside it.')
       : t('Controls are disabled in config.json, so these can only be read. Change them on the TV ') +
         t('under <b>Settings &rarr; General &rarr; About This TV &rarr; User Agreements</b>.');
@@ -2929,7 +3088,7 @@ async function loadPrivacy() {
     const allConsent = (c.known || []).concat(c.other || []);
     const onCount = allConsent.filter(f => f.enabled).length;
     q('pv-consent-cur').textContent = allConsent.length
-      ? onCount + ' of ' + allConsent.length + ' on' : '';
+      ? onCount + t(' of ') + allConsent.length + t(' on') : '';
 
     // services
     /*
@@ -2944,7 +3103,7 @@ async function loadPrivacy() {
       const cls = x.running ? 'idle' : 'good';
       const note = x.heldDown ? ' <span class="k">&middot; ' + t('kept stopped at boot') + '</span>' : '';
       const pill = `<span class="pill ${cls}">${state}</span>`;
-      return pvRow(esc(x.label), esc(x.detail) + note, pill);
+      return pvRow(esc(t(x.label)), esc(t(x.detail)) + note, pill);
     }).join('');
     const liveOn = (d.acr && d.acr.active ? 1 : 0) + (d.acr && d.acr.capturing ? 1 : 0);
     const total = dae.length + 2;
@@ -2954,7 +3113,7 @@ async function loadPrivacy() {
      * read-only there and the note must not promise otherwise.
      */
     q('pv-running-note').innerHTML =
-      t('A service can be running with its permission switched off — it simply has ') +
+      t('A service can be running with its permission switched off - it simply has ') +
       t('nothing it is allowed to send. ') +
       t('They are switched off in the Apps tab, under Turn off background services, which keeps them ') +
       t('off across reboots.') +
@@ -2962,7 +3121,7 @@ async function loadPrivacy() {
       t('question starts them, this panel included.');
 
     q('pv-running-cur').textContent = dae.length
-      ? (dae.filter(x => x.running).length + liveOn) + ' of ' + total + ' running' : '';
+      ? (dae.filter(x => x.running).length + liveOn) + t(' of ') + total + t(' running') : '';
 
     // ad blocker
     const ab = d.adblock || {};
@@ -2981,7 +3140,7 @@ async function loadPrivacy() {
       if (btn) btn.classList.toggle('on', m === mode);
     }
   } catch (e) {
-    q('pv-live').innerHTML = '<div class="d">' + t('Could not load privacy information — ') + e.message + '</div>';
+    q('pv-live').innerHTML = '<div class="d">' + t('Could not load privacy information - ') + e.message + '</div>';
   }
 }
 
@@ -3044,7 +3203,7 @@ async function loadHdmi() {
     const r = await fetch(api('/api/hdmi'), { cache: 'no-store' });
     const d = await r.json();
     const act = d.inputs.find(i => i.active);
-    q('hdmi-cur').textContent = act ? ': ' + act.label : ': no active input';
+    q('hdmi-cur').textContent = act ? ': ' + act.label : t(': no active input');
     q('hdmi-grid').innerHTML = d.inputs.map(i => {
       const s = i.signal;
       /* The resolution is the headline; the link figures sit under it. Both
@@ -3426,7 +3585,7 @@ function renderAppsPanel() {
           const id = esc(svc.id);
           const title = esc(svc.title);
           const badge = esc(svc.badge || '');
-          const desc = esc(svc.desc || '');
+          const desc = esc(t(svc.desc || ''));
           const unit = esc(svc.unit || '');
           const isDisabled = !!svc.disabled;
           const stillRunning = isDisabled && svc.running;
@@ -3689,18 +3848,18 @@ async function loadServiceMenu() {
   if (!d.lockable) {
     lockRow = `<div class="oled-row silent">
         <div class="oled-main">
-          <div class="oled-name">Unlock</div>
-          <div class="oled-desc">This TV does not lock its service menu, so there is nothing to unlock. Newer firmware shows a cut-down menu until it is unlocked.</div>
+          <div class="oled-name">${t('Unlock')}</div>
+          <div class="oled-desc">${t('This TV does not lock its service menu, so there is nothing to unlock. Newer firmware shows a cut-down menu until it is unlocked.')}</div>
         </div>
-        <div class="oled-ctl"><span class="oled-none">Not locked on this TV</span></div>
+        <div class="oled-ctl"><span class="oled-none">${t('Not locked on this TV')}</span></div>
       </div>`;
   } else {
     const locked = d.locked;
     lockRow = `<div class="oled-row guarded">
         <div class="oled-main">
-          <div class="oled-name">Unlock<span class="oled-sub">${locked ? t('Showing the cut-down menu') : t('Showing the full menu')}</span></div>
-          <div class="oled-desc">Unlocked, the menu shows every page rather than the handful LG leaves in.
-            <strong>The TV has to be switched off and on again before this takes effect.</strong></div>
+          <div class="oled-name">${t('Unlock')}<span class="oled-sub">${locked ? t('Showing the cut-down menu') : t('Showing the full menu')}</span></div>
+          <div class="oled-desc">${t('Unlocked, the menu shows every page rather than the handful LG leaves in.')}
+            <strong>${t('The TV has to be switched off and on again before this takes effect.')}</strong></div>
         </div>
         <div class="oled-ctl">
           <button class="pill ${locked ? 'bad' : 'good'}" data-svc="lock" data-next="${locked ? '0' : '1'}" ${dis}>${locked ? t('Locked') : t('Unlocked')}</button>
@@ -3711,8 +3870,8 @@ async function loadServiceMenu() {
   q('svc-rows').innerHTML = lockRow + `
     <div class="oled-row">
       <div class="oled-main">
-        <div class="oled-name">Open<span class="oled-sub">On the TV screen</span></div>
-        <div class="oled-desc">Puts the menu on the TV, where it asks for a four-digit PIN &mdash; usually 0413, though it varies by model and region. EZ Adjust is the picture and panel menu; In Start is the wider one.</div>
+        <div class="oled-name">${t('Open')}<span class="oled-sub">${t('On the TV screen')}</span></div>
+        <div class="oled-desc">${t('Puts the menu on the TV, where it asks for a four-digit PIN - usually 0413, though it varies by model and region. EZ Adjust is the picture and panel menu; In Start is the wider one.')}</div>
       </div>
       <div class="oled-ctl">
         <button class="pill" data-svc="open" data-menu="ezAdjust" ${dis}>EZ Adjust</button>
@@ -4094,8 +4253,8 @@ function renderEntitiesUI() {
     entsHtml += `
       <div class="pv-row">
         <div>
-          <div class="n">${esc(cat.name)} <span class="cnt">(${count} ${count === 1 ? 'entity' : 'entities'})</span></div>
-          <div class="d">${esc(cat.desc)}</div>
+          <div class="n">${esc(t(cat.name))} <span class="cnt">(${count} ${count === 1 ? t('entity') : t('entities')})</span></div>
+          <div class="d">${esc(t(cat.desc))}</div>
         </div>
         <button type="button" class="pill ${catOn ? 'good' : 'idle'}" id="cfg-cat-${cat.id}" onclick="cfgToggleCat('${cat.id}')">
           ${catOn ? t('Enabled') : t('Disabled')}
@@ -4111,7 +4270,7 @@ function renderEntitiesUI() {
       const catEnts = cfgCatalogue.filter(e => e.cat === cat.id);
       if (!catEnts.length) continue;
       const catOn = cfgEntities[cat.id] !== false;
-      subHtml += `<div class="pv-g" style="margin-top:16px"><span>${esc(cat.name)}</span></div>`;
+      subHtml += `<div class="pv-g" style="margin-top:16px"><span>${esc(t(cat.name))}</span></div>`;
       subHtml += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:4px 12px;margin-top:8px">`;
       for (const e of catEnts) {
         const isDis = disabledSet.has(e.id) || disabledSet.has(e.type + '.' + e.id);
@@ -4119,7 +4278,7 @@ function renderEntitiesUI() {
         subHtml += `
           <label class="cfg-ent-chk${catOn ? '' : ' dis'}">
             <input type="checkbox" id="cfg-ent-${e.id}" data-id="${esc(e.id)}" data-type="${esc(e.type)}" data-cat="${esc(cat.id)}" ${checked ? 'checked' : ''} ${catOn ? '' : 'disabled'} onchange="cfgToggleEnt(this)">
-            <span class="ent-name">${esc(e.name)} <span class="ent-type">${esc(e.type)}</span></span>
+            <span class="ent-name">${esc(t(e.name))} <span class="ent-type">${esc(e.type)}</span></span>
           </label>`;
       }
       subHtml += `</div>`;
@@ -4128,7 +4287,7 @@ function renderEntitiesUI() {
   }
 
   const countEl = q('cfg-fine-count');
-  if (countEl) countEl.textContent = `${totalActive} of ${totalEntities} active`;
+  if (countEl) countEl.textContent = `${totalActive} ${t('of')} ${totalEntities} ${t('active')}`;
 }
 
 function cfgToggleCat(catId) {
