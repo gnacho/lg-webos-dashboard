@@ -753,6 +753,33 @@ function doControl(action, value, cb) {
                   { category: 'other', settings: { ueiEnable: ddOn ? 'on' : 'off' } },
                   function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
 
+    /*
+     * LG's Always-on (general/alwaysOn), not its Always Ready, which is
+     * lifeOnScreenMode. Switched off, a C2 then stays in Active Standby with
+     * the screen dark and this server running, where it otherwise sleeps
+     * within ~2 minutes. Measured on an OLED42C24LA: 12.5W, against about 0W
+     * in plain standby.
+     */
+    case 'alwaysReady':
+      var arOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
+      return luna('com.webos.service.settings/setSystemSettings',
+                  { category: 'general', settings: { alwaysOn: arOn ? 'on' : 'off' } },
+                  function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
+
+    /*
+     * The five nightly hours when LG suspends Always-on, and a switched-off
+     * TV sleeps fully. LG's own menu moves only the start and keeps the end five
+     * hours later, "to keep your TV in the optimal condition"; so does this.
+     */
+    case 'alwaysReadyOffStart':
+      var offHour = parseInt(String(value).split(':')[0], 10);
+      if (!(offHour >= 0 && offHour <= 23)) return cb({ ok: false, error: 'the start must be an hour from 0 to 23' });
+      return luna('com.webos.service.settings/setSystemSettings',
+                  { category: 'general', settings: {
+                    alwaysOnDisableStartHour: String(offHour), alwaysOnDisableStartMinute: '0',
+                    alwaysOnDisableEndHour: String((offHour + 5) % 24), alwaysOnDisableEndMinute: '0' } },
+                  function (r) { telemetry.clearCache(); cb({ ok: !!(r && r.returnValue) }); });
+
     case 'lgLogo':
       var logoOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
       return luna('com.webos.service.settings/setSystemSettings',
@@ -846,9 +873,9 @@ function doControl(action, value, cb) {
 
     /*
      * Only reachable while the TV is in Active Standby (finishing panel
-     * compensation, or held there by Always Ready); in plain standby the B8
+     * compensation, or held there by Always-on); in plain standby the B8
      * drops off the network within 5s and nothing here runs. power/powerOn
-     * with a reason is what brings a C2 (webOS 9.2) back from Always Ready;
+     * with a reason is what brings a C2 (webOS 9.2) back from Always-on;
      * cancelPowerOff only reverses a power-off still in progress, and
      * turnOnScreen only undoes screenOff. Those two remain for firmware
      * without powerOn.
@@ -1641,7 +1668,20 @@ var server = http.createServer(function (req, res) {
   // First-run setup and the TV's own settings. The TV only: see fromTV.
   if (pathname === '/api/setup') {
     if (!fromTV(req)) return send(res, 403, JSON.stringify({ ok: false, error: 'only from the TV itself' }));
-    if (req.method === 'GET') return send(res, 200, JSON.stringify(setupState()));
+    if (req.method === 'GET') {
+      /*
+       * Setup offers Always-on only on a TV that has it (a C2 on webOS 9.2
+       * does, a B8 on 4.4 does not), so the TV is asked here; a TV without the
+       * setting answers with an error, and the step is left out.
+       */
+      return luna('com.webos.service.settings/getSystemSettings',
+                  { category: 'general', keys: ['alwaysOn'] }, function (r) {
+        var st = setupState();
+        var ar = r && r.returnValue !== false && r.settings && r.settings.alwaysOn;
+        if (ar !== undefined && ar !== null) st.alwaysReady = ar === 'on' || ar === true;
+        send(res, 200, JSON.stringify(st));
+      });
+    }
     if (req.method !== 'POST') return send(res, 405, JSON.stringify({ ok: false, error: 'GET or POST' }));
     if (String(req.headers['content-type'] || '').toLowerCase().indexOf('application/json') !== 0) {
       return send(res, 415, JSON.stringify({ ok: false, error: 'Content-Type must be application/json' }));
@@ -1664,6 +1704,11 @@ var server = http.createServer(function (req, res) {
           console.log('setup: dashboard ' + (open ? 'opened to the network' : 'closed to this TV') + ', restarting');
           send(res, 200, JSON.stringify({ ok: true, restarting: true }));
           setTimeout(function () { restartSelf(); }, 250);
+        });
+      }
+      if (a.action === 'alwaysReady') {
+        return doControl('alwaysReady', !!a.on, function (r) {
+          send(res, r && r.ok ? 200 : 500, JSON.stringify(r && r.ok ? { ok: true } : { ok: false, error: 'the TV would not change it' }));
         });
       }
       if (a.action === 'handoff') {
@@ -2238,7 +2283,7 @@ function setupHomeAssistant() {
 
   /*
    * Switched off is a state of the TV, not a loss of it. While the TV is off
-   * but still up (Active Standby, for Always Ready or panel compensation) the
+   * but still up (Active Standby, for Always-on or panel compensation) the
    * status reads "off"; once it sleeps the broker publishes the will,
    * "asleep". Readings stay available through both and show a switched-off
    * TV. Controls stay available while "off", since the server can still act,
