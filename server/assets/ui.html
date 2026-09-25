@@ -431,6 +431,13 @@ button.btn-off:hover{color:var(--w60);border-color:var(--w12);background:transpa
 .upd{max-width:760px;margin-top:22px}
 .upd .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
 .upd .btns button{min-width:160px;padding:16px 22px}
+/* Server updates: the version and daily check on the left, what can be done
+   about them on the right, where there is room for both. */
+@media(min-width:720px){
+  .upd-split{display:grid;grid-template-columns:minmax(0,1fr) 240px;column-gap:clamp(30px,4vw,52px)}
+  .upd-split .btns{flex-direction:column;margin-top:16px}
+  .upd-split .btns button{width:100%;min-width:0}
+}
 .theme-seg{display:flex;gap:6px}
 .theme-seg button{height:28px;min-height:0;padding:0 12px;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
 .upd #upd-msg{margin-top:12px}
@@ -466,6 +473,13 @@ button.pill{min-height:0;color:inherit}
 .pill.warn{color:var(--cand);border-color:var(--cand)}
 .pill.bad{color:var(--red);border-color:var(--red)}
 .pill.idle{color:var(--w60);border-color:var(--edge)}
+/* A border means it can be pressed. A status that is only reported (a span)
+   reads as text, with a dot in its state colour where it has one. The state
+   classes are repeated because .pill.good and the like outrank span.pill. */
+span.pill,span.pill.good,span.pill.warn,span.pill.bad,span.pill.idle{border-color:transparent}
+span.pill{min-width:0;padding:0;gap:8px}
+span.pill.good::before,span.pill.warn::before,span.pill.bad::before{
+  content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
 .pill-sel{font:500 11px 'Manrope';letter-spacing:.1em;height:28px;min-width:112px;padding:0 8px;
           color:var(--w100);background:transparent;border:1px solid var(--edge);border-radius:2px;cursor:pointer}
 .pill-sel option{color:initial}
@@ -532,13 +546,19 @@ button.pill[disabled]{cursor:default;opacity:.45}
 .pv-sec{margin-bottom:26px}
 /* The Advanced tab's later sections sit apart from the table above them. */
 .adv-sec{margin-top:clamp(34px,4.5vw,48px)}
-/* The Advanced and Server tabs' settings, side by side in two columns where
+/* The Advanced tab's settings, side by side in at most two columns where
    they fit, so a description sits beside its switch instead of running the
    full width away from it. Text at the Privacy tab's sizes (15px names, 13px
    descriptions): the shared 13/12px of .prot-row read small here, where the
    descriptions carry the substance. */
-#advpane .prot-table,#serverpane .prot-table{display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:clamp(30px,4vw,52px)}
+#advpane .prot-table{display:grid;column-gap:clamp(30px,4vw,52px);
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,max(340px,calc((100% - clamp(30px,4vw,52px)) / 2))),1fr))}
+/* The Server tab keeps one column, so every switch lines up under the daily
+   check's, clear of the update actions' column beside it. */
+#serverpane .prot-table{display:grid;grid-template-columns:1fr}
+@media(min-width:720px){
+  #serverpane .upd>.prot-table,#serverpane #tvapp-row .prot-table{margin-right:calc(240px + clamp(30px,4vw,52px))}
+}
 #advpane .prot-row,#serverpane .prot-row{align-items:flex-start;padding:16px 0}
 #advpane .prot-title,#serverpane .prot-title{font-size:15px;font-weight:500;letter-spacing:0;color:var(--w100)}
 #advpane .prot-desc,#serverpane .prot-desc{font-size:13px;line-height:1.5;margin-top:4px;max-width:none}
@@ -1366,32 +1386,36 @@ footer{margin-top:38px;font-size:12px;letter-spacing:.10em;text-transform:upperc
 <section class="priv panel" id="serverpane" role="tabpanel" hidden>
   <div class="upd">
     <div class="pv-sec">Server updates</div>
-    <div class="prot-table">
-      <div class="prot-row">
-        <div class="prot-main">
-          <div class="prot-title" id="upd-title">Version</div>
-          <div class="prot-desc" id="upd-desc" hidden></div>
+    <div class="upd-split">
+      <div class="prot-table">
+        <div class="prot-row">
+          <div class="prot-main">
+            <div class="prot-title" id="upd-title">Version</div>
+            <div class="prot-desc" id="upd-desc" hidden></div>
+          </div>
+          <div class="prot-status"><span class="pill idle" id="upd-pill">&mdash;</span></div>
         </div>
-        <div class="prot-status"><span class="pill idle" id="upd-pill">&mdash;</span></div>
-      </div>
-      <div class="prot-row">
-        <div class="prot-main">
-          <div class="prot-title">Check daily</div>
-          <div class="prot-desc">Looks for a new release once a day.</div>
+        <div class="prot-row">
+          <div class="prot-main">
+            <div class="prot-title">Check daily</div>
+            <div class="prot-desc">Looks for a new release once a day.</div>
+          </div>
+          <div class="prot-status"><button type="button" class="pill idle" id="upd-auto" onclick="toggleAutoCheck()">Off</button></div>
         </div>
-        <div class="prot-status"><button type="button" class="pill idle" id="upd-auto" onclick="toggleAutoCheck()">Off</button></div>
+      </div>
+      <div class="upd-act">
+        <div class="btns" id="upd-btns">
+          <button type="button" id="upd-check" onclick="checkNow()">Check now</button>
+          <button type="button" id="upd-install" hidden onclick="installUpdate()">Install</button>
+          <button type="button" id="upd-rollback" hidden onclick="rollbackUpdate()">Roll back</button>
+        </div>
+        <div class="upd-prog" id="upd-prog" hidden>
+          <div class="upd-step" id="upd-step"></div>
+          <div class="track"><b id="upd-bar"></b></div>
+        </div>
+        <div class="sub" id="upd-msg"></div>
       </div>
     </div>
-    <div class="btns" id="upd-btns">
-      <button type="button" id="upd-check" onclick="checkNow()">Check now</button>
-      <button type="button" id="upd-install" hidden onclick="installUpdate()">Install</button>
-      <button type="button" id="upd-rollback" hidden onclick="rollbackUpdate()">Roll back</button>
-    </div>
-    <div class="upd-prog" id="upd-prog" hidden>
-      <div class="upd-step" id="upd-step"></div>
-      <div class="track"><b id="upd-bar"></b></div>
-    </div>
-    <div class="sub" id="upd-msg"></div>
 
     <div class="pv-sec adv-sec">TV software updates</div>
     <div class="prot-table">
