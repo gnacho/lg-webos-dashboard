@@ -96,7 +96,7 @@ The TV arrives over MQTT Discovery as a single unified device:
 A custom Home Assistant dashboard for an LG TV:
 
 <p align="center">
-  <a href="https://github.com/user-attachments/assets/737b3106-e8a4-4c6b-ba96-b0bad130b600"><img width="800" alt="Custom dashboard leveraging MQTT data" src="https://github.com/user-attachments/assets/737b3106-e8a4-4c6b-ba96-b0bad130b600" /></a>
+  <a href="https://github.com/user-attachments/assets/b33d88c1-3c98-4e5f-a503-249e742a2ab1"><img width="800" alt="Custom dashboard leveraging MQTT data" src="https://github.com/user-attachments/assets/737b3106-e8a4-4c6b-ba96-b0bad130b600" /></a>
   <br>
   <sub>A custom Home Assistant dashboard using the TV's MQTT entities.</sub>
 </p>
