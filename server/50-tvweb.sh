@@ -92,6 +92,35 @@ sam_reread_app() {
   return 1
 }
 
+# The last way to make sam scan, for webOS 5: a restart, with the command
+# lib/apps.js and lib/samrescan.js restart it with. The start limit of sam and
+# every unit that requires it is cleared first, so a run of restarts does not
+# leave the input manager failed and the TV with no inputs, and LunaExecutable
+# is killed since it ignores SIGTERM. Mirrors lib/samrescan.js.
+SAM_UNITS='sam.service $(systemctl list-dependencies --reverse --plain --no-legend sam.service 2>/dev/null | sed -n "s/^[^A-Za-z0-9]*\([A-Za-z0-9@._-]*\.service\)$/\1/p")'
+sam_restart() {
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl reset-failed $SAM_UNITS >/dev/null 2>&1 || true
+    killall -9 LunaExecutable >/dev/null 2>&1 || true
+    systemctl kill -s 9 sam.service >/dev/null 2>&1 || systemctl restart --no-block sam >/dev/null 2>&1 || true
+  elif command -v initctl >/dev/null 2>&1; then
+    initctl restart sam >/dev/null 2>&1 || pkill -9 -x sam >/dev/null 2>&1 || true
+  else
+    pkill -9 -x sam >/dev/null 2>&1 || true
+  fi
+  # A unit that requires sam and hit its own restart limit is started again.
+  if command -v systemctl >/dev/null 2>&1; then
+    for u in $(systemctl list-dependencies --reverse --plain --no-legend sam.service 2>/dev/null |
+      sed -n "s/^[^A-Za-z0-9]*\([A-Za-z0-9@._-]*\.service\)$/\1/p"); do
+      systemctl is-failed --quiet "$u" || continue
+      systemctl reset-failed "$u"; systemctl start --no-block "$u"
+    done
+  elif command -v initctl >/dev/null 2>&1; then
+    initctl restart eim >/dev/null 2>&1 || true
+  fi
+  sleep 2
+}
+
 # Whether sam's getAppInfo for app $1 matches pattern $2 within 20s: at boot sam
 # can still be on its own first scan, and takes the nudge after it.
 sam_reports() {
@@ -120,11 +149,14 @@ webos_major=$(sed -n 's/.*webOS[^0-9]*\([0-9][0-9]*\)\..*/\1/p' /etc/issue 2>/de
 # "flutter-client -i com.webos.app.home"; webOS 11 only with
 # allowExperimentalHome in config.json. sam ignores the nudge there (above), so
 # the app is reread with a block and release first.
+# On webOS 5 (a CX on 5.5.0-19) there is neither the configd list nor the block
+# and release, so sam is restarted, as lib/samrescan.js does for the switch.
 homeapp=/usr/palm/applications/com.webos.app.home
 homestage=/var/lib/tvweb/home-takeover
 home_os=0
 [ "$webos_major" = "9" ] && home_os=1
 [ "$webos_major" = "10" ] && home_os=1
+[ "$webos_major" = "5" ] && home_os=1
 if [ "$webos_major" = "11" ]; then
   grep -q '"allowExperimentalHome"[[:space:]]*:[[:space:]]*true' /var/lib/tvweb/config.json 2>/dev/null && home_os=1
 fi
@@ -183,6 +215,8 @@ if [ "$home_os" -eq 1 ] && [ -f "$homestage/appinfo.json" ] &&
   mount --bind "$homestage" "$homeapp" 2>/dev/null || true
   if [ "$webos_major" = "9" ]; then
     home_reread() { sam_nudge; }
+  elif [ "$webos_major" = "5" ]; then
+    home_reread() { sam_restart; }
   else
     home_reread() { sam_reread_app com.webos.app.home; }
   fi
