@@ -97,26 +97,28 @@ sam_reread_app() {
 # every unit that requires it is cleared first, so a run of restarts does not
 # leave the input manager failed and the TV with no inputs, and LunaExecutable
 # is killed since it ignores SIGTERM. Mirrors lib/samrescan.js.
-SAM_UNITS='sam.service $(systemctl list-dependencies --reverse --plain --no-legend sam.service 2>/dev/null | sed -n "s/^[^A-Za-z0-9]*\([A-Za-z0-9@._-]*\.service\)$/\1/p")'
+sam_units() {
+  systemctl list-dependencies --reverse --plain --no-legend sam.service 2>/dev/null |
+    sed -n 's/^[^A-Za-z0-9]*\([A-Za-z0-9@._-]*\.service\)$/\1/p'
+}
 sam_restart() {
   if command -v systemctl >/dev/null 2>&1; then
-    systemctl reset-failed $SAM_UNITS >/dev/null 2>&1 || true
+    systemctl reset-failed sam.service >/dev/null 2>&1 || true
+    sam_units | while read -r u; do systemctl reset-failed "$u" >/dev/null 2>&1 || true; done
     killall -9 LunaExecutable >/dev/null 2>&1 || true
     systemctl kill -s 9 sam.service >/dev/null 2>&1 || systemctl restart --no-block sam >/dev/null 2>&1 || true
-  elif command -v initctl >/dev/null 2>&1; then
-    initctl restart sam >/dev/null 2>&1 || pkill -9 -x sam >/dev/null 2>&1 || true
-  else
-    pkill -9 -x sam >/dev/null 2>&1 || true
-  fi
-  # A unit that requires sam and hit its own restart limit is started again.
-  if command -v systemctl >/dev/null 2>&1; then
-    for u in $(systemctl list-dependencies --reverse --plain --no-legend sam.service 2>/dev/null |
-      sed -n "s/^[^A-Za-z0-9]*\([A-Za-z0-9@._-]*\.service\)$/\1/p"); do
+    # A unit that requires sam and hit its own restart limit is started again.
+    sam_units | while read -r u; do
       systemctl is-failed --quiet "$u" || continue
-      systemctl reset-failed "$u"; systemctl start --no-block "$u"
+      systemctl reset-failed "$u"
+      systemctl start --no-block "$u"
     done
   elif command -v initctl >/dev/null 2>&1; then
+    initctl restart sam >/dev/null 2>&1 || pkill -9 -x sam >/dev/null 2>&1 || true
+    # Upstart does not restart dependent jobs, so eim is restarted here.
     initctl restart eim >/dev/null 2>&1 || true
+  else
+    pkill -9 -x sam >/dev/null 2>&1 || true
   fi
   sleep 2
 }
