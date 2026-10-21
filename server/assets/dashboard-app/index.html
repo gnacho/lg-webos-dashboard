@@ -46,17 +46,26 @@ body{display:flex;display:-webkit-flex;align-items:center;-webkit-align-items:ce
    * This page shows while the server that holds the translations is still
    * starting, so its few strings are here: Spanish on a Spanish TV, English
    * otherwise. The markup above holds the English, for a page whose script
-   * does not run.
+   * does not run. English is the first entry of TXT, the base language for
+   * translations in this project.
    */
   var SPT = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en')
     .slice(0, 2).toLowerCase() === 'es';
   var TXT = {
-    connecting: SPT ? 'Conectando con el servicio de la TV' : 'Connecting to TV service',
-    waiting: SPT ? 'Esperando a que arranque el servicio en segundo plano' : 'Waiting for background service to initialize',
-    out: SPT ? 'El panel no responde. Puede que aún esté arrancando, o que esté desactivado en esta TV.'
-             : 'The dashboard is not answering. It may still be starting, or it may be switched off on this TV.',
-    retry: SPT ? 'Pulsa OK para reintentar' : 'Press OK to Retry'
+    en: {
+      connecting: 'Connecting to TV service',
+      waiting: 'Waiting for background service to initialize',
+      out: 'The dashboard is not answering. It may still be starting, or it may be switched off on this TV.',
+      retry: 'Press OK to Retry'
+    },
+    es: {
+      connecting: 'Conectando con el servicio de la TV',
+      waiting: 'Esperando a que arranque el servicio en segundo plano',
+      out: 'El panel no responde. Puede que aún esté arrancando, o que esté desactivado en esta TV.',
+      retry: 'Pulsa OK para reintentar'
+    }
   };
+  TXT = TXT[SPT ? 'es' : 'en'];
 
   // Rewritten by the server to match config.json's port, at every start.
   var PORT = 8080;                // tvweb:port
