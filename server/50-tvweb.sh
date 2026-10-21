@@ -92,7 +92,7 @@ sam_reread_app() {
   return 1
 }
 
-# The last way to make sam scan, for webOS 5: a restart, with the command
+# The last way to make sam scan, for webOS 5 and 6: a restart, with the command
 # lib/apps.js and lib/samrescan.js restart it with. The start limit of sam and
 # every unit that requires it is cleared first, so a run of restarts does not
 # leave the input manager failed and the TV with no inputs, and LunaExecutable
@@ -151,14 +151,16 @@ webos_major=$(sed -n 's/.*webOS[^0-9]*\([0-9][0-9]*\)\..*/\1/p' /etc/issue 2>/de
 # "flutter-client -i com.webos.app.home"; webOS 11 only with
 # allowExperimentalHome in config.json. sam ignores the nudge there (above), so
 # the app is reread with a block and release first.
-# On webOS 5 (a CX on 5.5.0-19) there is neither the configd list nor the block
-# and release, so sam is restarted, as lib/samrescan.js does for the switch.
+# On webOS 5 (a CX on 5.5.0-19) and webOS 6 (a C1 on 6.5.3) there is neither
+# the configd list nor the block and release, so sam is restarted, as
+# lib/samrescan.js does for the switch.
 homeapp=/usr/palm/applications/com.webos.app.home
 homestage=/var/lib/tvweb/home-takeover
 home_os=0
 [ "$webos_major" = "9" ] && home_os=1
 [ "$webos_major" = "10" ] && home_os=1
 [ "$webos_major" = "5" ] && home_os=1
+[ "$webos_major" = "6" ] && home_os=1
 if [ "$webos_major" = "11" ]; then
   grep -q '"allowExperimentalHome"[[:space:]]*:[[:space:]]*true' /var/lib/tvweb/config.json 2>/dev/null && home_os=1
 fi
@@ -217,7 +219,7 @@ if [ "$home_os" -eq 1 ] && [ -f "$homestage/appinfo.json" ] &&
   mount --bind "$homestage" "$homeapp" 2>/dev/null || true
   if [ "$webos_major" = "9" ]; then
     home_reread() { sam_nudge; }
-  elif [ "$webos_major" = "5" ]; then
+  elif [ "$webos_major" = "5" ] || [ "$webos_major" = "6" ]; then
     home_reread() { sam_restart; }
   else
     home_reread() { sam_reread_app com.webos.app.home; }

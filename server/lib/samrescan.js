@@ -18,9 +18,10 @@
  *
  * webOS 4 has no such setting (a B8 reports it missing), and there callers
  * restart sam as before. They also do if sam has not caught up in time.
- * webOS 5 (a CX on 5.5.0-19) has neither the setting nor the block and
- * release, so restart() is the only way to make sam read an appinfo.json
- * again there; Glasshouse Home switches itself on and off with it.
+ * webOS 5 (a CX on 5.5.0-19) and webOS 6 (a C1 on 6.5.3) have neither the
+ * setting nor the block and release, so restart() is the only way to make
+ * sam read an appinfo.json again there; Glasshouse Home switches itself on
+ * and off with it.
  *
  * sam ignores that list on webOS 10 (a C2 on 10.3.1 kept a blocked app on
  * Home), so there rereadApp() asks sam for one app instead:
@@ -236,9 +237,10 @@ function rereadApp(appId, check, cb) {
 
 /*
  * Restarts sam, and cb(true) once check(done) says sam has read the apps
- * again. The last way to make sam scan: webOS 5 has neither the configd nudge
- * nor the block and release, so Glasshouse Home, whose appinfo.json is mounted
- * over LG's, switches it on and off with this. The command is the one
+ * again. The last way to make sam scan: webOS 5 and 6 have neither the
+ * configd nudge nor the block and release (a CX on 5.5.0-19, a C1 on
+ * 6.5.3), so Glasshouse Home, whose appinfo.json is mounted over LG's,
+ * switches it on and off with this. The command is the one
  * lib/apps.js restarts sam with for tile hiding: the start limit cleared
  * first, LunaExecutable killed since it ignores SIGTERM, and the unit killed
  * so that systemd starts it again at once; initctl on Upstart TVs. A
