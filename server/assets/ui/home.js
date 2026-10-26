@@ -40,7 +40,6 @@ async function homePost(path, body) {
 function setHomeAvailable(st) {
   homeAvailable = st.available !== false;
   if (q('tab-btn-home')) q('tab-btn-home').hidden = !homeAvailable;
-  document.querySelectorAll('[data-glasshouse-home-note]').forEach(note => { note.hidden = !st.enabled; });
 }
 
 async function loadHomeAvailable() {
@@ -51,7 +50,7 @@ async function loadHome(afterSave) {
   if (homeSaving && afterSave !== true) return;
   const revision = ++homeLoadRevision;
   try {
-    const [st, cat] = await Promise.all([homeGet('/api/home'), homeGet('/api/home/catalogue')]);
+    const [st, cat] = await Promise.all([homeGet('/api/home?with=lghome'), homeGet('/api/home/catalogue')]);
     if (revision !== homeLoadRevision) return;
     homeStatus = st;
     homeCat = cat;
@@ -64,12 +63,37 @@ async function loadHome(afterSave) {
 
 function homeWritable() { return !!(!homeSaving && homeStatus && (homeStatus.supported.ok || homeStatus.enabled || homeStatus.restorePending) && homeStatus.writable !== false); }
 
+// The Home customisation section, whichever Home is the TV's: Open Home at
+// power-on wherever LG has it, Glasshouse Home's own options while it is on,
+// LG's Home's layout while that is, and hidden system apps, which apply to
+// either Home.
+function renderHomeCustom(autoVal) {
+  const st = homeStatus;
+  const lg = st.lgHome;
+  const glasshouseOn = !!(st.enabled && st.supported.ok);
+  const box = q('home-custom');
+  if (box) box.classList.toggle('lg-home', !glasshouseOn);
+  const layout = q('disc-homescreen');
+  const tiles = q('disc-system-tiles');
+  if (tiles) tiles.hidden = !lg;
+  if (lg) {
+    renderHomeScreen(lg);
+    renderSystemTiles(lg);
+  }
+  if (layout && (!lg || glasshouseOn)) layout.hidden = true;
+  if (box) box.hidden = !(glasshouseOn || autoVal !== undefined || (layout && !layout.hidden) || (tiles && !tiles.hidden));
+}
+
 function renderHome() {
   const st = homeStatus;
   const state = q('home-state');
   const desc = q('home-state-desc');
   const btn = q('home-switch');
   if (!st || !state) return;
+  // A TV without Glasshouse Home (a B8) has the tab for LG's Home's options alone.
+  const glasshouse = st.supported.ok || st.enabled || st.restorePending;
+  const hero = q('home-hero');
+  if (hero) hero.hidden = !glasshouse;
   if (st.restorePending) {
     state.textContent = t('home.restorePending', 'LG Home restoration is incomplete');
     desc.textContent = t('home.restoreRetry', 'Retry restoring LG Home before switching Glasshouse Home on again.');
@@ -94,14 +118,14 @@ function renderHome() {
   const autoRow = q('home-autolaunch-row');
   const autoLeased = typeof getLease === 'function' ? getLease('homeAutoLaunch', st.homeAutoLaunch) : undefined;
   const autoVal = autoLeased !== undefined ? autoLeased : st.homeAutoLaunch;
-  if (autoRow) autoRow.hidden = !st.supported.ok || autoVal === undefined;
-  const pwrTable = q('home-power-table');
-  if (pwrTable) pwrTable.hidden = !st.supported.ok || autoVal === undefined;
+  if (autoRow) autoRow.hidden = autoVal === undefined;
+  renderHomeCustom(autoVal);
   const autoBtn = q('home-autolaunch');
   if (autoBtn && autoVal !== undefined) {
     const on = !!autoVal;
     updateToggle(autoBtn, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off'), on: on });
-    autoBtn.disabled = !homeWritable();
+    // LG's own setting: changeable wherever the TV has it, Glasshouse Home or not.
+    autoBtn.disabled = homeSaving || st.writable === false;
   }
   const hideRow = q('home-hide-lg-row');
   // webOS 9 only: newer TVs have no layout file for LG's Home to start on.
