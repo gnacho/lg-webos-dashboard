@@ -994,6 +994,13 @@
       </div>
       <div class="prot-status"><button type="button" class="pill idle" id="home-picture" onclick="homePicture()">&mdash;</button></div>
     </div>
+    <div class="prot-row" id="home-fade-row" hidden>
+      <div class="prot-main">
+        <div class="prot-title" data-t="home.fade">Fade in and out</div>
+        <div class="prot-desc" data-t="home.fadeDesc">Glasshouse Home fades in as it comes on screen, and out as an app, input or channel opens.</div>
+      </div>
+      <div class="prot-status"><button type="button" class="pill idle" id="home-fade" onclick="homeFade()">&mdash;</button></div>
+    </div>
   </div>
 
   <div id="home-more">
@@ -1579,7 +1586,7 @@
 </main>
 
 <footer>
-  <span class="foot-end"><span id="activity-txrx" class="activity-txrx" aria-hidden="true"><span id="act-tx" class="txrx-pip"></span><span id="act-rx" class="txrx-pip"></span></span><a id="version" hidden target="_blank" rel="noopener noreferrer"></a><a id="version-new" hidden target="_blank" rel="noopener noreferrer"></a><button type="button" class="theme-toggle" id="theme-toggle">☾</button></span>
+  <span class="foot-end"><span id="activity-txrx" class="activity-txrx" aria-hidden="true"><span id="act-tx" class="txrx-pip"></span><span id="act-rx" class="txrx-pip"></span></span><span id="tv-name" hidden></span><a id="version" hidden target="_blank" rel="noopener noreferrer"></a><a id="version-new" hidden target="_blank" rel="noopener noreferrer"></a><button type="button" class="theme-toggle" id="theme-toggle">☾</button></span>
 </footer>
 
 <!-- Offered on load when "Update pop-up" is on in the Server tab; see offerUpdatePopup in ui/update.js. -->

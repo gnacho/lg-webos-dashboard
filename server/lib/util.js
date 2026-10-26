@@ -25,24 +25,107 @@ function readTrimmed(filePath) {
   catch (e) { return null; }
 }
 
-// The TV's IPv4 local address, whatever the server is bound to.
-function localAddress4() {
-  var ifaces = {};
-  try { ifaces = os.networkInterfaces() || {}; } catch (e) { return null; }
+function interfaces() {
+  try { return os.networkInterfaces() || {}; } catch (e) { return {}; }
+}
+
+// Whether an os.networkInterfaces() entry is of IP version 4 or 6: node 0.12
+// gives the family as 'IPv4' or 'IPv6', later versions as 4 or 6.
+function isFamily(entry, version) {
+  var family = String(entry.family);
+  return family === 'IPv' + version || family === String(version);
+}
+
+// The interface carrying the TV's IPv4 local address, and that address, or null.
+function localInterface(ifaces) {
   var best = null;
   for (var name in ifaces) {
     if (!ifaces.hasOwnProperty(name)) continue;
     var list = ifaces[name] || [];
     for (var i = 0; i < list.length; i++) {
-      var a = list[i];
-      var fam = String(a.family);
-      if (fam !== 'IPv4' && fam !== '4') continue;
-      if (a.internal) continue;
+      var entry = list[i];
+      if (!isFamily(entry, 4) || entry.internal) continue;
       // Wired first where a TV has both, otherwise the first that answers.
-      if (!best || /^eth/.test(name)) best = a.address;
+      if (!best || /^eth/.test(name)) best = { name: name, ip4: entry.address };
     }
   }
   return best;
+}
+
+// The TV's IPv4 local address, whatever the server is bound to.
+function localAddress4() {
+  var local = localInterface(interfaces());
+  return local ? local.ip4 : null;
+}
+
+function splitHextets(text) {
+  return text ? text.split(':') : [];
+}
+
+/*
+ * An IPv6 address as its eight hextets, as numbers, or null when it is not
+ * one. A "::" stands for the run of zero hextets the address leaves out.
+ */
+function ipv6Hextets(address) {
+  var withoutZone = String(address).split('%')[0];
+  var sides = withoutZone.split('::');
+  if (sides.length > 2) return null;
+
+  var written = splitHextets(sides[0]);
+  if (sides.length === 2) {
+    var after = splitHextets(sides[1]);
+    var leftOut = 8 - written.length - after.length;
+    if (leftOut < 1) return null;
+    for (var i = 0; i < leftOut; i++) written.push('0');
+    written = written.concat(after);
+  }
+  if (written.length !== 8) return null;
+
+  var hextets = [];
+  for (var j = 0; j < written.length; j++) {
+    if (!/^[0-9a-f]{1,4}$/i.test(written[j])) return null;
+    hextets.push(parseInt(written[j], 16));
+  }
+  return hextets;
+}
+
+// fc00::/7: the first seven bits are 1111110.
+function isUniqueLocal(hextets) {
+  return (hextets[0] & 0xfe00) === 0xfc00;
+}
+
+// An EUI-64 interface identifier is a MAC address with ff:fe put in its
+// middle. The identifier is the last four hextets, so ff is the low byte of
+// the sixth hextet and fe the high byte of the seventh.
+function isEui64(hextets) {
+  return (hextets[5] & 0xff) === 0xff && (hextets[6] >> 8) === 0xfe;
+}
+
+/*
+ * The TV's IPv6 local address, a unique local address (fc00::/7) on the
+ * interface localAddress4() uses, or null. A global address goes with the
+ * ISP's prefix and a link-local one with the link, so neither names the TV.
+ * Of two, the EUI-64 one is kept: the other is a temporary address, which
+ * rotates.
+ */
+function localAddress6() {
+  var ifaces = interfaces();
+  var local = localInterface(ifaces);
+  if (!local) return null;
+  var list = ifaces[local.name] || [];
+  var chosen = null, chosenIsEui64 = false;
+  for (var i = 0; i < list.length; i++) {
+    var entry = list[i];
+    if (!isFamily(entry, 6) || entry.internal) continue;
+    var hextets = ipv6Hextets(entry.address);
+    if (!hextets || !isUniqueLocal(hextets)) continue;
+    var eui64 = isEui64(hextets);
+    if (!chosen || (eui64 && !chosenIsEui64)) {
+      chosen = entry.address;
+      chosenIsEui64 = eui64;
+    }
+  }
+  return chosen;
 }
 
 // Milliseconds on CLOCK_MONOTONIC, which a step of the wall clock does not move.
@@ -142,6 +225,7 @@ module.exports = {
   mkdirp: mkdirp,
   readTrimmed: readTrimmed,
   localAddress4: localAddress4,
+  localAddress6: localAddress6,
   monotonicMs: monotonicMs,
   toBuffer: toBuffer,
   allocBuffer: allocBuffer,

@@ -12,6 +12,7 @@ riskier controls ask for confirmation in the dashboard first.
 | Boot hook that starts the server | `/var/lib/webosbrew/init.d/50-tvweb`, a link into the app when installed from the Homebrew Channel | Uninstalling |
 | Boot log | `/var/lib/webosbrew/tvweb-boot.log`, kept under 32 KB | Uninstalling |
 | Screen saver launched after a refused request | `/var/run/tvweb-screensaver-launched` records that Glasshouse opened it directly, so a server restart can resume remote dismissal without adopting a cached native screen saver. Remote keys are watched while it shows | Closing the screen saver, or restarting the TV |
+| Panel care's screen saver hold | Where LG's panel care service (eplmanager) refuses an idle screen saver, the app in front is handed to it without the hold (`setEplAppInfo`, `supportScreenSaverPolicy` on, a 1-minute delay) and the screen saver asked for again. Also before **Start screen saver**. `/var/run/tvweb-idlesaver` records the app before changing its policy | screenmanager's setting is sent back when the screen saver closes or is still refused, retrying failed restores. A server restart recovers the record and restores once the screen saver is closed; the next change of app or a restart of the TV resets the policy too |
 | Boot hook that holds switched-off services down | `/var/lib/webosbrew/init.d/20-tvweb-services`, only once a service is switched off | Switching the services back on, or uninstalling |
 | Home-screen tile | The Homebrew Channel app, or with `deploy.sh` a developer app | Removing the app |
 | Packages being installed | `/media/developer/temp/glasshouse-install`, deleted when the install ends or at the next start | Itself |
@@ -88,6 +89,8 @@ the cards for retry. Home and apps running without a card are left alone.
 Snapshot responses are private and must not be cached.
 
 ## Home-screen app port
+
+Glasshouse Home's page, staged in `/var/lib/tvweb/home-takeover` and mounted over LG's Home, has the port filled in the same way each time the server stages it.
 
 The dashboard's TV app and the Homebrew Channel's app are static pages and open the dashboard at the port in a `var PORT = n; // tvweb:port` line. At every start the server rewrites that line in each installed copy (`/media/developer/apps/usr/palm/applications/com.tvweb.dashboard/index.html` and `.../io.github.rorygallagher2024.lg-webos-dashboard/index.html`) to match `port` in `config.json`. Only that number changes; reinstalling the app brings the default back until the next start.
 

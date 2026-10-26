@@ -438,7 +438,7 @@ async function tick() {
         netParts.join('  ·  ') || t('metrics.net.connected', 'Connected'), 101);
 
     q('row-addr').hidden = !d.address;
-    q('sub-addr').innerHTML = [d.address, d.hostname].filter(Boolean).map(esc).join('<br>');
+    q('sub-addr').innerHTML = [d.hostname, d.address, d.address6].filter(Boolean).map(esc).join('<br>');
 
     // Hardware & System Specifications
     let hasHw = false;
@@ -711,6 +711,11 @@ async function tick() {
     }
 
     setVersion(d.tvwebVersion);
+    // The TV's name where the network's DNS has one, or else the address
+    // easier to read.
+    const tvName = d.hostname || d.address || d.address6;
+    q('tv-name').textContent = tvName || '';
+    q('tv-name').hidden = !tvName;
     // Several groups stay hidden until the first payload says the TV has them,
     // so the columns are only worth filling once that has happened.
     if (firstData) relayout(true);

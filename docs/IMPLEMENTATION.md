@@ -158,13 +158,21 @@ OLED65G5WUA (webOS 10) on optical showed a level of 10 that no change moved.
 So when the TV refuses a volume or mute change with "Current Scenario doesn't
 support", the volume counts as not changeable until the sound goes elsewhere.
 
-The TV's DNS name in the stats, `hostname`, is a reverse lookup of its IPv4
-address on the home network, `address`. It is looked up in the background and
-never on a request: the stats carry the cached answer, and the first after a
-start or an address change has none. A name, no name, an error, and no answer
-within 3 seconds are all cached for an hour, so a network without a reverse
-zone is not asked on every scrape. `dns.reverse` has no timeout of its own, so
-a later answer is dropped.
+The stats give the TV's local addresses: IPv4 as `address`, and IPv6 as
+`address6`, a unique local address (fc00::/7) on the same interface. A global
+IPv6 address changes with the ISP's prefix and a link-local one names only the
+link, so neither is given. Where the interface has two unique local addresses,
+the EUI-64 one (`ff:fe` in the middle of the interface identifier) is given,
+as the other is a temporary address, which rotates.
+
+The TV's DNS name, `hostname`, is a reverse lookup of `address6`, or of
+`address` where `address6` has no name: a network with an IPv6 local address
+was given one on purpose. Each is looked up in the background and never on a
+request: the stats carry the cached answer, and the first after a start or an
+address change has none. A name, no name, an error, and no answer within 3
+seconds are all cached for an hour, so a network without a reverse zone is not
+asked on every scrape. The two addresses are cached apart, each on its own
+hour. `dns.reverse` has no timeout of its own, so a later answer is dropped.
 
 webOS 3.9 has no temperature source at all: `/proc/lg/pm/temperature` is absent,
 nothing under `/proc/lg` or `/sys` is named for temperature, `/sys/class/thermal` is

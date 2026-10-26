@@ -100,6 +100,16 @@ function renderHome() {
     updateToggle(pic, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
     pic.disabled = !homeWritable();
   }
+  // Fading, as Picture details.
+  [['home-fade', 'fade']].forEach(([id, field]) => {
+    const row = q(id + '-row');
+    if (row) row.hidden = !st.supported.ok;
+    const btn = q(id);
+    if (!btn) return;
+    const on = !!st.layout && st.layout[field] === true;
+    updateToggle(btn, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
+    btn.disabled = !homeWritable();
+  });
   const hide = q('home-hide-lg');
   if (hide) {
     const armed = homeArmed === 'hide';
@@ -177,7 +187,7 @@ function homeItem(kind, id) {
   const list = kind === 'app' ? homeCat.apps : kind === 'dev' ? homeCat.devices : homeCat.channels;
   const it = list.find(x => x.id === id);
   if (!it) return null;
-  if (kind === 'dev' && it.unused) return { title: it.name, sub: t('home.dev.unused', 'Nothing connected') };
+  if (kind === 'dev' && it.unused) return { title: it.name, sub: t('home.dev.unused', 'Nothing connected'), unused: true };
   if (kind === 'dev') return { title: it.name, sub: it.via ? t('home.dev.through', 'HDMI {port}, through {via}', { port: it.port, via: it.via }) : t('home.dev.port', 'HDMI {port}', { port: it.port }) };
   if (kind === 'ch') return { title: it.number + ' ' + it.name };
   return { title: it.title, icon: it.icon };
@@ -199,8 +209,10 @@ function renderHomeRows() {
       const it = homeItem(kind, id);
       if (!it) return '';
       const hidden = kind !== 'ch' && homeLayout.hidden[kind].includes(id);
+      // Hidden or not, an input with nothing plugged in is left out by the row's switch.
+      const leftOut = kind === 'dev' && it.unused && homeLayout.hideUnused === true;
       const icon = it.icon ? `<img class="rk-ico" src="${esc(api(it.icon))}" alt="">` : '';
-      return `<div class="prot-row home-tile${hidden ? ' home-hidden' : ''}">
+      return `<div class="prot-row home-tile${hidden || leftOut ? ' home-hidden' : ''}">
         <div class="prot-main"><div class="prot-title">${icon}<span translate="no">${esc(it.title)}</span></div>
           ${it.sub ? `<div class="prot-desc">${esc(it.sub)}</div>` : ''}</div>
         <div class="prot-status">
@@ -208,6 +220,7 @@ function renderHomeRows() {
           <button type="button" class="pill idle home-move" ${movable && i < order.length - 1 ? '' : 'disabled'} onclick="homeMoveTile('${kind}', ${i}, 1)" aria-label="${esc(t('home.later', 'Later'))}">↓</button>
           ${it.lg ? `<span class="pill idle">${esc(t('home.alwaysShown', 'Always shown'))}</span>` :
             kind === 'ch' ? `<button type="button" class="pill idle" ${usable ? '' : 'disabled'} onclick="homeToggleChannel('${jsq(id)}')">${esc(t('home.ch.remove', 'Remove'))}</button>` :
+            (leftOut ? `<span class="pill idle">${esc(t('home.leftOut', 'Left out'))}</span>` : '') +
             renderToggle({ cls: hidden ? 'idle' : 'good', label: hidden ? t('home.hidden', 'Hidden') : t('home.shown', 'Shown'),
               disabled: !usable, onclick: `homeToggleTile('${kind}', '${jsq(id)}')` })}
         </div></div>`;
@@ -218,11 +231,23 @@ function renderHomeRows() {
           <button type="button" class="pill idle" ${usable && ri > 0 ? '' : 'disabled'} onclick="event.preventDefault(); homeMoveRow(${ri}, -1)">${esc(t('home.rowUp', 'Row up'))}</button>
           <button type="button" class="pill idle" ${usable && ri < homeLayout.rows.length - 1 ? '' : 'disabled'} onclick="event.preventDefault(); homeMoveRow(${ri}, 1)">${esc(t('home.rowDown', 'Row down'))}</button>
         </span></summary>
-      <div class="prot-table">${homeSortRow(kind, usable)}${tiles || `<div class="sub">${esc(kind === 'ch' ? t('home.ch.empty', 'No channels yet. Add them below.') : t('home.rowEmpty', 'Nothing to show in this row yet.'))}</div>`}</div>
+      <div class="prot-table">${homeSortRow(kind, usable)}${kind === 'dev' ? homeUnusedRow(usable) : ''}${tiles || `<div class="sub">${esc(kind === 'ch' ? t('home.ch.empty', 'No channels yet. Add them below.') : t('home.rowEmpty', 'Nothing to show in this row yet.'))}</div>`}</div>
       ${kind === 'ch' ? homeChannelPicker() : ''}
     </details>`;
   }).join('');
   if (q('home-ch-filter')) q('home-ch-filter').value = filter;
+}
+
+// The Inputs row's one choice of what it shows.
+function homeUnusedRow(usable) {
+  const on = homeLayout.hideUnused === true;
+  // An On and Off pill, as the tab's other switches are.
+  return `<div class="prot-row">
+    <div class="prot-main"><div class="prot-title">${esc(t('home.hideUnused', 'Hide inputs with nothing connected'))}</div>
+      <div class="prot-desc">${esc(t('home.hideUnusedDesc', 'Leaves inputs with nothing plugged in out of the Inputs row, instead of showing them greyed out. They still show while arranging.'))}</div></div>
+    <div class="prot-status">${renderToggle({ id: 'home-hide-unused', cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off'),
+      on, disabled: !usable, onclick: 'homeHideUnused()' })}</div>
+  </div>`;
 }
 
 function homeSort(kind) { return homeLayout.sort && homeLayout.sort[kind] === 'recent' ? 'recent' : 'custom'; }
@@ -334,10 +359,22 @@ function homePicture() {
   homeSaveLayout({ picture: homeLayout.picture !== true });
 }
 
+function homeFade() {
+  homeSaveLayout({ fade: homeLayout.fade !== true });
+}
+
+function homeHideUnused() {
+  homeSaveLayout({ hideUnused: homeLayout.hideUnused !== true });
+}
+
 // Added channels are the Channels row; this finds more to add. Built once, then only its list redraws.
 function homeChannelPicker() {
   return `<div class="home-ch-add">
-    <div class="prot-title">${esc(t('home.ch.addTitle', 'Add channels'))}</div>
+    <div class="prot-row">
+      <div class="prot-main"><div class="prot-title">${esc(t('home.ch.addTitle', 'Add channels'))}</div>
+        <div class="prot-desc">${esc(t('home.ch.addDesc', 'From those the TV has tuned.'))}</div></div>
+      <div class="prot-status" id="home-ch-show"></div>
+    </div>
     <input type="search" id="home-ch-filter" class="home-ch-filter" placeholder="${esc(t('home.ch.find', 'Find a channel'))}" oninput="renderHomeChannels()">
     <div class="prot-table home-ch-list" id="home-ch-list"></div>
   </div>`;
@@ -359,8 +396,12 @@ function renderHomeChannels() {
   if (!box || !homeLayout) return;
   const picked = homeLayout.channels;
   if (filterBox) filterBox.hidden = !homeChannels || !homeChannels.length;
+  // The button beside the row's title, until the channels have been read.
+  const show = q('home-ch-show');
+  if (show) show.innerHTML = homeChannels ? '' :
+    `<button type="button" class="pill idle" onclick="homeLoadChannels()">${esc(t('home.ch.show', 'Show channels'))}</button>`;
   if (!homeChannels) {
-    box.innerHTML = `<button type="button" class="pill idle" onclick="homeLoadChannels()">${esc(t('home.ch.show', 'Show the TV’s channels'))}</button>`;
+    box.innerHTML = '';
     return;
   }
   if (!homeChannels.length) {

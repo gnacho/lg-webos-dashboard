@@ -94,6 +94,12 @@ the check.
    language's name in its own words to `NAMES` there, and the file to `FILES`
    in `server/deploy.sh`. The Language list in the sidebar's Preferences is
    built from `LANGS` and `NAMES`.
+4. A language translated only in part goes in `PARTIAL` there too, with the
+   pages it covers in full: `web` (the dashboard), `tv` (the TV app) and
+   `home` (Glasshouse Home). Following the browser's language, it is used only
+   on those pages, so none mixes it with English; elsewhere only once chosen,
+   and the list marks it as partial. A language that covers every page leaves
+   `PARTIAL`.
 
 The page follows the browser's language. `?lang=es` picks one for testing.
 

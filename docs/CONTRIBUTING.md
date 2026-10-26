@@ -115,6 +115,24 @@ Direct URLs:
 * TV App Dashboard: `http://localhost:8080/assets/dashboard.html`
 * Glasshouse Home: `http://localhost:8080/assets/home.html`
 
+### Previewing documentation locally
+
+The documentation site is built with [MkDocs](https://www.mkdocs.org/) and the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme. To preview documentation changes locally with live reloading:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install 'mkdocs>=1.6,<2' 'mkdocs-material>=9.7,<10' 'markdown-callouts>=0.4,<0.5'
+NO_MKDOCS_2_WARNING=1 .venv/bin/mkdocs serve
+```
+
+Then open `http://127.0.0.1:8000/glasshouse/` in a browser. The page reloads automatically whenever a file under `docs/` or `mkdocs.yml` is saved. (With Nix, `nix develop` provides these packages directly so `mkdocs serve` works without a virtual environment.)
+
+To run the same strict build and link check that CI runs on pull requests:
+
+```bash
+NO_MKDOCS_2_WARNING=1 .venv/bin/mkdocs build
+```
+
 ## Testing on a real TV
 
 The automated checks run the server's code, not the TV. LG's services, the picture and sound pipeline and the start-up sequence behave differently between models and webOS versions, and only a real TV shows how a change behaves there. Before asking for a review:

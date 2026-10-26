@@ -63,7 +63,7 @@ assets/ui/ui.css assets/ui/core.js assets/ui/theme.js assets/ui/format.js assets
 assets/ui/update.js assets/ui/controls.js assets/ui/privacy.js assets/ui/lgsettings.js assets/ui/game.js \
 assets/ui/system.js assets/ui/history.js assets/ui/ssh.js assets/ui/screentime.js assets/ui/apps.js assets/ui/install.js assets/ui/home.js assets/ui/tabs.js assets/ui/servicemenu.js \
 assets/ui/oled.js assets/ui/screensavers.js assets/ui/mqtt.js assets/ui/tools.js assets/ui/search-aliases.js assets/ui/search.js assets/ui/main.js \
-assets/qr.js assets/i18n.js assets/i18n/es.json assets/setup.html assets/setup-phone.html \
+assets/qr.js assets/i18n.js assets/i18n/es.json assets/i18n/de.json assets/setup.html assets/setup-phone.html \
 assets/dashboard-app/appinfo.json assets/dashboard-app/index.html \
 assets/dashboard-app/packageinfo.json assets/dashboard-app/install-app.sh \
 assets/dashboard-app/assets/icon80.png assets/dashboard-app/assets/icon130.png \
@@ -77,7 +77,7 @@ assets/screensavers/clock.qml assets/screensavers/fireworks.qml \
 assets/screensavers/starfield.qml assets/screensavers/vitals.qml assets/screensavers/star.png \
 assets/screensavers/bokeh.qml assets/screensavers/bokeh.png \
 assets/screensavers/harmonograph.qml \
-lib/mqtt.js lib/ha.js lib/updater.js lib/fetch.js lib/repo.js lib/installer.js lib/privacy.js lib/devtools.js lib/oled.js lib/screensavers.js lib/telemetry.js \
+lib/mqtt.js lib/ha.js lib/updater.js lib/fetch.js lib/repo.js lib/installer.js lib/privacy.js lib/devtools.js lib/oled.js lib/screensavers.js lib/idlesaver.js lib/telemetry.js \
 lib/apps.js lib/samrescan.js lib/children.js lib/luna.js lib/piccap.js lib/state.js lib/mqtt-state.js lib/notifications.js lib/screentime.js lib/services.js lib/preload.js lib/quickaccess.js lib/remotekeys.js lib/homescreen.js lib/homescreen-webos9.js lib/homescreen-webos10.js lib/say.js lib/controls.js lib/routes.js lib/lgsettings.js lib/game.js lib/topics.js lib/timers.js lib/util.js lib/names.js lib/prometheus.js lib/remotebuttons.js lib/remotebuttons.py lib/logs.js lib/syslog.js lib/ntp.js lib/power.js lib/history.js lib/sshkeys.js lib/remotebattery.js lib/backup.js lib/iconserver.js lib/home.js lib/home-picture.js lib/home-takeover.js lib/home-wallpapers.js lib/home-recent.js lib/home-recent-apps.js"
 
 for t in tar base64 fold; do
@@ -117,7 +117,13 @@ elif [ -f "$DIR/config.json" ]; then
 fi
 # ustar is the plainest format, and both the GNU tar on webOS 4 and the BusyBox
 # tar on webOS 9 read it. COPYFILE_DISABLE stops macOS adding its ._ files.
-( cd "$WORK/b" && COPYFILE_DISABLE=1 tar --format=ustar -cf "$WORK/bundle.tar" . )
+# ustar holds IDs up to 2097151, and a Mac account from a directory server can
+# have a larger group ID (1149420193 seen), so every entry is written as root,
+# which the TV ignores anyway. GNU tar and the tar on macOS 15.4 or later take
+# --owner; the one on macOS 10.15 to 15.3 (libarchive before 3.7.3) takes --uid
+# instead, and the one on macOS 10.14 or older neither, so there the IDs stay.
+make_bundle() { ( cd "$WORK/b" && COPYFILE_DISABLE=1 tar --format=ustar "$@" -cf "$WORK/bundle.tar" . ); }
+make_bundle --owner=0 --group=0 2>/dev/null || make_bundle --uid=0 --gid=0 2>/dev/null || make_bundle
 
 SUM=""
 if command -v md5sum >/dev/null 2>&1; then
@@ -174,7 +180,9 @@ tail -6 "\$D/tvweb.log"
 # How this TV's own config exposes the dashboard, so the check at the end asks
 # for it only where it can answer. The TV keeps its own config.json, which is
 # the one that counts, not the copy on this computer.
-if tr -d ' \t\r\n' < "\$D/config.json" 2>/dev/null | grep -q '"web":{[^}]*"enabled":false'; then
+if [ ! -f "\$D/config.json" ]; then
+  :
+elif tr -d ' \t\r\n' < "\$D/config.json" 2>/dev/null | grep -q '"web":{[^}]*"enabled":false'; then
   echo "TVWEB_WEB_OFF"
 elif tr -d ' \t\r\n' < "\$D/config.json" 2>/dev/null | grep -qE '"host":"(127\.[0-9.]*|localhost|::1)"'; then
   echo "TVWEB_WEB_LOCAL"

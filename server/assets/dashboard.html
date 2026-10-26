@@ -92,8 +92,10 @@ body{font-family:'Manrope',sans-serif;color:#fff;
 .val{font-family:'Manrope',sans-serif;font-weight:400;font-size:3.1vh;color:rgba(255,255,255,.75);
   text-align:right;white-space:nowrap;padding-left:2vw}
 .row.sel .val{font-weight:600;color:rgba(255,255,255,.90)}
-/* A second, smaller line under a value, in the space the row leaves below it. */
+/* A second, smaller line under a value, in the space the row leaves below it.
+   A row with two is taller by one such line (TALL_VH). */
 .val .sub{display:block;font-size:2.1vh;line-height:1.2;font-weight:400;color:rgba(255,255,255,.5)}
+.row.tall{height:10.2vh}
 /* Catalog rows: an icon, a version and a root badge beside the title. The
    title gives way with an ellipsis rather than pushing the state off the row. */
 .row.cat .lbl{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -402,7 +404,7 @@ var TABS = [
   { key: 'settings', label: t('tv.tab.settings', 'Settings'),    url: '/api/setup',       build: settingsRows }
 ];
 
-var tab = 0, sel = 0, busy = false, ROW_VH = 7.6, HEAD_VH = 5.4;
+var tab = 0, sel = 0, busy = false, ROW_VH = 7.6, TALL_VH = 10.2, HEAD_VH = 5.4;
 var initialSel = null;
 /* Where a phone can reach this server. Only the server knows it - the app is
    served from localhost - so it is asked for once and kept. */
@@ -875,6 +877,12 @@ function homeRows(d) {
              act: can ? 'homePicture' : null, on: picOn,
              press: picOn ? t('tv.press.switchOff', 'Press OK to switch off') : t('tv.press.switchOn', 'Press OK to switch on'),
              hint: t('home.pictureDesc', 'In the top right of Glasshouse Home: the resolution, refresh rate and HDR of what was last on, and the picture mode and brightness it gets.') });
+    var fadeOn = d.layout.fade === true;
+    r.push({ label: t('home.fade', 'Fade in and out'),
+             value: fadeOn ? t('common.on', 'On') : t('common.off', 'Off'), cls: fadeOn ? 'on' : 'off',
+             act: can ? 'homeFade' : null, on: fadeOn,
+             press: fadeOn ? t('tv.press.switchOff', 'Press OK to switch off') : t('tv.press.switchOn', 'Press OK to switch on'),
+             hint: t('home.fadeDesc', 'Glasshouse Home fades in as it comes on screen, and out as an app, input or channel opens.') });
     // OK steps through the presets; colours picked on the browser dashboard show as Custom.
     var presets = d.colourPresets || [], cur = d.layout.colours, at = cur ? -1 : 0;
     for (var pi = 0; pi < presets.length; pi++) if (cur && presets[pi].text === cur.text && presets[pi].accent === cur.accent) at = pi;
@@ -939,6 +947,26 @@ function homeRows(d) {
       if (!order.length) return;
       r.push(head(names[kind]));
       r.push(sortRow(kind));
+      if (kind === 'dev') {
+        // Beside hiding each input, this leaves out those with nothing connected.
+        var hideUnusedOn = lay.hideUnused === true;
+        r.push({ label: t('home.hideUnused', 'Hide inputs with nothing connected'),
+                 value: hideUnusedOn ? t('common.on', 'On') : t('common.off', 'Off'), cls: hideUnusedOn ? 'on' : 'off',
+                 act: can ? 'homeHideUnused' : null, on: hideUnusedOn,
+                 press: hideUnusedOn ? t('tv.press.switchOff', 'Press OK to switch off') : t('tv.press.switchOn', 'Press OK to switch on'),
+                 hint: t('home.hideUnusedDesc', 'Leaves inputs with nothing plugged in out of the Inputs row, instead of showing them greyed out. They still show while arranging.') });
+        order.forEach(function (id) {
+          var title = homeItemTitle('dev', id), dev = null, i;
+          if (title === null) return;
+          for (i = 0; i < c.devices.length; i++) if (c.devices[i].id === id) dev = c.devices[i];
+          var out = !!(dev && dev.unused && hideUnusedOn), hid = lay.hidden.dev.indexOf(id) !== -1;
+          r.push({ label: title, value: hid ? t('home.hidden', 'Hidden') : out ? t('home.leftOut', 'Left out') : t('home.shown', 'Shown'),
+                   cls: hid || out ? 'off' : 'on', act: can ? 'homeTile' : null, key: id, kind: 'dev', on: !hid,
+                   press: hid ? t('tv.home.tile.show', 'Press OK to show it') : t('tv.home.tile.hide', 'Press OK to hide it'),
+                   hint: t('tv.home.tile.hint', 'Hold OK on Glasshouse Home to change the order of tiles.') });
+        });
+        return;
+      }
       order.forEach(function (id) {
         var title = homeItemTitle(kind, id);
         if (title === null) return;
@@ -1462,8 +1490,10 @@ function settingsRows(d) {
                : t('tv.settings.web.open', 'It is on for your home network, with no password, so anyone on that network can use it.'))
              : t('tv.settings.web.off', 'It is off, so only this TV can reach the dashboard.')) });
   if (d.network && d.address) {
-    // The TV's DNS name under it, where the home network's DNS has one.
-    r.push({ label: t('tv.settings.address', 'Address'), value: d.address, sub: d.hostname || null, web: '/',
+    // The TV's DNS name where the home network's DNS has one, and its local
+    // addresses under it.
+    var addresses = [d.hostname, d.address, d.address6].filter(Boolean);
+    r.push({ label: t('tv.settings.address', 'Address'), value: addresses[0], sub: addresses.slice(1), web: '/',
              hint: t('tv.settings.address.hint', 'Where the web dashboard is, for a browser on a phone or computer on your home network.'),
              scan: t('tv.settings.address.scan', 'Scan to open it on your phone.') });
   }
@@ -1995,7 +2025,12 @@ function backOut() {
 
 // ---- rendering ----
 
-function rowHeight(r) { return (r && r.head ? HEAD_VH : ROW_VH) * window.innerHeight / 100; }
+function rowHeight(r) { return (r && r.head ? HEAD_VH : isTall(r) ? TALL_VH : ROW_VH) * window.innerHeight / 100; }
+
+// A row's smaller lines under its value: sub is one, or a list of them.
+function subLines(r) { return r && r.sub ? [].concat(r.sub) : []; }
+
+function isTall(r) { return subLines(r).length > 1; }
 
 function render() {
   var box = document.getElementById('rows'), msg = document.getElementById('msg');
@@ -2019,10 +2054,10 @@ function render() {
   msg.style.display = 'none';
   box.innerHTML = rows.map(function (r, i) {
     if (r.head) return '<div class="row head"><span class="lbl">' + esc(r.label) + '</span></div>';
-    return '<div class="row' + (i === sel ? ' sel' : '') + (r.act ? ' doable' : '') + (r.cat ? ' cat' : '') + '" onclick="pickRow(' + i + ')">' +
+    return '<div class="row' + (i === sel ? ' sel' : '') + (r.act ? ' doable' : '') + (r.cat ? ' cat' : '') + (isTall(r) ? ' tall' : '') + '" onclick="pickRow(' + i + ')">' +
              '<span class="lbl">' + labelHtml(r, i) + '</span>' +
              '<span class="val' + valClass(r) + '">' + esc(r.value) +
-               (r.sub ? '<span class="sub">' + esc(r.sub) + '</span>' : '') + '</span>' +
+               subLines(r).map(function (line) { return '<span class="sub">' + esc(line) + '</span>'; }).join('') + '</span>' +
            '</div>';
   }).join('');
   position();
@@ -2455,6 +2490,10 @@ function activate() {
                       r.on ? t('tv.flash.switchedOff', 'Switched off') : t('tv.flash.switchedOn', 'Switched on'));
     case 'homePicture':
       return homeLayout({ picture: !r.on });
+    case 'homeFade':
+      return homeLayout({ fade: !r.on });
+    case 'homeHideUnused':
+      return homeLayout({ hideUnused: !r.on });
     case 'homeColours':
       // The first preset is the view's own colours, saved as none chosen.
       return homeLayout({ colours: r.key.id === homeData.colourPresets[0].id ? null : { text: r.key.text, accent: r.key.accent } });

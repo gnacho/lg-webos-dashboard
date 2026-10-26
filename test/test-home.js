@@ -1055,6 +1055,10 @@ step('LG\'s notifications and search are on the Apps row where the TV has them',
     assert.strictEqual(notif.title, 'Notifications');
     assert.ok(notif.icon, 'its own icon');
     assert.strictEqual(search.icon, null, 'Search\'s icon is not a search, so it shows a letter');
+    // Both open over Home, which the view does not fade out for.
+    assert.strictEqual(notif.overlay, true);
+    assert.strictEqual(search.overlay, true);
+    assert.ok(c.apps.filter(function (a) { return !a.overlay; }).length > 1, 'other apps are not overlays');
     home.iconPath('com.webos.app.notificationcenter', function (p) {
       assert.strictEqual(p, '/usr/palm/applications/com.webos.app.notificationcenter/icon_notification.png');
       home.open({ kind: 'app', id: 'com.webos.app.voice' }, function (r) {
@@ -1078,18 +1082,34 @@ step('where sam does not take the app, LG\'s files go back under it and nothing 
   });
 });
 
-step('switching on is refused on a non-default port or an untried webOS, changing nothing', function (done) {
+step('switching on works on any port, with the staged page opening the view there', function (done) {
   start(null, { port: 8090 });
   home.enable(function (r) {
-    assert.strictEqual(r.ok, false);
-    assert.ok(/8080/.test(r.error));
-    start(null, { webosVersion: '7.4.0' });
-    home.enable(function (r2) {
-      assert.strictEqual(r2.ok, false);
-      assert.ok(/webOS 7\.4\.0/.test(r2.error));
-      assert.deepEqual(tv.events, []);
-      done();
-    });
+    assert.strictEqual(r.ok, true, r.error);
+    var page = fs.readFileSync(path.join(stageDir, 'index.html'), 'utf8');
+    assert.ok(/var PORT = 8090;\s*\/\/ tvweb:port/.test(page), 'the staged page carries the port');
+    assert.ok(!/localhost:8080/.test(page));
+    done();
+  });
+});
+
+step('the default port stages the page at 8080', function (done) {
+  start(null);
+  home.enable(function (r) {
+    assert.strictEqual(r.ok, true, r.error);
+    var page = fs.readFileSync(path.join(stageDir, 'index.html'), 'utf8');
+    assert.ok(/var PORT = 8080;\s*\/\/ tvweb:port/.test(page));
+    done();
+  });
+});
+
+step('switching on is refused on an untried webOS, changing nothing', function (done) {
+  start(null, { webosVersion: '7.4.0' });
+  home.enable(function (r2) {
+    assert.strictEqual(r2.ok, false);
+    assert.ok(/webOS 7\.4\.0/.test(r2.error));
+    assert.deepEqual(tv.events, []);
+    done();
   });
 });
 
@@ -1336,6 +1356,38 @@ step('the picture details stay off until switched on, and the server is told of 
         assert.deepEqual(told, [false, true, false]);
         done();
       });
+    });
+  });
+});
+
+step('fading and leaving out inputs with nothing plugged in stay off until switched on, are saved, and outlast a reset, beside hiding inputs one by one', function (done) {
+  start(null);
+  assert.strictEqual(home.layout().fade, false);
+  assert.strictEqual(home.layout().hideUnused, false);
+  home.setLayout({ fade: true, hideUnused: true }, function (r) {
+    assert.ok(r.ok, r.error);
+    assert.strictEqual(r.layout.fade, true);
+    assert.strictEqual(r.layout.hideUnused, true);
+    var saved = home.normalise(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')));
+    assert.strictEqual(saved.fade, true);
+    assert.strictEqual(saved.hideUnused, true);
+    // Only true switches them on.
+    assert.strictEqual(home.normalise({ fade: 'yes', hideUnused: 1 }).fade, false);
+    assert.strictEqual(home.normalise({ fade: 'yes', hideUnused: 1 }).hideUnused, false);
+    // Inputs are still hidden one by one beside it: an earlier version's list stays, and a new one is kept.
+    assert.deepEqual(home.normalise({ hidden: { dev: ['hdmi1'], app: ['netflix'] } }).hidden.dev, ['hdmi1']);
+    home.setLayout({ hidden: { dev: ['hdmi2'] } }, function (rh) {
+      assert.deepEqual(rh.layout.hidden.dev, ['hdmi2']);
+      assert.strictEqual(rh.layout.hideUnused, true, 'hiding an input leaves the tick box as it is');
+    home.setLayout({ reset: true }, function (r2) {
+      assert.strictEqual(r2.layout.fade, true, 'a reset is of rows and tiles');
+      assert.strictEqual(r2.layout.hideUnused, true);
+      home.setLayout({ hideUnused: false }, function (r3) {
+        assert.strictEqual(r3.layout.hideUnused, false);
+        assert.strictEqual(r3.layout.fade, true, 'one is changed without the other');
+        done();
+      });
+    });
     });
   });
 });

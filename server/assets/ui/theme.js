@@ -75,7 +75,9 @@
   I18N.languages.forEach(code => {
     const opt = document.createElement('option');
     opt.value = code;
-    opt.textContent = I18N.names[code] || code.toUpperCase();
+    const name = I18N.names[code] || code.toUpperCase();
+    // One translated only in part shows English for the rest of the dashboard.
+    opt.textContent = I18N.complete(code) ? name : t('lang.partial', '{name} (partial)', { name: name });
     // Each in its own words, the same whatever the page is in.
     opt.setAttribute('translate', 'no');
     sel.appendChild(opt);

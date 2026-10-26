@@ -85,27 +85,35 @@ function createMockRes(cb) {
   console.log('  ✓ parseUrl handles query strings and missing paths cleanly');
 })();
 
-// The setup state gives the IPv4 local address with the port, and its name.
+// The setup state gives the local addresses and the name, each with the port.
 (function testSetupStateAddress() {
   var origInterfaces = os.networkInterfaces;
+  var named = [];
   routes.init({
     config: { port: 8080, host: '::', web: { enabled: false } },
-    telemetry: { localHostname: function (address) { return address === '192.0.2.17' ? 'tv.example.net' : null; } },
+    telemetry: { localName: function (ip4, ip6) {
+      named.push([ip4, ip6]);
+      return ip4 === '192.0.2.17' ? 'tv.example.net' : null;
+    } },
     getMqttStatus: function () { return { state: 'disconnected' }; }
   });
   os.networkInterfaces = function () {
-    return { wlan0: [{ address: '192.0.2.17', family: 'IPv4', internal: false }] };
+    return { wlan0: [{ address: '192.0.2.17', family: 'IPv4', internal: false },
+                     { address: 'fd12:3456:789a:1::17', family: 'IPv6', internal: false }] };
   };
   try {
     var st = routes.setupState();
     assert.strictEqual(st.address, '192.0.2.17:8080');
-    assert.strictEqual(st.hostname, 'tv.example.net');
+    assert.strictEqual(st.address6, '[fd12:3456:789a:1::17]:8080');
+    assert.strictEqual(st.hostname, 'tv.example.net:8080');
+    assert.deepEqual(named, [['192.0.2.17', 'fd12:3456:789a:1::17']], 'named from both addresses');
     os.networkInterfaces = function () { return {}; };
     st = routes.setupState();
     assert.strictEqual(st.address, null, 'no address');
+    assert.strictEqual(st.address6, null);
     assert.strictEqual(st.hostname, null, 'no address, no name');
   } finally { os.networkInterfaces = origInterfaces; }
-  console.log('  ✓ setupState gives the address with its port, and its name');
+  console.log('  ✓ setupState gives the addresses, the IPv4 one with its port, and the name');
 })();
 
 // 2. Loopback checks (fromTV)
@@ -1383,7 +1391,7 @@ function createMockRes(cb) {
   var cfg = { allowControl: true, port: 8080, host: '0.0.0.0', emulateSetup: true };
   routes.init({
     config: cfg,
-    telemetry: { alwaysOnSupported: function (cb) { cb(true); }, localHostname: function () { return 'lg.lan'; } }
+    telemetry: { alwaysOnSupported: function (cb) { cb(true); }, localName: function () { return 'lg.lan'; } }
   });
   routes.resetSimulatedSetup();
 

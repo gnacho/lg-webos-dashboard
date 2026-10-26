@@ -10,9 +10,11 @@
 var msg = require('./say').msg;
 var fs = require('fs');
 var dns = require('dns');
+var net = require('net');
 var readTrimmed = require('./util').readTrimmed;
 var toInt = require('./util').toInt;
 var localAddress4 = require('./util').localAddress4;
+var localAddress6 = require('./util').localAddress6;
 var hexColor = require('./util').hexColor;
 var path = require('path');
 var execFile = require('child_process').execFile;
@@ -462,7 +464,7 @@ function macAddress(iface) {
 }
 
 /*
- * The TV's DNS name, from a reverse lookup of its IPv4 local address. Most
+ * The TV's DNS name, from a reverse lookup of its local addresses. Most
  * home networks have no reverse zone, so no name is the usual answer, and it
  * is cached for the same hour as a name: a network without one is asked that
  * often, not every scrape. The record's own TTL would be the right lifetime,
@@ -471,11 +473,15 @@ function macAddress(iface) {
  * hand-run reverse zones commonly give.
  * dns.reverse has no timeout of its own either, so a late answer is dropped
  * and counts as no name.
+ * The IPv4 and IPv6 local addresses are cached apart, so neither lookup holds
+ * up or replaces the other.
  */
 var HOSTNAME_TTL_MS = 3600000;
 var HOSTNAME_TIMEOUT_MS = 3000;
-var hostnameCache = { address: null, name: null, time: 0 };
-var hostnameAsking = null;
+var hostnameCaches = {
+  4: { address: null, name: null, time: 0, asking: null },
+  6: { address: null, name: null, time: 0, asking: null }
+};
 
 function reverseName(address, timeoutMs, cb) {
   var done = false;
@@ -498,18 +504,29 @@ function reverseName(address, timeoutMs, cb) {
 // behind the answer, so a caller never waits on DNS.
 function localHostname(address) {
   if (!address) return null;
-  var c = hostnameCache;
-  var known = c.address === address;
-  if ((!known || Date.now() - c.time >= HOSTNAME_TTL_MS) && hostnameAsking !== address) {
-    hostnameAsking = address;
+  var cache = hostnameCaches[net.isIPv6(address) ? 6 : 4];
+  var known = cache.address === address;
+  if ((!known || Date.now() - cache.time >= HOSTNAME_TTL_MS) && cache.asking !== address) {
+    cache.asking = address;
     reverseName(address, HOSTNAME_TIMEOUT_MS, function (name) {
       // An answer for an address the TV has since left is not kept.
-      if (hostnameAsking !== address) return;
-      hostnameAsking = null;
-      hostnameCache = { address: address, name: name, time: Date.now() };
+      if (cache.asking !== address) return;
+      cache.asking = null;
+      cache.address = address;
+      cache.name = name;
+      cache.time = Date.now();
     });
   }
-  return known ? c.name : null;
+  return known ? cache.name : null;
+}
+
+// The TV's name: the IPv6 local address's first, as a network given one was
+// set up for it on purpose, or else the IPv4 address's. Both are asked, so
+// each stays fresh.
+function localName(ip4, ip6) {
+  var name4 = localHostname(ip4);
+  var name6 = localHostname(ip6);
+  return name6 || name4;
 }
 
 function netBytes() {
@@ -1700,6 +1717,7 @@ function collectStats(cb) {
 
   var devCfg = (configObj && configObj.device) || {};
   var ip4 = localAddress4();
+  var ip6 = localAddress6();
   var out = {
     ok: true,
     time: Date.now(),
@@ -1752,7 +1770,8 @@ function collectStats(cb) {
     netTotal: n ? { rx: n.rx, tx: n.tx, iface: n.iface } : null,
     mac: n ? macAddress(n.iface) : null,
     address: ip4,
-    hostname: localHostname(ip4),
+    address6: ip6,
+    hostname: localName(ip4, ip6),
     emmc: emmcInfo(),
     signal: null,
     signal_timing: null,
@@ -2254,6 +2273,7 @@ module.exports = {
   macAddress: macAddress,
   reverseName: reverseName,
   localHostname: localHostname,
+  localName: localName,
   netBytes: netBytes,
   getVideoSignal: getVideoSignal,
   readRemoteInfo: readRemoteInfo,
