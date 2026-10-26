@@ -139,7 +139,12 @@ function luna(uri, p, cb) {
   if (uri === 'com.webos.service.settings/getSystemSettings') {
     if (tv.settingsReadFails) return process.nextTick(function () { cb({ returnValue: false }); });
     r.settings = {};
-    p.keys.forEach(function (k) { if (tv.settings[k] !== undefined) r.settings[k] = copy(tv.settings[k]); });
+    var missing = [];
+    p.keys.forEach(function (k) {
+      if (tv.settingsMissing && tv.settingsMissing.indexOf(k) !== -1) { missing.push(k); return; }
+      if (tv.settings[k] !== undefined) r.settings[k] = copy(tv.settings[k]);
+    });
+    if (missing.length) { r.returnValue = false; r.errorKey = missing; }
   } else if (uri === 'com.webos.service.settings/setSystemSettings') {
     if ((tv.settingsWriteFails && p.settings.screenSaverEnabled === undefined) ||
         (tv.saverWriteFails && p.settings.screenSaverEnabled !== undefined)) {
@@ -1172,6 +1177,24 @@ step('a switch-off cut short is finished at start', function (done) {
     home.status(function (st) {
       assert.strictEqual(st.restorePending, false);
       assert.strictEqual(st.active, false);
+      done();
+    });
+  });
+});
+
+step('a switch-off is finished at start even when the settings read misses a key, as on a C1', function (done) {
+  start({ enabled: false, restorePending: true }, { webosVersion: '6.5.3', allowExperimental: function () { return true; } });
+  fs.unlinkSync(appDir);
+  fs.symlinkSync(path.join(dir, 'home-takeover'), appDir);
+  fs.mkdirSync(stageDir);
+  fs.writeFileSync(path.join(stageDir, 'appinfo.json'), JSON.stringify({ id: LG_HOME, type: 'web' }));
+  tv.samType = 'web';
+  tv.settingsMissing = ['defaultApps'];
+  home.start();
+  wait(50, function () {
+    assert.strictEqual(tv.samType, 'native', 'the partial answer is used, not dropped');
+    home.status(function (st) {
+      assert.strictEqual(st.restorePending, false);
       done();
     });
   });

@@ -867,7 +867,11 @@ function switchTo(on, cb) {
 
 function readSettings(keys, cb) {
   luna(SETTINGS + 'getSystemSettings', { category: 'general', keys: keys }, function (r) {
-    cb(r && r.returnValue !== false && r.settings ? r.settings : null);
+    // A C1 (webOS 6.5.3) answers returnValue false with errorKey naming a key
+    // it has no setting for, defaultApps there, and the rest of them in
+    // settings: what came back is used rather than nothing.
+    var partial = r && r.errorKey && r.settings;
+    cb(r && (r.returnValue !== false || partial) && r.settings ? r.settings : null);
   });
 }
 
