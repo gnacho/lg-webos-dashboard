@@ -216,7 +216,7 @@ function start(file, opts) {
   freshTv();
   if (file) fs.writeFileSync(path.join(dir, 'home.json'), JSON.stringify(file));
   var o = { luna: luna, liveState: liveState, stateDir: dir, webosVersion: '9.2.2', samrescan: samrescan,
-            takeoverDir: stageDir, lgHomeDir: appDir, procDir: procDir, exec: exec, kill: kill,
+            wakeSettleMs: 1500, takeoverDir: stageDir, lgHomeDir: appDir, procDir: procDir, exec: exec, kill: kill,
             lgLayoutDir: layoutDir, checkpointDirs: [checkpointDir],
             setStarting: function (text, cb) { tv.starting = text; cb({ ok: true }); } };
   for (var k in opts || {}) o[k] = opts[k];
@@ -493,6 +493,62 @@ step('switching on turns LG\'s Home auto launch off, and switching off puts it b
 });
 
 /*
+ * A CX (webOS 5.6.2) has defaultApps.home at com.webos.app.fullhome, which the
+ * Home key opens: the first press showed LG's Home, and only the second the view.
+ */
+step('on webOS 5 the Home key is pointed at the view\'s app while it has the place, and put back after', function (done) {
+  start(null, { webosVersion: '5.6.2' });
+  tv.rescanAbsent = true;
+  tv.settings.defaultApps = { MembershipApp: 'com.webos.app.overlaymembership', home: 'com.webos.app.fullhome' };
+  home.enable(function (r) {
+    assert.ok(r.ok, r.error);
+    wait(20, function () {
+      assert.strictEqual(tv.settings.defaultApps.home, LG_HOME);
+      assert.strictEqual(tv.settings.defaultApps.MembershipApp, 'com.webos.app.overlaymembership', 'the rest of the setting is kept');
+      assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')).lgDefaultHome, 'com.webos.app.fullhome');
+      home.disable(function (r2) {
+        assert.ok(r2.ok, r2.error);
+        assert.strictEqual(tv.settings.defaultApps.home, 'com.webos.app.fullhome');
+        assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')).lgDefaultHome, null);
+        done();
+      });
+    });
+  });
+});
+
+step('the Home key\'s target is left alone on other versions, and when the owner has chosen another', function (done) {
+  start(null);
+  tv.settings.defaultApps = { home: 'com.webos.app.fullhome' };
+  home.enable(function (r) {
+    assert.ok(r.ok, r.error);
+    wait(20, function () {
+      assert.strictEqual(tv.settings.defaultApps.home, 'com.webos.app.fullhome', 'webOS 9 already reaches the view');
+      start(null, { webosVersion: '5.6.2' });
+      tv.rescanAbsent = true;
+      tv.settings.defaultApps = { home: 'some.other.home' };
+      home.enable(function (r2) {
+        assert.ok(r2.ok, r2.error);
+        wait(20, function () {
+          assert.strictEqual(tv.settings.defaultApps.home, 'some.other.home');
+          done();
+        });
+      });
+    });
+  });
+});
+
+step('a switch-off cut short is finished at the next start: the Home key\'s target is put back', function (done) {
+  start({ enabled: false, lgDefaultHome: 'com.webos.app.fullhome' }, { webosVersion: '5.6.2' });
+  tv.settings.defaultApps = { home: LG_HOME };
+  home.start();
+  wait(30, function () {
+    assert.strictEqual(tv.settings.defaultApps.home, 'com.webos.app.fullhome');
+    assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')).lgDefaultHome, null);
+    done();
+  });
+});
+
+/*
  * With Quick Start+ on, a power-on resumes the TV with Glasshouse Home in place,
  * and bootd opens it as Home only while auto launch is on.
  */
@@ -552,6 +608,63 @@ step('woken from Active Standby with auto launch held off, Glasshouse Home opens
         home.disable(function () { done(); });
       });
     });
+    });
+  });
+});
+
+step('Home opened over the input after a wake is opened once more if the input takes the screen back', function (done) {
+  start(null);
+  tv.settings.homeAutoLaunch = 'on';
+  tv.settings.quickStartMode = 'off';
+  home.enable(function (r) {
+    assert.ok(r.ok, r.error);
+    foreground('com.webos.app.hdmi4');
+    powerState('Active');
+    powerState('Active Standby');
+    wait(20, function () {
+      tv.launched = [];
+      powerState('Active');
+      wait(1700, function () {
+        assert.deepEqual(tv.launched, [LG_HOME]);
+        foreground(LG_HOME);
+        // eim puts the input back in front a moment later.
+        foreground('com.webos.app.hdmi4');
+        wait(20, function () {
+          assert.deepEqual(tv.launched, [LG_HOME, LG_HOME], 'Home is opened again');
+          foreground(LG_HOME);
+          foreground('com.webos.app.hdmi4');
+          wait(20, function () {
+            assert.deepEqual(tv.launched, [LG_HOME, LG_HOME], 'but only once');
+            home.disable(function () { done(); });
+          });
+        });
+      });
+    });
+  });
+});
+
+step('Home opened after a wake is not opened again once something else is in front', function (done) {
+  start(null);
+  tv.settings.homeAutoLaunch = 'on';
+  tv.settings.quickStartMode = 'off';
+  home.enable(function (r) {
+    assert.ok(r.ok, r.error);
+    foreground('com.webos.app.hdmi4');
+    powerState('Active');
+    powerState('Active Standby');
+    wait(20, function () {
+      tv.launched = [];
+      powerState('Active');
+      wait(1700, function () {
+        assert.deepEqual(tv.launched, [LG_HOME]);
+        foreground(LG_HOME);
+        foreground('netflix');
+        foreground('com.webos.app.hdmi4');
+        wait(20, function () {
+          assert.deepEqual(tv.launched, [LG_HOME], 'the owner went elsewhere');
+          home.disable(function () { done(); });
+        });
+      });
     });
   });
 });
@@ -980,6 +1093,27 @@ step('the LG Home tile gives LG\'s Home its place until something else is in fro
         assert.notStrictEqual(fs.readFileSync(path.join(layoutDir, 'home_layoutShelfView.xml'), 'utf8'), CUSTOM_LAYOUT, 'and the empty layout back');
         assert.ok(tv.events.indexOf('stop LG ' + LG_PID) !== -1);
         done();
+      });
+    });
+  });
+});
+
+step('where the Home key was LG\'s full-screen Home, the LG Home tile opens that and releases nothing', function (done) {
+  start(null, { webosVersion: '5.6.2' });
+  tv.rescanAbsent = true;
+  tv.settings.defaultApps = { home: 'com.webos.app.fullhome' };
+  home.enable(function (r) {
+    assert.ok(r.ok, r.error);
+    wait(20, function () {
+      foreground(LG_HOME);
+      tv.events = [];
+      tv.launched = [];
+      home.open({ kind: 'lg' }, function (r2) {
+        assert.ok(r2.ok, r2.error);
+        assert.deepEqual(tv.launched, ['com.webos.app.fullhome']);
+        assert.deepEqual(tv.events, [], 'no umount and no sam restart');
+        assert.ok(taken(), 'the view keeps its place');
+        home.disable(function () { done(); });
       });
     });
   });

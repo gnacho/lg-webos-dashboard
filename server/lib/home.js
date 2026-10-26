@@ -38,6 +38,8 @@ var recentApps = require('./home-recent-apps');
 var HOME_APP = 'com.tvweb.home';
 var LG_HOME = takeover.LG_HOME;
 var LIVE_TV = 'com.webos.app.livetv';
+// What a CX (webOS 5.6.2) has as defaultApps.home, so the Home key opens it.
+var LG_FULLHOME = 'com.webos.app.fullhome';
 var SETTINGS = 'com.webos.service.settings/';
 
 var ROWS = ['app', 'dev', 'ch'];
@@ -71,8 +73,15 @@ var MAX_CHANNELS = 40;
  * 10.3.1). webOS 9 has no such value (a G3), and opened Home on remoteKey.
  */
 var FULL_HOME_REASONS = ['aiKey', 'lastPowerOn', 'localKey', 'remoteKey', 'seniorHelp'];
-// After a wake, how long bootd is given to put the last input in front.
-var WAKE_SETTLE_MS = 1500;
+/*
+ * After a wake, how long the TV is given to put the last input in front before
+ * Glasshouse Home is opened over it. A CX (webOS 5.6.2) woken by the remote key
+ * had eim launch the input again 2.9 s in; Home opened at 1.4 s showed for about
+ * 2 s and was then covered, so it is opened after that.
+ */
+var WAKE_SETTLE_MS = 4500;
+// How long after opening it Home is opened once more if the input comes back in front.
+var WAKE_REOPEN_MS = 4000;
 /*
  * Colours for Glasshouse Home's text and accent, chosen by both dashboards.
  * The first is the view's own, used while none is chosen. Every pair keeps
@@ -154,9 +163,15 @@ var powerActive = true;
 var powerState = null;
 var wakeTimer = null;
 var wakeRequest = null;
+// Home opened over the input after a wake, until the input has had its chance to take it back.
+var wakeReopen = null;
+var wakeSettleMs = WAKE_SETTLE_MS;
 var guideCache = { at: 0, data: {} };
 var listCache = {};
 var changing = false;
+var defaultHomeBusy = false;
+var defaultHomeAgain = false;
+var defaultHomeWaiting = [];
 var settingsQueue = [];
 var settingsBusy = false;
 var autoLaunchBusy = false;
@@ -213,6 +228,8 @@ function defaults() {
     // null while it has not, and LG's mark of whether the owner chose it.
     lgAutoLaunch: null,
     lgAutoLaunchCheck: null,
+    // defaultApps.home as it was before Glasshouse Home held it at LG's Home, null while it has not.
+    lgDefaultHome: null,
     snapshot: null
   };
 }
@@ -253,6 +270,7 @@ function normalise(raw) {
   if (typeof raw.hideLgHomeAtStart === 'boolean') d.hideLgHomeAtStart = raw.hideLgHomeAtStart;
   if (typeof raw.lgAutoLaunch === 'string' && raw.lgAutoLaunch) d.lgAutoLaunch = raw.lgAutoLaunch;
   if (typeof raw.lgAutoLaunchCheck === 'string' && raw.lgAutoLaunchCheck) d.lgAutoLaunchCheck = raw.lgAutoLaunchCheck;
+  if (typeof raw.lgDefaultHome === 'string' && raw.lgDefaultHome) d.lgDefaultHome = raw.lgDefaultHome;
   d.snapshot = validSnapshot(raw.snapshot) ? raw.snapshot : null;
   return d;
 }
@@ -793,6 +811,13 @@ function toLgHome(why, cb) {
   cb = cb || function () {};
   console.log('home: opening LG\'s Home (' + why + ')');
   if (!readConfig().enabled) return launch(LG_HOME, null, cb);
+  /*
+   * Where the Home key opened com.webos.app.fullhome before Glasshouse Home
+   * held it (a CX), that is LG's Home and runs beside the view: opened as it is,
+   * with no release, which on webOS 5 restarts sam and has the TV's last input
+   * handler put the input back over LG's Home a second later.
+   */
+  if (readConfig().lgDefaultHome === LG_FULLHOME) return launch(LG_FULLHOME, null, cb);
   escaped = true;
   stopBeatWatch();
   switchTo(false, function (r) {
@@ -916,6 +941,7 @@ function enable(cb) {
     wasEnabled = true;
     startingNotice(true);
     syncLgAutoLaunch();
+    syncDefaultHome();
     if (viewInFront() && powerActive) watchBeat(FIRST_BEAT_GRACE_MS);
     console.log('home: Glasshouse Home switched on');
     cb({ ok: true });
@@ -944,13 +970,16 @@ function disable(cb) {
     if (!r.ok) return cb({ ok: false, error: msg('srv.home.restoreFailed', 'the TV would not take its earlier Home settings back') + ' (' + r.error + ')' });
     syncLgAutoLaunch(function (restored) {
       if (!restored) return cb({ ok: false, error: msg('srv.home.restoreFailed', 'the TV would not take its earlier Home settings back') });
-      cleanLegacy(function (cleaned) {
-        if (!cleaned) return cb({ ok: false, error: msg('srv.home.restoreFailed', 'the TV would not take its earlier Home settings back') });
-        c = readConfig();
-        c.restorePending = false;
-        if (!saveConfig()) return cb({ ok: false, error: msg('srv.home.saveFailed', 'could not save the layout') });
-        console.log('home: Glasshouse Home switched off');
-        cb({ ok: true });
+      syncDefaultHome(function (homeBack) {
+        if (!homeBack) return cb({ ok: false, error: msg('srv.home.restoreFailed', 'the TV would not take its earlier Home settings back') });
+        cleanLegacy(function (cleaned) {
+          if (!cleaned) return cb({ ok: false, error: msg('srv.home.restoreFailed', 'the TV would not take its earlier Home settings back') });
+          c = readConfig();
+          c.restorePending = false;
+          if (!saveConfig()) return cb({ ok: false, error: msg('srv.home.saveFailed', 'could not save the layout') });
+          console.log('home: Glasshouse Home switched off');
+          cb({ ok: true });
+        });
       });
     });
   });
@@ -1071,6 +1100,87 @@ function restoreLgAutoLaunch(cb) {
     if (!saveConfig()) return cb(false);
     console.log('home: LG\'s Home auto launch put back as ' + value);
     cb(true);
+  });
+}
+
+/*
+ * A CX (webOS 5.6.2) has defaultApps.home at com.webos.app.fullhome, LG's
+ * full-screen Home, which the Home key opens (surfacemanager launches it as a
+ * HOME window) rather than com.webos.app.home, whose place Glasshouse Home
+ * takes: the first press showed LG's Home and only the second the view. While
+ * Glasshouse Home has the place on webOS 5 and 6, the setting names
+ * com.webos.app.home; the owner's value is kept as lgDefaultHome and put back
+ * when it is off. A value that is anything else is left alone, and so is the
+ * setting on other versions, where the Home key already reaches the view.
+ */
+function syncDefaultHome(cb) {
+  cb = cb || function () {};
+  if (defaultHomeBusy) {
+    defaultHomeAgain = true;
+    defaultHomeWaiting.push(cb);
+    return;
+  }
+  defaultHomeBusy = true;
+  function done(ok) {
+    defaultHomeBusy = false;
+    var waiting = defaultHomeWaiting.splice(0, defaultHomeWaiting.length);
+    if (defaultHomeAgain) {
+      defaultHomeAgain = false;
+      return syncDefaultHome(function (again) {
+        cb(again);
+        waiting.forEach(function (fn) { fn(again); });
+      });
+    }
+    cb(ok);
+    waiting.forEach(function (fn) { fn(ok); });
+  }
+  var holding = readConfig().enabled && (escaped || takeover.mounted());
+  if (!holding) return restoreDefaultHome(done);
+  if (!/^[56]\./.test(String(webosVersion || ''))) return done(true);
+  readSettings(['defaultApps'], function (s) {
+    if (!s) {
+      console.error('home: could not read the Home key\'s target');
+      return done(false);
+    }
+    var apps = s.defaultApps && typeof s.defaultApps === 'object' ? copy(s.defaultApps) : {};
+    if (apps.home !== LG_FULLHOME) return done(true);
+    var c = readConfig();
+    c.lgDefaultHome = LG_FULLHOME;
+    if (!saveConfig()) return done(false);
+    apps.home = LG_HOME;
+    writeSettings({ defaultApps: apps }, function (ok) {
+      console.log(ok ? 'home: the Home key opens ' + LG_HOME + ' (was ' + LG_FULLHOME + ')'
+                     : 'home: could not point the Home key at ' + LG_HOME);
+      done(ok);
+    });
+  });
+}
+
+function restoreDefaultHome(cb) {
+  var value = readConfig().lgDefaultHome;
+  if (value === null) return cb(true);
+  function forget() {
+    var c = readConfig();
+    c.lgDefaultHome = null;
+    cb(saveConfig());
+  }
+  readSettings(['defaultApps'], function (s) {
+    if (!s) {
+      console.error('home: could not read the Home key\'s target');
+      return cb(false);
+    }
+    var apps = s.defaultApps && typeof s.defaultApps === 'object' ? copy(s.defaultApps) : {};
+    // Changed to something else since: the owner's choice stands.
+    if (apps.home !== LG_HOME) return forget();
+    apps.home = value;
+    writeSettings({ defaultApps: apps }, function (ok) {
+      if (!ok) {
+        console.error('home: could not put the Home key\'s target back');
+        return cb(false);
+      }
+      console.log('home: the Home key opens ' + value + ' again');
+      forget();
+    });
   });
 }
 
@@ -1264,6 +1374,7 @@ function beat() {
 function foregroundChanged(id) {
   var was = foreground;
   foreground = id;
+  if (wakeReopen) reopenAfterWake(was, id);
   if (wakeRequest && id && id !== was) {
     if (!wakeRequest.input && isInputApp(id)) wakeRequest.input = id;
     else if (wakeRequest.input !== id) cancelWake();
@@ -1313,10 +1424,32 @@ function homeKey(down) {
   }, HOLD_MS);
 }
 
+/*
+ * The input taking the screen back from Home right after a wake opened it (eim
+ * launching it again) is answered once by opening Home again. Anything else in
+ * front, or the time gone, ends the wait.
+ */
+function reopenAfterWake(was, id) {
+  var reopen = wakeReopen;
+  if (nowMs() > reopen.until || (id && id !== LG_HOME && id !== reopen.input)) {
+    wakeReopen = null;
+    return;
+  }
+  if (id !== reopen.input || was !== LG_HOME) return;
+  wakeReopen = null;
+  var current = readConfig();
+  if (!current.enabled || escaped || !powerActive || !takeover.mounted()) return;
+  console.log('home: opening Glasshouse Home again, ' + id + ' took the screen back after the wake');
+  launch(LG_HOME, null, function (res) {
+    if (!res.ok) console.error('home: could not open Glasshouse Home again after the wake');
+  });
+}
+
 function cancelWake() {
   if (wakeTimer) clearTimeout(wakeTimer);
   wakeTimer = null;
   wakeRequest = null;
+  wakeReopen = null;
 }
 
 /*
@@ -1352,10 +1485,11 @@ function powerStateChanged(raw) {
       cancelWake();
       console.log('home: opening Glasshouse Home over ' + foreground + ' after a wake by ' + reason);
       launch(LG_HOME, null, function (res) {
-        if (!res.ok) console.error('home: could not open Glasshouse Home after the wake');
+        if (!res.ok) return console.error('home: could not open Glasshouse Home after the wake');
+        wakeReopen = { input: request.input, until: nowMs() + WAKE_REOPEN_MS };
       });
     });
-  }, WAKE_SETTLE_MS);
+  }, wakeSettleMs);
 }
 
 function powerChanged(active) {
@@ -1418,6 +1552,7 @@ function init(opts) {
     blockFirst: function () { return /^1[01]\./.test(String(webosVersion || '')); }
   });
   webosVersion = opts.webosVersion || null;
+  wakeSettleMs = typeof opts.wakeSettleMs === 'number' ? opts.wakeSettleMs : WAKE_SETTLE_MS;
   serverPort = opts.port === undefined ? 8080 : Number(opts.port);
   installFn = opts.installApp || null;
   allowExperimentalFn = opts.allowExperimental || function () { return false; };
@@ -1437,6 +1572,7 @@ function init(opts) {
   powerActive = true;
   powerState = null;
   lastBeatAt = 0;
+  wakeReopen = null;
   guideCache = { at: 0, data: {} };
   listCache = {};
   changing = false;
@@ -1445,6 +1581,9 @@ function init(opts) {
   autoLaunchBusy = false;
   autoLaunchAgain = false;
   autoLaunchWaiting = [];
+  defaultHomeBusy = false;
+  defaultHomeAgain = false;
+  defaultHomeWaiting = [];
   switchBusy = false;
   switchWant = null;
   switchWaiting = [];
@@ -1506,11 +1645,13 @@ function start() {
       return disable(function (r) { if (!r.ok) console.error('home: ' + r.error); });
     }
     startingNotice(c.enabled);
-    if (!c.enabled) return;
+    // Off, but the Home key's target was never put back: a switch-off cut short.
+    if (!c.enabled) return syncDefaultHome();
     wasEnabled = true;
     switchTo(true, function (r) {
       if (!r.ok) console.error('home: could not take LG\'s Home\'s place: ' + r.error);
       syncLgAutoLaunch();
+      syncDefaultHome();
     });
   });
 }
