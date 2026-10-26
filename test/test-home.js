@@ -497,7 +497,7 @@ step('switching on turns LG\'s Home auto launch off, and switching off puts it b
  * Home key opens: the first press showed LG's Home, and only the second the view.
  */
 step('on webOS 5 the Home key is pointed at the view\'s app while it has the place, and put back after', function (done) {
-  start(null, { webosVersion: '5.6.2' });
+  start(null, { webosVersion: '5.6.2', allowExperimental: function () { return true; } });
   tv.rescanAbsent = true;
   tv.settings.defaultApps = { MembershipApp: 'com.webos.app.overlaymembership', home: 'com.webos.app.fullhome' };
   home.enable(function (r) {
@@ -523,7 +523,7 @@ step('the Home key\'s target is left alone on other versions, and when the owner
     assert.ok(r.ok, r.error);
     wait(20, function () {
       assert.strictEqual(tv.settings.defaultApps.home, 'com.webos.app.fullhome', 'webOS 9 already reaches the view');
-      start(null, { webosVersion: '5.6.2' });
+      start(null, { webosVersion: '5.6.2', allowExperimental: function () { return true; } });
       tv.rescanAbsent = true;
       tv.settings.defaultApps = { home: 'some.other.home' };
       home.enable(function (r2) {
@@ -538,7 +538,7 @@ step('the Home key\'s target is left alone on other versions, and when the owner
 });
 
 step('a switch-off cut short is finished at the next start: the Home key\'s target is put back', function (done) {
-  start({ enabled: false, lgDefaultHome: 'com.webos.app.fullhome' }, { webosVersion: '5.6.2' });
+  start({ enabled: false, lgDefaultHome: 'com.webos.app.fullhome' }, { webosVersion: '5.6.2', allowExperimental: function () { return true; } });
   tv.settings.defaultApps = { home: LG_HOME };
   home.start();
   wait(30, function () {
@@ -825,8 +825,25 @@ step('webOS 11 only with allowExperimentalHome', function (done) {
   });
 });
 
-step('webOS 5 has neither the nudge nor the block and release, so both switches restart sam', function (done) {
+step('webOS 5 and 6 only with allowExperimentalHome', function (done) {
   start(null, { webosVersion: '5.5.0' });
+  home.status(function (st0) {
+    assert.strictEqual(st0.supported.ok, false, 'a sam restart at every switch is the owner\'s call');
+    start(null, { webosVersion: '6.5.3' });
+    home.status(function (st1) {
+      assert.strictEqual(st1.supported.ok, false, 'same on a C1');
+      start(null, { webosVersion: '5.5.0', allowExperimental: function () { return true; } });
+      home.status(function (st) {
+        assert.strictEqual(st.supported.ok, true);
+        assert.strictEqual(st.supported.experimental, true);
+        done();
+      });
+    });
+  });
+});
+
+step('webOS 5 has neither the nudge nor the block and release, so both switches restart sam', function (done) {
+  start(null, { webosVersion: '5.5.0', allowExperimental: function () { return true; } });
   home.status(function (st) {
     assert.strictEqual(st.supported.ok, true, 'offered on a CX');
     assert.strictEqual(st.supported.experimental, true);
@@ -850,7 +867,7 @@ step('webOS 5 has neither the nudge nor the block and release, so both switches 
 });
 
 step('webOS 6 shows the same limits, so it is offered and restarts sam too', function (done) {
-  start(null, { webosVersion: '6.5.3' });
+  start(null, { webosVersion: '6.5.3', allowExperimental: function () { return true; } });
   home.status(function (st) {
     assert.strictEqual(st.supported.ok, true, 'offered on a C1');
     assert.strictEqual(st.supported.experimental, true);
@@ -1099,7 +1116,7 @@ step('the LG Home tile gives LG\'s Home its place until something else is in fro
 });
 
 step('where the Home key was LG\'s full-screen Home, the LG Home tile opens that and releases nothing', function (done) {
-  start(null, { webosVersion: '5.6.2' });
+  start(null, { webosVersion: '5.6.2', allowExperimental: function () { return true; } });
   tv.rescanAbsent = true;
   tv.settings.defaultApps = { home: 'com.webos.app.fullhome' };
   home.enable(function (r) {
