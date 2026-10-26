@@ -19,6 +19,15 @@ The TV app is operated entirely with the LG remote control:
 * **Back**: Return to the previous view from sub-menus (such as app preview details) or exit the app.
 * **Magic Remote pointer**: Clicking a row selects it and clicking it again acts on it; clicking a tab opens it.
 
+### Audio capabilities
+
+The **Audio** tab has the same rows as the web dashboard's
+[Audio tab](../dashboard/audio.md): LG's sound settings and each input's audio
+format, then the TV model, the DTS declaration, the incoming audio and the
+negotiated return channel, and the format declarations.
+
+![Audio tab on the office G3, showing its sound settings](../screenshots/audio-g3-tv-sound.png)
+
 ### First-run setup wizard
 
 Opening the TV app on a fresh install starts an on-screen setup wizard to configure the TV in a few quick steps with the remote:

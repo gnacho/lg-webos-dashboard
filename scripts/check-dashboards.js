@@ -143,7 +143,7 @@ async function visitHomePicture(browser, base, problems) {
   const page = await browser.newPage();
   page.on('pageerror', e => problems.push('Home picture: ' + e.message));
   const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
-    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true };
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true };
   const hdmi4 = { ok: true, range: 'hdr', mode: { display: 'HDR Filmmaker' }, light: 100, oled: true,
     signal: { width: 3840, height: 2160, hz: 24, chroma: 'YCbCr 4:4:4', bits: 10, hdr: 'hdr10' } };
   const netflix = { ok: true, range: 'dolbyHdr', mode: { display: 'Dolby Vision Cinema Bright' }, light: 100, oled: true,
@@ -194,8 +194,10 @@ async function visitHomePicture(browser, base, problems) {
   }
   try {
     await page.clock.install();
+    const firstNow = page.waitForResponse(r => new URL(r.url()).pathname === '/api/home/now');
     await page.goto(base + '/assets/home.html');
-    await page.waitForFunction(() => document.getElementById('srcTitle').textContent === 'HDMI 4');
+    await firstNow;
+    await page.waitForTimeout(50);
     if (pictureReads) problems.push('Home picture: fetched a plate before the layout was known');
     await releaseCatalogue();
     await page.waitForSelector('.tile');
@@ -235,13 +237,303 @@ async function visitHomePicture(browser, base, problems) {
   } finally { await page.close(); }
 }
 
+async function visitHomeVisibility(browser, base, problems) {
+  const page = await browser.newPage();
+  page.on('pageerror', e => problems.push('Home visibility: ' + e.message));
+  const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true,
+    showLastOn: false, showAppCount: false, showCec: false };
+  let version = 1, releaseCatalogue = null;
+  const reply = (route, body) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
+  await page.route('**/api/home/**', route => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === '/api/home/now') return reply(route, { kind: 'input', port: 1, title: 'Player' });
+    if (pathname === '/api/home/catalogue') {
+      const body = { ok: true, layout, layoutVersion: String(version), apps: [],
+        devices: [{ id: 'player', name: 'Player', port: 1, address: '1.0.0.0' }], channels: [],
+        sources: { channels: 0 }, order: { app: ['lg-home'], dev: ['player'], ch: [] } };
+      const snapshot = JSON.parse(JSON.stringify(body));
+      releaseCatalogue = () => reply(route, snapshot);
+      return;
+    }
+    return reply(route, { ok: true, build: 'one', layoutVersion: String(version) });
+  });
+  async function check(shown) {
+    const actual = await page.evaluate(() => ({
+      source: document.getElementById('srcTitle').textContent.trim(),
+      last: !!document.querySelector('.tile.dev.last'),
+      count: !!document.querySelector('[data-key="app"] h2 span'),
+      cec: document.querySelector('.tile.dev .st span').textContent.trim(),
+      clock: document.getElementById('clock').getBoundingClientRect().left
+    }));
+    if (actual.source !== (shown ? 'Player' : '') || actual.last !== shown || actual.count !== shown ||
+        actual.cec !== (shown ? 'CEC 1.0.0.0' : '')) {
+      problems.push('Home visibility: details did not follow the loaded switches: ' + JSON.stringify(actual));
+    }
+    return actual.clock;
+  }
+  async function release() {
+    for (let n = 0; !releaseCatalogue && n < 100; n++) await page.waitForTimeout(20);
+    if (!releaseCatalogue) throw new Error('Home visibility: no catalogue request');
+    const received = page.waitForResponse(r => new URL(r.url()).pathname === '/api/home/catalogue');
+    await releaseCatalogue();
+    releaseCatalogue = null;
+    await received;
+    await page.waitForTimeout(50);
+  }
+  try {
+    await page.clock.install();
+    const firstNow = page.waitForResponse(r => new URL(r.url()).pathname === '/api/home/now');
+    await page.goto(base + '/assets/home.html');
+    await firstNow;
+    await page.waitForTimeout(50);
+    if ((await page.locator('#srcTitle').textContent()).trim()) problems.push('Home visibility: last watched appeared before the layout loaded');
+    await release();
+    await page.waitForSelector('.tile');
+    const clock = await check(false);
+    // Layouts saved before these switches existed retain all three details.
+    delete layout.showLastOn; delete layout.showAppCount; delete layout.showCec;
+    version++;
+    await page.clock.fastForward(5000);
+    await release();
+    if (await check(true) !== clock) problems.push('Home visibility: the clock moved when last watched appeared');
+    layout.showLastOn = layout.showAppCount = layout.showCec = false;
+    version++;
+    await page.clock.fastForward(5000);
+    await release();
+    if (await check(false) !== clock) problems.push('Home visibility: the clock moved when last watched was hidden');
+  } finally { await page.close(); }
+}
+
+// The Magic Remote's pointer on a row of 30 apps: hover only focuses, resting
+// at the screen's side glides the row, a click opens the tile under the
+// pointer, the wheel scrolls, the keys go on from what is in view, and
+// closing Recent apps while its cards glide leaves the rows scrolling.
+async function visitHomeScrolling(browser, base, problems) {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  page.on('pageerror', e => problems.push('Home scrolling: ' + e.message));
+  const apps = Array.from({ length: 30 }, (_, i) => ({ id: 'app' + i, title: 'App ' + i }));
+  const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true };
+  const opened = [];
+  await page.route('**/api/home/**', route => {
+    const url = new URL(route.request().url());
+    const reply = body => route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
+    if (url.pathname.endsWith('/catalogue')) {
+      return reply({ ok: true, layout, apps, devices: [{ id: 'hdmi1:box', name: 'Box', port: 1 }], channels: [],
+        sources: { channels: 0 }, order: { app: apps.map(a => a.id), dev: ['hdmi1:box'], ch: [] } });
+    }
+    if (url.pathname.endsWith('/now')) return reply({ kind: null });
+    if (url.pathname.endsWith('/open')) { opened.push(JSON.parse(route.request().postData() || '{}')); return reply({ ok: true }); }
+    if (url.pathname.endsWith('/recents')) return reply({ ok: true, apps: apps.slice(0, 12).map(a => ({ id: a.id, title: a.title })) });
+    return reply({ ok: true, build: 'one' });
+  });
+  const x = sel => page.evaluate(sel => {
+    const m = /translateX\((-?[\d.]+)px\)/.exec(document.querySelector(sel).style.transform || '');
+    return m ? -parseFloat(m[1]) : 0;
+  }, sel);
+  const settle = async (sel, from) => {
+    const deadline = Date.now() + 4000;
+    let last = await x(sel), stable = 0;
+    while (Date.now() < deadline) {
+      await page.waitForTimeout(50);
+      const cur = await x(sel);
+      if (cur === last && (from === undefined || cur !== from)) {
+        if (++stable >= 3) return cur;
+      } else {
+        last = cur;
+        stable = 0;
+      }
+    }
+    return last;
+  };
+  const apps0 = '.row[data-key="app"] .track';
+  try {
+    await page.goto(base + '/assets/home.html');
+    await page.waitForSelector('.row[data-key="app"] .tile');
+    const rowY = await page.evaluate(() => { const r = document.querySelector('.row[data-key="app"] .wrap').getBoundingClientRect(); return r.top + r.height / 2; });
+    await page.mouse.move(900, rowY);
+    await page.waitForTimeout(300);
+    if (await x(apps0) !== 0) problems.push('Home scrolling: hovering a tile moved its row');
+    await page.mouse.move(1880, rowY, { steps: 3 });
+    await page.waitForTimeout(600);
+    const glided = await x(apps0);
+    if (glided < 200) problems.push('Home scrolling: resting at the screen\'s side did not glide the row (' + glided + ' px)');
+    // Held still over a tile near the end while the row glides under it, a
+    // click, with no move before it, opens the tile under the pointer.
+    const still = [1760, rowY];
+    await page.mouse.move(still[0], still[1]);
+    await page.waitForTimeout(500);
+    const under = await page.evaluate(([px, py]) => { let t = document.elementFromPoint(px, py); while (t && !/\btile\b/.test(t.className)) t = t.parentNode; return t && t.querySelector('.nm').textContent; }, still);
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+    const last = opened[opened.length - 1];
+    if (!last || 'App ' + last.id.slice(3) !== under) problems.push('Home scrolling: a click opened ' + (last && last.id) + ', not the tile under the pointer, ' + under);
+    await page.mouse.move(900, rowY);
+    const stopped = await settle(apps0);
+    await page.waitForTimeout(300);
+    if (await x(apps0) !== stopped) problems.push('Home scrolling: the glide went on after the pointer left the end');
+    await page.mouse.wheel(0, 100);
+    const notched = await settle(apps0, stopped);
+    if (Math.round(notched - stopped) !== 176) problems.push('Home scrolling: a wheel notch did not move the row one tile');
+    // Wheel steps move tiles under a still pointer: a click then opens the
+    // tile now under it, and moving down a row leaves this row where it is.
+    await page.mouse.wheel(0, 300);
+    const wheeled = await settle(apps0, notched);
+    const underWheel = await page.evaluate(([px, py]) => { let t = document.elementFromPoint(px, py); while (t && !/\btile\b/.test(t.className)) t = t.parentNode; return t && t.querySelector('.nm').textContent; }, [900, rowY]);
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+    const afterWheel = opened[opened.length - 1];
+    if (!afterWheel || 'App ' + afterWheel.id.slice(3) !== underWheel) problems.push('Home scrolling: after the wheel a click opened ' + (afterWheel && afterWheel.id) + ', not ' + underWheel);
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(400);
+    if (Math.abs(await x(apps0) - wheeled) > 1) problems.push('Home scrolling: moving down a row pulled the wheeled row back');
+    await page.keyboard.press('ArrowUp');
+    await page.waitForTimeout(300);
+    const before = await x(apps0);
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(400);
+    if (Math.abs(await x(apps0) - before) > 1) problems.push('Home scrolling: moving down a row pulled the scrolled row above back');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(500);
+    if (Math.abs(await x(apps0) - before) > 200) problems.push('Home scrolling: the keys pulled a scrolled row back');
+    if (!(await page.evaluate(() => { const f = document.querySelector('.row .tile.focus'), w = f.parentNode.parentNode.getBoundingClientRect(), r = f.getBoundingClientRect(); return r.right > w.left && r.left < w.right; })))
+      problems.push('Home scrolling: the keys focused a tile out of view');
+    // Recent apps: glide its cards, close it, and the rows still glide.
+    await page.keyboard.press('Backspace');
+    await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { keyCode: 461, bubbles: true })));
+    await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keyup', { keyCode: 461, bubbles: true })));
+    await page.waitForSelector('#recents .tile.rc');
+    await page.waitForTimeout(400);
+    const cards = await page.evaluate(() => { const r = document.querySelector('#recents .wrap').getBoundingClientRect(); return { y: r.top + r.height / 2, x: r.right - 60 }; });
+    // Over a card in the panel's end zone, the cards glide; a click there
+    // opens that app and the panel closes while the cards are still moving.
+    await page.mouse.move(cards.x, cards.y, { steps: 3 });
+    await page.waitForTimeout(300);
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.waitForTimeout(500);
+    const rowsAt = await x(apps0);
+    await page.mouse.move(1870, rowY, { steps: 3 });
+    await page.waitForTimeout(500);
+    if (await x(apps0) <= rowsAt) problems.push('Home scrolling: after Recent apps closed mid-glide, the rows no longer glide');
+  } finally { await page.close(); }
+}
+
+/*
+ * A row's place frame by frame, read in a frame callback: a flick to the
+ * screen's side gathers speed over several frames, the row brakes into its
+ * end, and moving the pointer away lets it slow to a stop.
+ */
+async function visitHomeMotion(browser, base, problems) {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  page.on('pageerror', e => problems.push('Home motion: ' + e.message));
+  const apps = Array.from({ length: 30 }, (_, i) => ({ id: 'app' + i, title: 'App ' + i }));
+  const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true };
+  await page.route('**/api/home/**', route => {
+    const url = new URL(route.request().url());
+    const reply = body => route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
+    if (url.pathname.endsWith('/catalogue')) {
+      return reply({ ok: true, layout, apps, devices: [], channels: [],
+        sources: { channels: 0 }, order: { app: apps.map(a => a.id), dev: [], ch: [] } });
+    }
+    if (url.pathname.endsWith('/now')) return reply({ kind: null });
+    return reply({ ok: true, build: 'one' });
+  });
+  const mark = () => page.evaluate(() => window.xs.length);
+  const steps = from => page.evaluate(from => {
+    const d = [];
+    for (let i = from + 1; i < window.xs.length; i++) if (window.xs[i] !== window.xs[i - 1]) d.push(window.xs[i] - window.xs[i - 1]);
+    return d;
+  }, from);
+  const show = d => d.map(v => v.toFixed(1)).join(', ');
+  try {
+    await page.goto(base + '/assets/home.html');
+    await page.waitForSelector('.row[data-key="app"] .tile');
+    const rowY = await page.evaluate(() => { const r = document.querySelector('.row[data-key="app"] .wrap').getBoundingClientRect(); return r.top + r.height / 2; });
+    await page.mouse.move(900, rowY);
+    await page.waitForTimeout(200);
+    await page.evaluate(() => {
+      window.xs = [];
+      const track = document.querySelector('.row[data-key="app"] .track');
+      (function read() {
+        const m = /translateX\((-?[\d.]+)px\)/.exec(track.style.transform || '');
+        window.xs.push(m ? -parseFloat(m[1]) : 0);
+        requestAnimationFrame(read);
+      })();
+    });
+    let at = await mark();
+    await page.mouse.move(1880, rowY);
+    await page.waitForTimeout(400);
+    let d = await steps(at);
+    if (d.length < 3) problems.push('Home motion: a flick to the screen\'s side did not glide the row');
+    else if (d[0] > 10 || d[1] > 14) problems.push('Home motion: a glide started at full speed (' + show(d.slice(0, 3)) + ' px a frame)');
+    await page.waitForFunction(() => { const xs = window.xs, n = xs.length; return n > 12 && xs[n - 1] > 1000 && xs[n - 1] === xs[n - 12]; }, null, { timeout: 10000 });
+    d = await steps(at);
+    const end = await page.evaluate(() => { const w = document.querySelector('.row[data-key="app"] .wrap'); return w.querySelector('.track').scrollWidth - (w.clientWidth - 44); });
+    const rest = await page.evaluate(() => window.xs[window.xs.length - 1]);
+    if (Math.abs(rest - end) > 1) problems.push('Home motion: the glide stopped at ' + rest + ' px, not at the row\'s end, ' + end);
+    if (Math.max.apply(null, d) < 18) problems.push('Home motion: the glide never reached its speed (' + Math.max.apply(null, d).toFixed(1) + ' px a frame)');
+    if (Math.max.apply(null, d.slice(-3)) > 12) problems.push('Home motion: the row ran into its end (' + show(d.slice(-3)) + ' px a frame)');
+    await page.mouse.move(20, rowY);
+    await page.waitForTimeout(700);
+    at = await mark();
+    await page.mouse.move(900, rowY);
+    await page.waitForFunction(from => { const xs = window.xs, n = xs.length; return n > from + 10 && xs[n - 1] === xs[n - 6]; }, at, { timeout: 5000 });
+    d = await steps(at);
+    if (d.length < 6 || Math.abs(d[d.length - 1]) > 3) problems.push('Home motion: the glide stopped dead when the pointer left the end (' + show(d) + ')');
+  } finally { await page.close(); }
+}
+
+/*
+ * A channel's programme moves on through the minute's refresh with its tile
+ * left in place: the rows are not rebuilt for the progress bar.
+ */
+async function visitHomeGuide(browser, base, problems) {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  page.on('pageerror', e => problems.push('Home guide: ' + e.message));
+  const start = Date.parse('2026-10-20T20:00:00Z');
+  const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
+    hidden: { app: [], dev: [], ch: [] }, channels: ['ch1'], hintSeen: true };
+  await page.route('**/api/home/**', route => {
+    const url = new URL(route.request().url());
+    const reply = body => route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
+    if (url.pathname.endsWith('/catalogue')) {
+      return reply({ ok: true, layout, apps: [{ id: 'app0', title: 'App 0' }], devices: [],
+        channels: [{ id: 'ch1', number: '1', name: 'One' }], sources: { channels: 1 },
+        order: { app: ['app0'], dev: [], ch: ['ch1'] } });
+    }
+    if (url.pathname.endsWith('/guide')) {
+      return reply({ ok: true, guide: { ch1: [{ title: 'News', start, end: start + 3600000 },
+        { title: 'Film', start: start + 3600000, end: start + 7200000 }] } });
+    }
+    if (url.pathname.endsWith('/now')) return reply({ kind: null });
+    return reply({ ok: true, build: 'one' });
+  });
+  try {
+    await page.clock.install({ time: start + 600000 });
+    await page.goto(base + '/assets/home.html');
+    await page.waitForSelector('.ch .bar i');
+    const first = await page.evaluate(() => { window.bar = document.querySelector('.ch .bar i'); return window.bar.style.width; });
+    if (first !== '16.7%') problems.push('Home guide: ten minutes into an hour showed as ' + first);
+    await page.clock.fastForward(60000);
+    await page.waitForFunction(w => document.querySelector('.ch .bar i').style.width !== w, first, { timeout: 5000 });
+    if (!(await page.evaluate(() => document.querySelector('.ch .bar i') === window.bar)))
+      problems.push('Home guide: the minute\'s refresh rebuilt the rows to move a programme\'s progress on');
+  } finally { await page.close(); }
+}
+
 // Glasshouse Home's fading and its Inputs row without the inputs that have
 // nothing plugged in, each where the layout asks for it.
 async function visitHomeFadeAndInputs(browser, base, problems) {
   const page = await browser.newPage();
   page.on('pageerror', e => problems.push('Home fade: ' + e.message));
   const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
-    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, colours: null, fade: false, hideUnused: true };
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true, colours: null, fade: false, hideUnused: true };
   let version = 1;
   let openFails = false;
   let holdCatalogue = null;
@@ -396,7 +688,7 @@ async function visitHomeInputsEditor(browser, base, problems) {
   const page = await browser.newPage();
   page.on('pageerror', e => problems.push('Home inputs editor: ' + e.message));
   const layout = { rows: ['dev', 'app', 'ch'], order: { app: [], dev: [], ch: [] }, sort: { app: 'custom', dev: 'custom', ch: 'custom' },
-    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, hideUnused: false };
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true, hideUnused: false };
   const saves = [];
   await page.route('**/api/home**', async route => {
     const pathname = new URL(route.request().url()).pathname;
@@ -416,6 +708,7 @@ async function visitHomeInputsEditor(browser, base, problems) {
   try {
     await page.goto(base + '/?tab=home');
     const row = page.locator('details.home-row[data-kind="dev"]');
+    await row.locator('summary').click();
     await row.locator('.home-tile').first().waitFor();
     if (await row.locator('button#home-hide-unused.pill').count() !== 1) problems.push('Home inputs editor: the Inputs row has no On and Off switch for inputs with nothing connected');
     const toggles = await row.locator('.home-tile').getByText(/^(Shown|Hidden)$/).count();
@@ -433,7 +726,7 @@ async function visitHomeColours(browser, base, problems) {
   const page = await browser.newPage();
   page.on('pageerror', e => problems.push('Home colours: ' + e.message));
   const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
-    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, colours: null };
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true, colours: null };
   let version = 1;
   await page.route('**/api/home/**', route => {
     const pathname = new URL(route.request().url()).pathname;
@@ -478,7 +771,7 @@ async function visitHomeArrangement(browser, base, problems) {
   page.on('pageerror', e => problems.push('Home arranging: ' + e.message));
   const layout = {
     rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
-    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true
   };
   const defaultOrder = ['netflix', 'youtube', 'lg-home'];
   const saves = [];
@@ -580,7 +873,7 @@ async function visitHomeOrder(browser, base, problems) {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
   page.on('pageerror', e => problems.push('Home order: ' + e.message));
   const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
-    sort: { app: 'custom', dev: 'custom', ch: 'custom' }, hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true };
+    sort: { app: 'custom', dev: 'custom', ch: 'custom' }, hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true };
   const saves = [];
   let pauseSave = false, pauseCatalogue = false, saveHeld, catalogueHeld;
   const saveReady = new Promise(resolve => { saveHeld = resolve; });
@@ -679,6 +972,7 @@ async function visitHomeOrder(browser, base, problems) {
 
     layout.sort.app = 'recent';
     await page.goto(base + '/?tab=home');
+    await page.locator('details.home-row[data-kind="app"] summary').click();
     await page.waitForSelector('#home-sort-app:not(:disabled)');
     if (!await page.locator('details.home-row[data-kind="app"] .home-tile button[aria-label="Later"]').first().isDisabled()) {
       problems.push('Home order: tiles in a Last opened row can be moved on the Home tab');
@@ -701,7 +995,7 @@ async function visitHomeEditor(browser, base, problems) {
   const page = await browser.newPage();
   page.on('pageerror', e => problems.push('Home editor: ' + e.message));
   let layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
-    hidden: { app: [], dev: [], ch: [] }, channels: ['a'], hintSeen: true };
+    hidden: { app: [], dev: [], ch: [] }, channels: ['a'], hintSeen: true, searchHintSeen: true };
   const channels = ['a', 'b', 'c'].map(id => ({ id, name: id.toUpperCase(), number: id }));
   const saves = [];
   let release = null, refuse = false, pendingRestore = false, portChanged = false;
@@ -735,6 +1029,7 @@ async function visitHomeEditor(browser, base, problems) {
       return button && !button.disabled;
     });
     await ready();
+    await page.locator('details.home-row[data-kind="app"] summary').click();
     await page.locator('details.home-row[data-kind="ch"] summary').click();
     await page.getByRole('button', { name: 'Show channels', exact: true }).click();
     const add = id => page.locator('#home-ch-list .prot-row').filter({ hasText: id + ' ' + id.toUpperCase() }).getByRole('button', { name: 'Add', exact: true });
@@ -769,7 +1064,7 @@ async function visitHomeUploads(browser, base, problems) {
   const page = await context.newPage(), observer = await context.newPage();
   for (const p of [page, observer]) p.on('pageerror', e => problems.push('Home uploads: ' + e.message));
   const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
-    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true };
+    hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true };
   let uploading = false, uploaded = false, release, image;
   const wallpapers = () => ({ available: uploaded, uploading,
     slots: { morning: uploaded }, revision: uploaded ? '1' : '0' });
@@ -790,7 +1085,7 @@ async function visitHomeUploads(browser, base, problems) {
       if (route.request().postDataJSON().removeUploads) uploaded = false;
       body = { ok: true, wallpapers: wallpapers() };
     } else if (pathname === '/api/home') {
-      body = { ok: true, supported: { ok: true }, installed: true, enabled: false, writable: true, layout, wallpapers: wallpapers() };
+      body = { ok: true, supported: { ok: true }, installed: true, enabled: true, writable: true, layout, wallpapers: wallpapers() };
     } else {
       body = { ok: true, layout, apps: [], devices: [], channels: [], order: { app: [], dev: [], ch: [] }, sources: { channels: 0 } };
     }
@@ -825,7 +1120,7 @@ async function visitHomeAvailability(browser, base, problems) {
     page.on('pageerror', e => problems.push('Home availability: ' + e.message));
     await page.route('**/api/home**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(Object.assign({
       ok: true, supported: { ok: st.available }, installed: true, restorePending: false, writable: true,
-      layout: { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] }, hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true },
+      layout: { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] }, hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true },
       apps: [], devices: [], channels: [], order: { app: [], dev: [], ch: [] }, sources: { channels: 0 }, wallpapers: { slots: {} }
     }, st)) }));
     try {
@@ -839,6 +1134,33 @@ async function visitHomeAvailability(browser, base, problems) {
       if (notes !== (st.enabled ? 2 : 0)) problems.push('Home availability: ' + notes + ' Apps tab notes with Glasshouse Home ' + (st.enabled ? 'on' : 'off'));
     } finally { await page.close(); }
   }
+}
+
+async function visitAudio(browser, base, problems) {
+  const page = await browser.newPage();
+  page.on('pageerror', e => problems.push('Web audio: ' + e.message));
+  try {
+    const state = await page.request.get(base + '/api/audio?with=settings').then(r => r.json());
+    let failed = false;
+    await page.route('**/api/audio*', route => {
+      if (failed) return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ ok: false, error: 'Audio service unavailable' }) });
+      return route.fulfill({ contentType: 'application/json', body: JSON.stringify(state) });
+    });
+    await page.goto(base + '/?tab=audio');
+    await page.waitForFunction(() => audioState !== null);
+    if (!await page.locator('#audio-settings [data-lgs]').count()) problems.push('Audio tab: LG sound settings missing');
+    failed = true;
+    // The readings and their Refresh are folded below the settings.
+    await page.locator('#audio-more > summary').click();
+    await page.locator('#audio-refresh').click();
+    await page.waitForFunction(() => !document.querySelector('#audio-error').hidden);
+    if (await page.locator('#audio-readings').isVisible() || await page.locator('#audio-settings :enabled').count())
+      problems.push('Web audio: a failed read left stale controls usable');
+    failed = false;
+    await page.locator('#audio-refresh').click();
+    await page.waitForFunction(() => document.querySelector('#audio-error').hidden);
+    if (!await page.locator('#audio-readings').isVisible()) problems.push('Web audio: readings did not recover after a failed read');
+  } finally { await page.close(); }
 }
 
 async function visitHomeReadiness(browser, base, problems) {
@@ -855,7 +1177,7 @@ async function visitHomeReadiness(browser, base, problems) {
       return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, apps: [], devices: [], channels: [],
         order: { app: ['lg-home'], dev: [], ch: [] }, sources: { channels: 0 },
         layout: { rows: ['app', 'dev', 'ch'], hidden: { app: [], dev: [], ch: [] }, order: { app: [], dev: [], ch: [] },
-          channels: [], hintSeen: true } }) });
+          channels: [], hintSeen: true, searchHintSeen: true } }) });
     }
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, build: 'one', kind: null }) });
   });
@@ -888,7 +1210,7 @@ async function visitHomeRecents(browser, base, problems) {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === '/api/home/catalogue') return reply(route, {
       ok: true, apps: [], devices: [], channels: [], sources: {}, order: { app: ['lg-home'], dev: [], ch: [] },
-      layout: { rows: ['app', 'dev', 'ch'], hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true }
+      layout: { rows: ['app', 'dev', 'ch'], hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true }
     });
     if (pathname === '/api/home/recents') {
       if (route.request().method() === 'POST') {
@@ -944,6 +1266,102 @@ async function visitHomeRecents(browser, base, problems) {
         problems.push('Home recents: a late reply reopened the panel after ' + cancel);
       }
     }
+  } finally { await page.close(); }
+}
+
+// Search requests and launches through the real view, including delayed replies.
+async function visitHomeSearch(browser, base, problems) {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  page.on('pageerror', e => problems.push('Home search: ' + e.message));
+  const layout = { rows: ['app', 'dev', 'ch'], hidden: { app: [], dev: [], ch: [] }, channels: [],
+    hintSeen: true, searchHintSeen: true, search: true };
+  let pending, releaseOpen, searches = 0, launches = 0, sleeps = 0;
+  await page.route('**/api/home/**', async route => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === '/api/home/search') { searches++; pending = route; return; }
+    if (pathname === '/api/home/search/open') { launches++; releaseOpen = () => route.fulfill({ json: { ok: true } }); return; }
+    const body = pathname === '/api/home/catalogue'
+      ? { ok: true, layout, apps: [], devices: [], channels: [], sources: { channels: 0 },
+          order: { app: ['lg-home'], dev: [], ch: [] } }
+      : { ok: true, build: 'one', sleeps };
+    await route.fulfill({ json: body });
+  });
+  const result = title => ({ ok: true, elsewhere: 0,
+    results: [{ id: title, title, kind: 'film', apps: [{ id: 'amazon', title: 'Prime Video' }] }] });
+  const enterSearch = async () => {
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('#stage.typing');
+  };
+  const query = async text => {
+    pending = null;
+    const sent = page.waitForRequest(r => new URL(r.url()).pathname === '/api/home/search');
+    await page.locator('#query').fill(text);
+    await sent;
+    const deadline = Date.now() + 3000;
+    while (!pending && Date.now() < deadline) await page.waitForTimeout(10);
+    if (!pending) throw new Error('Home search: the request did not reach its handler');
+  };
+  const answer = async body => {
+    const received = page.waitForResponse(r => new URL(r.url()).pathname === '/api/home/search');
+    await pending.fulfill({ json: body });
+    await received;
+  };
+  const back = () => page.evaluate(() => {
+    for (const type of ['keydown', 'keyup']) document.dispatchEvent(new KeyboardEvent(type, { keyCode: 461, bubbles: true }));
+  });
+  try {
+    await page.goto(base + '/assets/home.html');
+    await page.waitForSelector('.tile');
+    await enterSearch();
+    await query('dune');
+    await answer(result('Dune'));
+    await page.waitForSelector('.hit');
+    pending = null;
+    await page.locator('#query').fill('alien');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(100);
+    if (launches) throw new Error('Home search: a previous title opened during the typing delay');
+    await page.waitForFunction(() => document.getElementById('status').textContent.includes('Looking for'));
+    if (!pending) throw new Error('Home search: the changed query was not sent');
+    if (await page.locator('.hit').count()) problems.push('Home search: previous titles remain selectable during a newer query');
+    await answer(result('Alien'));
+    await page.waitForSelector('.hit.on');
+    if (await page.locator('.hit.on .ttl').textContent() !== 'Alien') problems.push('Home search: Enter did not focus the awaited results');
+    await page.keyboard.press('ArrowUp');
+    await query('retry');
+    await answer({ ok: false });
+    await page.waitForFunction(() => document.getElementById('status').textContent.includes('did not answer'));
+    pending = null;
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(200);
+    if (searches !== 4 || !pending) throw new Error('Home search: Enter did not retry the failed query');
+    await answer(result('Retry'));
+    await page.waitForSelector('.hit.on');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(100);
+    if (launches !== 1) problems.push('Home search: repeated OK sent duplicate launches during detail lookup');
+    await releaseOpen();
+    await page.waitForTimeout(100);
+    await page.evaluate(() => document.dispatchEvent(new Event('webOSRelaunch')));
+    await page.waitForSelector('#stage.finding');
+    if (await page.locator('#query').inputValue() !== 'retry') problems.push('Home search: return from a launched app lost the query');
+    sleeps++;
+    await page.evaluate(() => document.dispatchEvent(new Event('webOSRelaunch')));
+    await page.waitForSelector('#stage:not(.finding)');
+    await enterSearch();
+    await query('late');
+    await back();
+    await answer(result('Late'));
+    if (await page.locator('.hit').count()) problems.push('Home search: a late response repopulated a closed panel');
+    layout.search = false;
+    await page.evaluate(() => document.dispatchEvent(new Event('webOSRelaunch')));
+    await page.waitForSelector('#stage.no-search');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Enter');
+    if (await page.locator('#stage.finding').count()) problems.push('Home search: the disabled rail opened the panel');
   } finally { await page.close(); }
 }
 
@@ -1069,6 +1487,33 @@ async function visitTvDashboard(browser, base, problems) {
   }
 }
 
+async function visitTvAudio(browser, base, problems) {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  page.on('pageerror', e => problems.push('TV audio: ' + e.message));
+  const state = await page.request.get(base + '/api/audio?with=settings').then(r => r.json());
+  let failed = false;
+  await page.route('**/api/audio*', route => route.fulfill({ status: failed ? 503 : 200, contentType: 'application/json',
+    body: JSON.stringify(failed ? { ok: false, error: 'Audio service unavailable' } : state) }));
+  const selected = () => page.locator('#rows .row.sel .lbl').textContent();
+  const readings = () => page.locator('#rows .row').filter({ hasText: 'Return channel' });
+  async function open() {
+    await page.goto(base + '/assets/dashboard.html?tab=audio');
+    await page.waitForSelector(failed ? '#rows .row:has-text("Audio readings unavailable")' : '#rows .row:has-text("Return channel")');
+  }
+  try {
+    await open();
+    if (await selected() !== 'Sound output') problems.push('TV audio: did not open on the Sound settings');
+    failed = true;
+    await open();
+    if (await readings().count()) problems.push('TV audio: a failed read left stale readings on screen');
+    failed = false;
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('#rows .row:has-text("Return channel")');
+    await page.goto(base + '/assets/dashboard.html?tab=options');
+    await page.waitForSelector('#rows .row');
+    if (await page.locator('#rows .row').filter({ hasText: /Audio capabilities|Sound output/ }).count()) problems.push('TV audio: sound still listed under System');
+  } finally { await page.close(); }
+}
 async function visitTvNonOled(browser, base, problems) {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
   page.on('pageerror', e => problems.push('TV non-OLED: ' + e.message));
@@ -1096,9 +1541,11 @@ async function visitTvNonOled(browser, base, problems) {
   await visitAll(browser, web.map(t => ({ url: base + '/?tab=' + t, label: 'web ' + t }))
     .concat(tv.map(t => ({ url: base + '/assets/dashboard.html?tab=' + t, label: 'TV ' + t }))), problems);
   await visitTvDashboard(browser, base, problems);
+  await visitTvAudio(browser, base, problems);
   await visitTvNonOled(browser, base, problems);
   await visitHomeArrangement(browser, base, problems);
   await visitHomePicture(browser, base, problems);
+  await visitHomeVisibility(browser, base, problems);
   await visitHomeColours(browser, base, problems);
   await visitHomeFadeAndInputs(browser, base, problems);
   await visitHomeInputsEditor(browser, base, problems);
@@ -1107,10 +1554,15 @@ async function visitTvNonOled(browser, base, problems) {
   await visitHomeUploads(browser, base, problems);
   await visitHomeReadiness(browser, base, problems);
   await visitHomeAvailability(browser, base, problems);
+  await visitAudio(browser, base, problems);
   await visitHomeRecents(browser, base, problems);
+  await visitHomeScrolling(browser, base, problems);
+  await visitHomeMotion(browser, base, problems);
+  await visitHomeGuide(browser, base, problems);
+  await visitHomeSearch(browser, base, problems);
   await browser.close();
   for (const p of problems) console.log(p);
   console.log((web.length + tv.length) + ' tabs opened (' + web.length + ' web, ' + tv.length + ' TV app), ' +
-              'TV navigation and LCD profile, Home arranging, picture, colours, fading and inputs, update, editing, order, uploads, readiness, availability and recents checked, ' + problems.length + ' problem' + (problems.length === 1 ? '' : 's'));
+              'TV navigation and LCD profile, Home arranging, picture, visibility, colours, fading and inputs, update, editing, order, uploads, readiness, availability, recents, scrolling, motion, guide and search checked, ' + problems.length + ' problem' + (problems.length === 1 ? '' : 's'));
   process.exit(problems.length ? 1 : 0);
 })().catch(e => { console.error(e.message); process.exit(1); });

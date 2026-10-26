@@ -7,7 +7,8 @@
  * LG's Home auto launch is off while it is on, and put back after;
  * LG's notifications and search are on the Apps row; the ways back to LG's Home give its
  * place back until something else is in front; what earlier builds changed is undone once; and a view
- * that sends no heartbeat is replaced by LG's Home
+ * that sends no heartbeat, or none after a Home press, gets WebAppMgr started
+ * again where it is not running, and is otherwise replaced by LG's Home
  *
  * The mount is a symlink here: lib/home-takeover tells a mounted directory by
  * its inode, which a symlink shares. sam is a reader of whatever appinfo.json
@@ -66,6 +67,18 @@ function lgRunning(on) {
   }
 }
 
+// WebAppMgr, which runs the view: started by systemctl unless the TV refuses.
+var WAM_PID = 4540;
+function wamRunning(on) {
+  var p = path.join(procDir, String(WAM_PID));
+  if (on) {
+    if (!fs.existsSync(p)) fs.mkdirSync(p);
+    fs.writeFileSync(path.join(p, 'cmdline'), '/usr/bin/WebAppMgr\0--webos-js-flags=');
+  } else {
+    rmrf(p);
+  }
+}
+
 function freshTv() {
   rmrf(dir);
   fs.mkdirSync(dir);
@@ -81,6 +94,7 @@ function freshTv() {
   tv = { settings: copy(ORIGINAL), events: [], launched: [], launches: [], samType: 'native', samCategory: null, samRefuses: false,
          oldAppInstalled: false, mountFails: false };
   lgRunning(true);
+  wamRunning(true);
 }
 
 // sam reads LG's Home's directory when told to, as it does on a scan.
@@ -121,6 +135,9 @@ function exec(file, args, opts, cb) {
       fs.unlinkSync(appDir);
       fs.symlinkSync(args[1], appDir);
     }
+  } else if (file === '/bin/systemctl') {
+    tv.events.push('systemctl ' + args.join(' '));
+    if (!tv.wamStartFails) wamRunning(true);
   } else if (file === '/bin/umount') {
     tv.events.push('umount');
     fs.unlinkSync(appDir);
@@ -139,12 +156,10 @@ function luna(uri, p, cb) {
   if (uri === 'com.webos.service.settings/getSystemSettings') {
     if (tv.settingsReadFails) return process.nextTick(function () { cb({ returnValue: false }); });
     r.settings = {};
-    var missing = [];
-    p.keys.forEach(function (k) {
-      if (tv.settingsMissing && tv.settingsMissing.indexOf(k) !== -1) { missing.push(k); return; }
-      if (tv.settings[k] !== undefined) r.settings[k] = copy(tv.settings[k]);
-    });
-    if (missing.length) { r.returnValue = false; r.errorKey = missing; }
+    // As webOS 7.6.0 and 6.5.3 answer for a key they do not have: the rest, and a failure naming it.
+    var absent = p.keys.filter(function (k) { return (tv.missingSettings || []).indexOf(k) !== -1; });
+    p.keys.forEach(function (k) { if (absent.indexOf(k) === -1 && tv.settings[k] !== undefined) r.settings[k] = copy(tv.settings[k]); });
+    if (absent.length) { r.returnValue = false; r.errorKey = absent; }
   } else if (uri === 'com.webos.service.settings/setSystemSettings') {
     if ((tv.settingsWriteFails && p.settings.screenSaverEnabled === undefined) ||
         (tv.saverWriteFails && p.settings.screenSaverEnabled !== undefined)) {
@@ -674,6 +689,58 @@ step('Home opened after a wake is not opened again once something else is in fro
   });
 });
 
+/*
+ * With Quick Start+ on, auto launch is left on, yet a C4 (webOS 10.3.1) woke
+ * on its last input: LG's own value is read there. Where bootd opens Home
+ * itself, as a G3 does, Home coming to the front cancels the open.
+ */
+step('woken with Quick Start+ on and the TV still on its input, Glasshouse Home opens where LG\'s auto launch is on', function (done) {
+  start(null);
+  tv.settings.homeAutoLaunch = 'on';
+  tv.settings.quickStartMode = 'on';
+  home.enable(function (r) {
+    assert.ok(r.ok, r.error);
+    foreground('com.webos.app.hdmi3');
+    powerState('Active');
+    powerState('Active Standby');
+    tv.launched = [];
+    wait(20, function () {
+    assert.strictEqual(tv.settings.homeAutoLaunch, 'on', 'left as the owner had it');
+    assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')).lgAutoLaunch, null);
+    powerState('Active');
+    wait(1700, function () {
+      assert.deepEqual(tv.launched, [LG_HOME]);
+      // bootd opened Home itself.
+      tv.launched = [];
+      powerState('Active Standby');
+      powerState('Active');
+      foreground(LG_HOME);
+      wait(1700, function () {
+        assert.deepEqual(tv.launched, [], 'Home already in front');
+        // The owner has auto launch off.
+        tv.settings.homeAutoLaunch = 'off';
+        foreground('com.webos.app.hdmi3');
+        powerState('Active Standby');
+        powerState('Active');
+        wait(1700, function () {
+          assert.deepEqual(tv.launched, [], 'auto launch off');
+          // LG's value unread: nothing is opened.
+          tv.settings.homeAutoLaunch = 'on';
+          tv.settingsReadFails = true;
+          powerState('Active Standby');
+          powerState('Active');
+          wait(1700, function () {
+            assert.deepEqual(tv.launched, [], 'an unread auto launch opens nothing');
+            tv.settingsReadFails = false;
+            home.disable(function () { done(); });
+          });
+        });
+      });
+    });
+    });
+  });
+});
+
 step('a layout saved from a dashboard keeps LG\'s Home auto launch as it was', function (done) {
   start({ enabled: true, lgAutoLaunch: 'on', lgAutoLaunchCheck: 'default' });
   home.setLayout({ reset: true, colours: null }, function (r) {
@@ -802,6 +869,68 @@ step('switched on in LG\'s settings while Glasshouse Home is on, auto launch is 
   wait(50, function () {
     assert.strictEqual(tv.settings.homeAutoLaunch, 'off');
     assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')).lgAutoLaunch, 'on');
+    home.disable(function () { done(); });
+  });
+});
+
+step('Open Home at power-on updates LG\'s setting or the held preference, and status reports the effective state', function (done) {
+  start(null);
+  tv.settings.homeAutoLaunch = 'off';
+  tv.settings.quickStartMode = 'off';
+  home.setAutoLaunch(true, function (r1) {
+    assert.ok(r1.ok);
+    assert.strictEqual(tv.settings.homeAutoLaunch, 'on');
+    assert.strictEqual(home.autoLaunchHeld(), false);
+    home.status(function (st1) {
+      assert.strictEqual(st1.homeAutoLaunch, true);
+      home.enable(function (re) {
+        assert.ok(re.ok, re.error);
+        wait(20, function () {
+          assert.strictEqual(tv.settings.homeAutoLaunch, 'off', 'held off while Quick Start+ is off');
+          assert.strictEqual(home.autoLaunchHeld(), true);
+          home.status(function (st2) {
+            assert.strictEqual(st2.homeAutoLaunch, true, 'effective preference stays on');
+            home.setAutoLaunch(false, function (r2) {
+              assert.ok(r2.ok);
+              assert.strictEqual(tv.settings.homeAutoLaunch, 'off');
+              assert.strictEqual(home.autoLaunchHeld(), false);
+              assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')).lgAutoLaunch, null);
+              home.status(function (st3) {
+                assert.strictEqual(st3.homeAutoLaunch, false);
+                home.setAutoLaunch(true, function (r3) {
+                  assert.ok(r3.ok);
+                  assert.strictEqual(tv.settings.homeAutoLaunch, 'off');
+                  assert.strictEqual(home.autoLaunchHeld(), true);
+                  tv.settings.quickStartMode = 'on';
+                  home.setAutoLaunch(false, function (r4) {
+                    assert.ok(r4.ok);
+                    assert.strictEqual(tv.settings.homeAutoLaunch, 'off');
+                    assert.strictEqual(home.autoLaunchHeld(), false);
+                    home.setAutoLaunch(true, function (r5) {
+                      assert.ok(r5.ok);
+                      assert.strictEqual(tv.settings.homeAutoLaunch, 'on', 'written directly when Quick Start+ is on');
+                      home.disable(function () { done(); });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+step('webOS 7, which has no defaultApps setting, still starts: it takes the place and watches the Home key', function (done) {
+  var keys = [];
+  start({ enabled: true }, { webosVersion: '7.6.0', homeKeys: function (on) { keys.push(on); } });
+  tv.missingSettings = ['defaultApps'];
+  tv.settings.quickStartMode = 'off';
+  home.start();
+  wait(50, function () {
+    assert.ok(taken(), 'Glasshouse Home has LG\'s Home\'s place');
+    assert.deepEqual(keys, [true], 'the Home key is watched, for holding Home');
     home.disable(function () { done(); });
   });
 });
@@ -1104,10 +1233,10 @@ step('the default port stages the page at 8080', function (done) {
 });
 
 step('switching on is refused on an untried webOS, changing nothing', function (done) {
-  start(null, { webosVersion: '7.4.0' });
+  start(null, { webosVersion: '8.0.0' });
   home.enable(function (r2) {
     assert.strictEqual(r2.ok, false);
-    assert.ok(/webOS 7\.4\.0/.test(r2.error));
+    assert.ok(/webOS 8\.0\.0/.test(r2.error));
     assert.deepEqual(tv.events, []);
     done();
   });
@@ -1183,6 +1312,97 @@ step('held, Home opens LG\'s Home; a short press there brings Glasshouse Home ba
   });
 });
 
+// A G4 (webOS 11.2.0) with WebAppMgr stopped under the view: sam kept naming the view in
+// front, launched it on every press, and nothing drew it, nor LG's Home.
+step('a short Home press that brings no heartbeat starts WebAppMgr and opens the view again', function (done) {
+  start({ enabled: true }, { systemctl: '/bin/systemctl' });
+  wamRunning(false);
+  home.start();
+  wait(50, function () {
+    foreground(LG_HOME);
+    home.beat();
+    tv.launched = [];
+    home.homeKey(true);
+    home.homeKey(false);
+    wait(5100, function () {
+      assert.ok(tv.events.indexOf('systemctl start webapp-mgr.service') !== -1, 'WebAppMgr started');
+      assert.deepEqual(tv.launched, [LG_HOME], 'and the view opened again');
+      home.beat();
+      wait(5100, function () {
+        assert.ok(taken(), 'beating again, Glasshouse Home keeps LG\'s Home\'s place');
+        assert.strictEqual(tv.events.filter(function (e) { return e === 'systemctl start webapp-mgr.service'; }).length, 1);
+        home.disable(function () { done(); });
+      });
+    });
+  });
+});
+
+step('a view that stops beating with WebAppMgr stopped gets WebAppMgr started, not LG\'s Home', function (done) {
+  start({ enabled: true }, { systemctl: '/bin/systemctl' });
+  wamRunning(false);
+  home.start();
+  wait(50, function () {
+    foreground(LG_HOME);
+    home.beat();
+    tv.launched = [];
+    wait(10100, function () {
+      assert.ok(tv.events.indexOf('systemctl start webapp-mgr.service') !== -1, 'WebAppMgr started');
+      assert.deepEqual(tv.launched, [LG_HOME], 'and the view opened again');
+      assert.ok(taken(), 'Glasshouse Home keeps the place');
+      home.disable(function () { done(); });
+    });
+  });
+});
+
+step('with WebAppMgr running, a short Home press that brings no heartbeat gives LG\'s Home its place', function (done) {
+  start({ enabled: true }, { systemctl: '/bin/systemctl' });
+  home.start();
+  wait(50, function () {
+    foreground('com.webos.app.hdmi1');
+    home.homeKey(true);
+    home.homeKey(false);
+    wait(5100, function () {
+      assert.strictEqual(tv.samType, 'native', 'LG\'s Home has its place');
+      assert.ok(tv.events.indexOf('systemctl start webapp-mgr.service') === -1, 'WebAppMgr left alone');
+      home.disable(function () { done(); });
+    });
+  });
+});
+
+step('where WebAppMgr will not start, a short Home press that brings no heartbeat gives LG\'s Home its place', function (done) {
+  start({ enabled: true }, { systemctl: '/bin/systemctl' });
+  tv.wamStartFails = true;
+  wamRunning(false);
+  home.start();
+  wait(50, function () {
+    foreground('com.webos.app.hdmi1');
+    home.homeKey(true);
+    home.homeKey(false);
+    wait(5100, function () {
+      assert.ok(tv.events.indexOf('systemctl start webapp-mgr.service') !== -1);
+      assert.strictEqual(tv.samType, 'native', 'LG\'s Home has its place');
+      home.disable(function () { done(); });
+    });
+  });
+});
+
+step('a short Home press the view answers with a heartbeat changes nothing', function (done) {
+  start({ enabled: true }, { systemctl: '/bin/systemctl' });
+  home.start();
+  wait(50, function () {
+    foreground('com.webos.app.hdmi1');
+    home.homeKey(true);
+    home.homeKey(false);
+    foreground(LG_HOME);
+    home.beat();
+    wait(5100, function () {
+      assert.ok(taken());
+      assert.ok(tv.events.indexOf('systemctl start webapp-mgr.service') === -1);
+      home.disable(function () { done(); });
+    });
+  });
+});
+
 step('a switch-off cut short is finished at start', function (done) {
   start({ enabled: false, restorePending: true });
   fs.unlinkSync(appDir);
@@ -1209,7 +1429,7 @@ step('a switch-off is finished at start even when the settings read misses a key
   fs.mkdirSync(stageDir);
   fs.writeFileSync(path.join(stageDir, 'appinfo.json'), JSON.stringify({ id: LG_HOME, type: 'web' }));
   tv.samType = 'web';
-  tv.settingsMissing = ['defaultApps'];
+  tv.missingSettings = ['defaultApps'];
   home.start();
   wait(50, function () {
     assert.strictEqual(tv.samType, 'native', 'the partial answer is used, not dropped');
@@ -1360,20 +1580,45 @@ step('the picture details stay off until switched on, and the server is told of 
   });
 });
 
-step('fading and leaving out inputs with nothing plugged in stay off until switched on, are saved, and outlast a reset, beside hiding inputs one by one', function (done) {
+step('last watched, the app count and CEC addresses show until switched off, one at a time', function (done) {
+  start(null);
+  var l = home.layout();
+  assert.deepEqual([l.showLastOn, l.showAppCount, l.showCec], [true, true, true]);
+  home.setLayout({ showCec: false }, function (r) {
+    assert.deepEqual([r.layout.showLastOn, r.layout.showAppCount, r.layout.showCec], [true, true, false]);
+    home.setLayout({ showLastOn: false, showAppCount: 'no' }, function (r2) {
+      assert.deepEqual([r2.layout.showLastOn, r2.layout.showAppCount, r2.layout.showCec], [false, true, false]);
+      var saved = home.normalise(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')));
+      assert.deepEqual([saved.showLastOn, saved.showAppCount, saved.showCec], [false, true, false]);
+      home.setLayout({ showAppCount: false }, function (r3) {
+        assert.deepEqual([r3.layout.showLastOn, r3.layout.showAppCount, r3.layout.showCec], [false, false, false]);
+        home.setLayout({ showLastOn: true, showAppCount: true, showCec: true }, function (r4) {
+          assert.deepEqual([r4.layout.showLastOn, r4.layout.showAppCount, r4.layout.showCec], [true, true, true]);
+          done();
+        });
+      });
+    });
+  });
+});
+
+step('fading, search and leaving out inputs with nothing plugged in stay off until switched on, are saved, and outlast a reset, beside hiding inputs one by one', function (done) {
   start(null);
   assert.strictEqual(home.layout().fade, false);
+  assert.strictEqual(home.layout().search, false);
   assert.strictEqual(home.layout().hideUnused, false);
-  home.setLayout({ fade: true, hideUnused: true }, function (r) {
+  home.setLayout({ fade: true, search: true, hideUnused: true }, function (r) {
     assert.ok(r.ok, r.error);
     assert.strictEqual(r.layout.fade, true);
+    assert.strictEqual(r.layout.search, true);
     assert.strictEqual(r.layout.hideUnused, true);
     var saved = home.normalise(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')));
     assert.strictEqual(saved.fade, true);
+    assert.strictEqual(saved.search, true);
     assert.strictEqual(saved.hideUnused, true);
     // Only true switches them on.
-    assert.strictEqual(home.normalise({ fade: 'yes', hideUnused: 1 }).fade, false);
-    assert.strictEqual(home.normalise({ fade: 'yes', hideUnused: 1 }).hideUnused, false);
+    assert.strictEqual(home.normalise({ fade: 'yes', search: 'yes', hideUnused: 1 }).fade, false);
+    assert.strictEqual(home.normalise({ fade: 'yes', search: 'yes', hideUnused: 1 }).search, false);
+    assert.strictEqual(home.normalise({ fade: 'yes', search: 'yes', hideUnused: 1 }).hideUnused, false);
     // Inputs are still hidden one by one beside it: an earlier version's list stays, and a new one is kept.
     assert.deepEqual(home.normalise({ hidden: { dev: ['hdmi1'], app: ['netflix'] } }).hidden.dev, ['hdmi1']);
     home.setLayout({ hidden: { dev: ['hdmi2'] } }, function (rh) {
