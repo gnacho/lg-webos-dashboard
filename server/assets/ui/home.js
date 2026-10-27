@@ -112,7 +112,10 @@ function renderHome() {
     desc.textContent = t('home.isOffDesc', 'Nothing of LG’s is changed: Glasshouse Home is laid over LG’s Home while on, and switching off takes it away.');
   }
   const dot = q('home-dot');
-  if (dot) dot.className = 'ps-dot' + (st.restorePending ? ' warn' : st.enabled ? (st.active && !st.lgHomeOpen ? ' good' : ' warn') : '');
+  // Orange only when something needs attention: switched on but not in LG's
+  // Home's place, or a switch-off left unfinished. LG's Home opened on purpose
+  // (its tile, or holding Home) leaves Glasshouse Home the TV's Home.
+  if (dot) dot.className = 'ps-dot' + (st.restorePending ? ' warn' : st.enabled ? (st.active || st.lgHomeOpen ? ' good' : ' warn') : '');
   const more = q('home-more');
   if (more) more.hidden = !st.supported.ok || !st.enabled;
   const autoRow = q('home-autolaunch-row');
@@ -534,40 +537,118 @@ function homeToggleChannel(id) {
   homeSaveLayout({ channels: list });
 }
 
-// The four wallpapers, by the hours each is shown.
+// The four wallpapers, by the hours each is shown, as the view picks them
+// (home.html): night runs past midnight. sample is the time each preview's
+// clock shows.
+const HOME_WALL_SLOTS = [
+  { key: 'morning', from: 6, to: 11, sample: [8, 30] },
+  { key: 'afternoon', from: 11, to: 17, sample: [14, 0] },
+  { key: 'evening', from: 17, to: 21, sample: [19, 30] },
+  { key: 'night', from: 21, to: 6, sample: [23, 10] }
+];
+const HOME_WALL_NAMES = () => ({
+  morning: t('home.wall.slotMorning', 'Morning'), afternoon: t('home.wall.slotAfternoon', 'Afternoon'),
+  evening: t('home.wall.slotEvening', 'Evening'), night: t('home.wall.slotNight', 'Night')
+});
+
+// A time in the TV's own hour cycle, as Glasshouse Home shows it.
+function homeWallTime(h, m) {
+  const mm = String(m || 0).padStart(2, '0');
+  if (!homeStatus || !homeStatus.clockHour12) return String(h % 24).padStart(2, '0') + ':' + mm;
+  return ((h + 11) % 12 + 1) + ':' + mm + ' ' + (h % 24 < 12 ? t('common.am', 'AM') : t('common.pm', 'PM'));
+}
+
+function homeWallNow() {
+  const h = new Date().getHours();
+  return HOME_WALL_SLOTS.find(w => w.from < w.to ? h >= w.from && h < w.to : h >= w.from || h < w.to).key;
+}
+
+function homeWallUrl(key, walls) {
+  return api('/api/home/wallpaper?slot=' + key + '&v=' + encodeURIComponent(walls.revision || ''));
+}
+
 function renderHomeWalls() {
   const box = q('home-walls');
-  if (!box) return;
+  if (!box || !homeStatus) return;
   const walls = homeStatus.wallpapers || {};
-  const busy = !homeWritable() || homeWallUploading || walls.uploading;
-  q('home-wall-slot').disabled = busy;
-  q('home-wall-file').disabled = busy;
-  q('home-wall-upload').disabled = busy || !q('home-wall-file').files.length;
-  q('home-wall-upload').textContent = homeWallUploading || walls.uploading ? t('home.wall.uploading', 'Uploading…') : t('home.wall.upload', 'Upload image');
+  const has = walls.slots || {};
+  const busy = !homeWritable() || !!homeWallUploading || walls.uploading;
+  const names = HOME_WALL_NAMES();
+  const now = homeWallNow();
+  const c = (homeLayout && homeLayout.colours) || ((homeStatus.colourPresets || [])[0]) || { text: '#ece7df', accent: '#e9ad55' };
   q('home-wall-clear').disabled = busy || !walls.available;
   clearTimeout(homeWallTimer);
   if (walls.uploading) homeWallTimer = setTimeout(() => { if (activeTab === 'home') loadHome(); }, 2000);
-  if (!walls.available) { box.innerHTML = ''; delete box.dataset.revision; return; }
-  if (box.dataset.revision === walls.revision) return;
-  box.dataset.revision = walls.revision;
-  const slots = [
-    ['morning', t('home.wall.morning', 'Morning, 06:00 to 11:00')],
-    ['afternoon', t('home.wall.afternoon', 'Afternoon, 11:00 to 17:00')],
-    ['evening', t('home.wall.evening', 'Evening, 17:00 to 21:00')],
-    ['night', t('home.wall.night', 'Night, 21:00 to 06:00')]
-  ];
-  box.innerHTML = slots.map(([key, label]) => `<figure class="home-wall">
-    ${walls.slots && !walls.slots[key] ? `<div class="home-wall-empty">${esc(t('home.wall.black', 'Black'))}</div>`
-      : `<img src="${esc(api('/api/home/wallpaper?slot=' + key + '&v=' + encodeURIComponent(walls.revision || '')))}" alt="" loading="lazy">`}
-    <figcaption class="sub">${esc(label)}</figcaption></figure>`).join('');
+
+  // The day strip: midnight to midnight, night split at midnight.
+  const day = q('home-wall-day');
+  if (day) {
+    const parts = [['night', 0, 6], ['morning', 6, 11], ['afternoon', 11, 17], ['evening', 17, 21], ['night', 21, 24]];
+    const d = new Date();
+    const at = (d.getHours() + d.getMinutes() / 60) / 24 * 100;
+    day.innerHTML = `<div class="wall-day-bar">${parts.map(([key, from, to]) => `<button type="button" class="wall-day-part${has[key] ? ' has' : ''}${key === now ? ' now' : ''}" data-slot="${key}"
+        style="flex:${to - from}${has[key] ? `;background-image:url('${esc(homeWallUrl(key, walls))}')` : ''}"
+        onclick="homeWallChoose('${key}')" ${busy ? 'disabled' : ''} title="${esc(names[key])}" aria-label="${esc(names[key])}"></button>`).join('')}
+      <span class="wall-day-needle" style="left:${at.toFixed(2)}%"><b>${esc(t('home.wall.now', 'Now'))}</b></span></div>
+      <div class="wall-day-scale">${[0, 6, 12, 18, 24].map(h => `<span style="left:${h / 24 * 100}%">${esc(homeWallTime(h, 0))}</span>`).join('')}</div>`;
+  }
+
+  box.style.setProperty('--look-text', c.text);
+  box.style.setProperty('--look-accent', c.accent);
+  box.innerHTML = HOME_WALL_SLOTS.map(w => {
+    const key = w.key, set = !!has[key];
+    const sending = homeWallUploading === key || (walls.uploading && !homeWallUploading);
+    return `<div class="wall-card${set ? ' has' : ''}${key === now ? ' now' : ''}${sending ? ' busy' : ''}" data-slot="${key}">
+      <button type="button" class="wall-screen" onclick="homeWallChoose('${key}')" ${busy ? 'disabled' : ''}
+          aria-label="${esc(t('home.wall.choose', 'Choose a picture for {name}', { name: names[key] }))}"
+          ${set ? `style="background-image:url('${esc(homeWallUrl(key, walls))}')"` : ''}>
+        <span class="wall-clock">${esc(homeWallTime(w.sample[0], w.sample[1]))}</span>
+        <span class="wall-row">${esc(t('home.row.apps', 'Apps'))}</span><i></i>
+        ${set ? '' : `<span class="wall-add">${esc(t('home.wall.add', 'Add a picture'))}</span>`}
+        ${key === now ? `<span class="wall-badge">${esc(t('home.wall.now', 'Now'))}</span>` : ''}
+        ${sending ? `<span class="wall-sending">${esc(t('home.wall.uploading', 'Uploading…'))}</span>` : ''}
+      </button>
+      <div class="wall-meta">
+        <span class="wall-name">${esc(names[key])}</span>
+        <span class="wall-hours">${esc(homeWallTime(w.from, 0))} – ${esc(homeWallTime(w.to, 0))}</span>
+      </div>
+      <div class="wall-actions">${set ? `<button type="button" class="wall-link" onclick="homeWallChoose('${key}')" ${busy ? 'disabled' : ''}>${esc(t('home.wall.replace', 'Replace'))}</button>
+        <button type="button" class="wall-link" onclick="homeWallRemove('${key}')" ${busy ? 'disabled' : ''}>${esc(t('home.wall.remove', 'Remove'))}</button>`
+        : ''}</div>
+    </div>`;
+  }).join('');
+  // An image dropped on a time of day, or on its part of the strip, is its picture.
+  document.querySelectorAll('#home-walls .wall-screen, #home-wall-day .wall-day-part').forEach(el => {
+    const slot = el.closest('[data-slot]').dataset.slot;
+    el.addEventListener('dragover', e => { if (busy) return; e.preventDefault(); el.classList.add('drop'); });
+    el.addEventListener('dragleave', () => el.classList.remove('drop'));
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drop');
+      const file = e.dataTransfer && e.dataTransfer.files[0];
+      if (file && !busy) homeUploadWall(slot, file);
+    });
+  });
 }
 
-async function homeUploadWall() {
-  const file = q('home-wall-file').files[0];
+let homeWallSlot = null;
+function homeWallChoose(key) {
+  if (!homeWritable() || homeWallUploading) return;
+  homeWallSlot = key;
+  const input = q('home-wall-file');
+  input.value = '';
+  input.click();
+}
+
+function homeWallPicked(input) {
+  const file = input.files[0];
+  if (file && homeWallSlot) homeUploadWall(homeWallSlot, file);
+}
+
+async function homeUploadWall(slot, file) {
   if (!file || !homeWritable() || homeWallUploading) return;
-  const slot = q('home-wall-slot').value;
   const note = q('home-wall-upload-note');
-  homeWallUploading = true;
+  homeWallUploading = slot;
   note.textContent = '';
   renderHomeWalls();
   let url;
@@ -598,7 +679,6 @@ async function homeUploadWall() {
     });
     const r = await res.json();
     if (!res.ok || !r.ok) throw new Error(r.error || t('home.wall.uploadFailed', 'The image could not be uploaded.'));
-    q('home-wall-file').value = '';
     note.textContent = t('home.wall.uploadDone', 'Image uploaded. Home updates within a few seconds.');
   } catch (e) { note.textContent = e.message; }
   finally {
@@ -607,6 +687,14 @@ async function homeUploadWall() {
     await loadHome();
     renderHomeWalls();
   }
+}
+
+async function homeWallRemove(key) {
+  if (!homeWritable() || homeWallUploading) return;
+  q('home-wall-upload-note').textContent = '';
+  try { await homePost('/api/home/wallpapers', { remove: key }); }
+  catch (e) { q('home-wall-upload-note').textContent = e.message; }
+  await loadHome();
 }
 
 async function homeClearUploads() {

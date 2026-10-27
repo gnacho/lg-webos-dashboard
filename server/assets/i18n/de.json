@@ -531,45 +531,13 @@
     "text": "Auf diesem TV nicht verfügbar",
     "from": "Not available on this TV"
   },
-  "home.wall.afternoon": {
-    "text": "Nachmittag, 11:00 bis 17:00",
-    "from": "Afternoon, 11:00 to 17:00"
-  },
   "home.wall.black": {
     "text": "Schwarz",
     "from": "Black"
   },
-  "home.wall.chooseFile": {
-    "text": "Hintergrundbild auswählen",
-    "from": "Choose a wallpaper image"
-  },
   "home.wall.chooseImage": {
     "text": "Ein Bild als JPEG, PNG oder WebP bis 25 MB wählen.",
     "from": "Choose a JPEG, PNG or WebP image up to 25 MB."
-  },
-  "home.wall.clear": {
-    "text": "Hochgeladene Bilder entfernen",
-    "from": "Remove uploaded images"
-  },
-  "home.wall.evening": {
-    "text": "Abend, 17:00 bis 21:00",
-    "from": "Evening, 17:00 to 21:00"
-  },
-  "home.wall.morning": {
-    "text": "Morgen, 06:00 bis 11:00",
-    "from": "Morning, 06:00 to 11:00"
-  },
-  "home.wall.night": {
-    "text": "Nacht, 21:00 bis 06:00",
-    "from": "Night, 21:00 to 06:00"
-  },
-  "home.wall.optional": {
-    "text": "Optional: für jede Tageszeit ein Bild hochladen. Ohne Bild bleibt der Hintergrund schwarz.",
-    "from": "Optional: upload an image for each time of day. A time of day without one has a black background."
-  },
-  "home.wall.slot": {
-    "text": "Tageszeit",
-    "from": "Time of day"
   },
   "home.wall.slotAfternoon": {
     "text": "Nachmittag",
@@ -603,10 +571,6 @@
     "text": "Das Bild konnte nicht geöffnet werden.",
     "from": "The image could not be opened."
   },
-  "home.wall.upload": {
-    "text": "Bild hochladen",
-    "from": "Upload image"
-  },
   "home.wall.uploadDone": {
     "text": "Bild hochgeladen. Home aktualisiert sich in wenigen Sekunden.",
     "from": "Image uploaded. Home updates within a few seconds."
@@ -634,5 +598,37 @@
   "home.hideLgWarn": {
     "text": "Warnung: Läuft Glasshouse nicht mehr (etwa nach einem Firmware-Update, das Root entfernt), bleibt LGs Home schwarz, bis es per SSH zurückgesetzt wird.",
     "from": "Warning: If Glasshouse stops running (for example after a firmware update removes root), LG’s Home will stay black until it is put back over SSH."
+  },
+  "home.wall.add": {
+    "text": "Bild hinzufügen",
+    "from": "Add a picture"
+  },
+  "home.wall.choose": {
+    "text": "Bild für {name} wählen",
+    "from": "Choose a picture for {name}"
+  },
+  "home.wall.clearAll": {
+    "text": "Alle entfernen",
+    "from": "Remove all"
+  },
+  "home.wall.intro": {
+    "text": "Ein Bild hinter Glasshouse Home für jede Tageszeit. Wählen Sie eine Tageszeit oder ziehen Sie ein Bild darauf. Eine ohne Bild hat einen schwarzen Hintergrund.",
+    "from": "A picture behind Glasshouse Home for each part of the day. Choose a time of day, or drop an image on it. One without a picture has a black background."
+  },
+  "home.wall.now": {
+    "text": "Jetzt",
+    "from": "Now"
+  },
+  "home.wall.remove": {
+    "text": "Entfernen",
+    "from": "Remove"
+  },
+  "home.wall.replace": {
+    "text": "Ersetzen",
+    "from": "Replace"
+  },
+  "srv.home.wallSlot": {
+    "text": "unbekannte Tageszeit für das Hintergrundbild",
+    "from": "unknown wallpaper slot"
   }
 }

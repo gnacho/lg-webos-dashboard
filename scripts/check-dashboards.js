@@ -1059,17 +1059,22 @@ async function visitHomeEditor(browser, base, problems) {
   } finally { await page.close(); }
 }
 
+// The wallpaper picker: a time of day chosen and uploaded to, the upload shown
+// pending in another tab, an image dropped on another time of day, then one
+// removed and all of them.
 async function visitHomeUploads(browser, base, problems) {
   const context = await browser.newContext();
   const page = await context.newPage(), observer = await context.newPage();
   for (const p of [page, observer]) p.on('pageerror', e => problems.push('Home uploads: ' + e.message));
   const layout = { rows: ['app', 'dev', 'ch'], order: { app: [], dev: [], ch: [] },
     hidden: { app: [], dev: [], ch: [] }, channels: [], hintSeen: true, searchHintSeen: true };
-  let uploading = false, uploaded = false, release, image;
-  const wallpapers = () => ({ available: uploaded, uploading,
-    slots: { morning: uploaded }, revision: uploaded ? '1' : '0' });
+  let uploading = false, hold = true, release, image, revision = 0;
+  const has = {};
+  const wallpapers = () => ({ available: Object.keys(has).some(k => has[k]), uploading,
+    slots: { morning: !!has.morning, afternoon: !!has.afternoon, evening: !!has.evening, night: !!has.night }, revision: String(revision) });
   await context.route('**/api/home**', async route => {
-    const pathname = new URL(route.request().url()).pathname;
+    const url = new URL(route.request().url());
+    const pathname = url.pathname;
     let body;
     if (pathname === '/api/home/wallpaper') return route.fulfill({ contentType: 'image/jpeg', body: image });
     if (pathname.endsWith('/upload')) {
@@ -1078,11 +1083,14 @@ async function visitHomeUploads(browser, base, problems) {
         problems.push('Home uploads: PNG was not prepared as a JPEG');
       }
       uploading = true;
-      await new Promise(resolve => { release = resolve; });
-      uploading = false; uploaded = true;
+      if (hold) await new Promise(resolve => { release = resolve; });
+      uploading = false; has[url.searchParams.get('slot')] = true; revision++;
       body = { ok: true, wallpapers: wallpapers() };
     } else if (pathname === '/api/home/wallpapers') {
-      if (route.request().postDataJSON().removeUploads) uploaded = false;
+      const req = route.request().postDataJSON();
+      if (req.removeUploads) Object.keys(has).forEach(k => { has[k] = false; });
+      else if (req.remove) has[req.remove] = false;
+      revision++;
       body = { ok: true, wallpapers: wallpapers() };
     } else if (pathname === '/api/home') {
       body = { ok: true, supported: { ok: true }, installed: true, enabled: true, writable: true, layout, wallpapers: wallpapers() };
@@ -1091,25 +1099,43 @@ async function visitHomeUploads(browser, base, problems) {
     }
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
   });
+  const card = (p, slot) => p.locator(`.wall-card[data-slot="${slot}"]`);
+  const ready = p => p.waitForSelector('.wall-card[data-slot="morning"] .wall-screen:not(:disabled)');
   try {
     await page.goto(base + '/?tab=home');
     await page.waitForFunction(() => typeof homeStatus !== 'undefined' && homeStatus && homeCat);
-    await page.waitForSelector('#home-wall-slot:not(:disabled)');
-    await page.locator('#home-wall-file').setInputFiles(path.join(ASSETS, 'dashboard-app/assets/icon130.png'));
-    const sent = page.waitForRequest(r => new URL(r.url()).pathname.endsWith('/wallpapers/upload'));
-    await page.locator('#home-wall-upload').click(); await sent;
+    await ready(page);
+    // Choosing Morning opens the file chooser for it.
+    const chooser = page.waitForEvent('filechooser');
+    await card(page, 'morning').locator('.wall-screen').click();
+    const sent = page.waitForRequest(r => r.url().includes('/wallpapers/upload?slot=morning'));
+    await (await chooser).setFiles(path.join(ASSETS, 'dashboard-app/assets/icon130.png'));
+    await sent;
     await observer.goto(base + '/?tab=home');
-    await observer.getByRole('button', { name: 'Uploading…', exact: true }).waitFor();
-    if (!await observer.locator('#home-wall-slot').isDisabled()) problems.push('Home uploads: another tab did not show the pending upload');
+    await card(observer, 'morning').locator('.wall-sending').waitFor();
+    if (!await card(observer, 'evening').locator('.wall-screen').isDisabled()) problems.push('Home uploads: another tab did not show the pending upload');
     release();
-    await observer.waitForSelector('#home-wall-slot:not(:disabled)');
-    await page.waitForSelector('#home-wall-slot:not(:disabled)');
-    await page.waitForFunction(() => {
-      const image = document.querySelector('#home-walls img');
-      return image && image.complete && image.naturalWidth;
+    await ready(observer);
+    await ready(page);
+    await page.waitForFunction(() => document.querySelector('.wall-card[data-slot="morning"].has .wall-screen').style.backgroundImage.includes('/api/home/wallpaper'));
+    // An image dropped on Evening is Evening's.
+    hold = false;
+    const dropped = page.waitForRequest(r => r.url().includes('/wallpapers/upload?slot=evening'));
+    await page.evaluate(async () => {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 36;
+      const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+      const dt = new DataTransfer();
+      dt.items.add(new File([blob], 'evening.png', { type: 'image/png' }));
+      document.querySelector('.wall-card[data-slot="evening"] .wall-screen').dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
     });
+    await dropped;
+    await page.waitForSelector('.wall-card[data-slot="evening"].has');
+    // Remove takes one time of day's picture alone.
+    await card(page, 'morning').getByRole('button', { name: 'Remove', exact: true }).click();
+    await page.waitForSelector('.wall-card[data-slot="morning"]:not(.has)');
+    if (!await card(page, 'evening').evaluate(el => el.classList.contains('has'))) problems.push('Home uploads: removing Morning took Evening\'s picture too');
     await page.locator('#home-wall-clear').click();
-    await page.waitForFunction(() => !document.querySelector('#home-walls img'));
+    await page.waitForFunction(() => !document.querySelector('.wall-card.has'));
   } finally { await context.close(); }
 }
 

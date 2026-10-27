@@ -1121,22 +1121,16 @@
   </div>
 
   <div class="pv-sec adv-sec" data-t="home.wall.title">Wallpaper</div>
-  <div class="sub" data-t="home.wall.optional">Optional: upload an image for each time of day. A time of day without one has a black background.</div>
-  <div class="home-upload">
-    <label for="home-wall-slot" data-t="home.wall.slot">Time of day</label>
-    <select id="home-wall-slot" class="pill-sel">
-      <option value="morning" data-t="home.wall.slotMorning">Morning</option>
-      <option value="afternoon" data-t="home.wall.slotAfternoon">Afternoon</option>
-      <option value="evening" data-t="home.wall.slotEvening">Evening</option>
-      <option value="night" data-t="home.wall.slotNight">Night</option>
-    </select>
-    <input id="home-wall-file" type="file" accept="image/jpeg,image/png,image/webp" onchange="renderHomeWalls()" aria-label="Choose a wallpaper image" data-t-aria-label="home.wall.chooseFile">
-    <button type="button" id="home-wall-upload" onclick="homeUploadWall()" disabled></button>
-    <button type="button" id="home-wall-clear" onclick="homeClearUploads()" data-t="home.wall.clear">Remove uploaded images</button>
+  <div class="sub" data-t="home.wall.intro">A picture behind Glasshouse Home for each part of the day. Choose a time of day, or drop an image on it. One without a picture has a black background.</div>
+  <!-- The day as Glasshouse Home shows it: each part's picture across its hours, and where the day is now -->
+  <div class="wall-day" id="home-wall-day"></div>
+  <div class="wall-cards" id="home-walls"></div>
+  <input type="file" id="home-wall-file" accept="image/jpeg,image/png,image/webp" hidden onchange="homeWallPicked(this)">
+  <div class="wall-foot">
+    <div class="sub" data-t="home.wall.uploadHelp">JPEG, PNG or WebP, up to 25 MB. Images are resized to fit 1920 × 1080, the size Glasshouse Home is drawn at, before upload, and fill the screen.</div>
+    <button type="button" class="pill idle" id="home-wall-clear" onclick="homeClearUploads()" data-t="home.wall.clearAll">Remove all</button>
   </div>
-  <div class="sub" data-t="home.wall.uploadHelp">JPEG, PNG or WebP, up to 25 MB. Images are resized to fit 1920 × 1080, the size Glasshouse Home is drawn at, before upload, and fill the screen.</div>
   <div class="sub" id="home-wall-upload-note" role="status"></div>
-  <div class="home-walls" id="home-walls"></div>
   </div>
 
 </section>

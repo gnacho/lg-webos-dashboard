@@ -116,10 +116,13 @@ var FIRST_BEAT_GRACE_MS = 20000;
 var HOLD_MS = 1200;
 /*
  * A short Home press has the view in front within 0.1 s (a G3, webOS 9.2.2; a
- * G5, webOS 10.3.1), and it beats as it shows. No beat this long after, the
- * press opened nothing.
+ * G5, webOS 10.3.1), and it beats as it shows. No beat this long after, and
+ * WebAppMgr not running, the press opened nothing. With WebAppMgr running the
+ * page may still be loading from cold: the first press after a reboot took up
+ * to 13 s on a CX (webOS 5.6.2), so there the wait runs to the first beat's.
  */
 var OPEN_GRACE_MS = 5000;
+var slowOpenMs = FIRST_BEAT_GRACE_MS;
 /*
  * WebAppMgr runs every web app, the view among them. On a G4 (webOS 11.2.0) it
  * was stopped by a SIGTERM from outside, and its unit restarts only on a
@@ -1585,12 +1588,17 @@ function reopenAfterWake(was, id) {
  */
 function watchOpen(retried, ms) {
   stopOpenWatch();
-  var beatsBefore = beats;
-  openTimer = setTimeout(function () {
-    openTimer = null;
-    if (beats > beatsBefore || escaped || !powerActive || !readConfig().enabled) return;
-    recoverView('Glasshouse Home did not open', retried);
-  }, ms);
+  var beatsBefore = beats, since = nowMs();
+  function check(wait) {
+    openTimer = setTimeout(function () {
+      openTimer = null;
+      if (beats > beatsBefore || escaped || !powerActive || !readConfig().enabled) return;
+      var left = slowOpenMs - (nowMs() - since);
+      if (!retried && left > 0 && webAppMgrRunning() !== false) return check(left);
+      recoverView('Glasshouse Home did not open', retried);
+    }, wait);
+  }
+  check(ms);
 }
 
 /*
@@ -1782,6 +1790,7 @@ function init(opts) {
   wakeSettleMs = typeof opts.wakeSettleMs === 'number' ? opts.wakeSettleMs : WAKE_SETTLE_MS;
   installFn = opts.installApp || null;
   procDir = opts.procDir || '/proc';
+  slowOpenMs = typeof opts.slowOpenMs === 'number' ? opts.slowOpenMs : FIRST_BEAT_GRACE_MS;
   execFn = opts.exec || execFile;
   systemctlPath = opts.systemctl !== undefined ? opts.systemctl
     : SYSTEMCTLS.filter(function (p) { return fs.existsSync(p); })[0] || '';
@@ -1934,7 +1943,8 @@ module.exports = {
     var sup = supported();
     if (!sup.ok) return cb({ ok: false, error: sup.reason });
     if (body && body.removeUploads === true) return wallpapers.removeUploads(cb);
-    cb({ ok: false, error: 'removeUploads expected' });
+    if (body && typeof body.remove === 'string') return wallpapers.removeUploads(cb, body.remove);
+    cb({ ok: false, error: 'removeUploads or remove expected' });
   },
   normalise: normalise,
   layout: function () { return layoutOf(readConfig()); },

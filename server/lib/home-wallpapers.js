@@ -39,10 +39,12 @@ function image(key) {
   return null;
 }
 
-function removeUploads(cb) {
+// Every slot's image, or with only, that slot's alone.
+function removeUploads(cb, only) {
   if (uploading) return cb({ ok: false, error: msg('srv.home.wallUploading', 'Wait for the wallpaper upload to finish.') });
+  if (only !== undefined && SLOTS.indexOf(only) === -1) return cb({ ok: false, error: msg('srv.home.wallSlot', 'unknown wallpaper slot') });
   try {
-    SLOTS.forEach(function (key) {
+    (only !== undefined ? [only] : SLOTS).forEach(function (key) {
       [key + '.jpg', key + '.jpg.part'].forEach(function (name) {
         try { fs.unlinkSync(path.join(uploadsDir, name)); } catch (e) { if (e.code !== 'ENOENT') throw e; }
       });

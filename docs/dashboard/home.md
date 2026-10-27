@@ -80,10 +80,13 @@ LG's search needs the TV online and LG's search server (`gb.nextlgsdp.com` on a 
 
 ## Wallpapers
 
-By default, Glasshouse Home uses a pure `#000` OLED black background (and leaves the TV's [screen saver](screen-savers.md) untouched). Custom wallpapers can be uploaded for four times of day (**Morning** 06:00, **Afternoon** 11:00, **Evening** 17:00, **Night** 21:00):
+By default, Glasshouse Home uses a pure `#000` OLED black background (and leaves the TV's [screen saver](screen-savers.md) untouched). A picture can be set for each of four times of day: **Morning** (06:00 to 11:00), **Afternoon** (11:00 to 17:00), **Evening** (17:00 to 21:00) and **Night** (21:00 to 06:00).
 
-* Select a JPEG, PNG, or WebP image (up to 25 MB) in the web dashboard and click **Upload image**. The browser scales it to 1920 × 1080 JPEG before saving it to `/var/lib/tvweb/home-wallpaper-uploads` on the TV.
-* **Remove uploaded images** restores the pure black background.
+The web dashboard's **Wallpaper** section shows the day as a strip from midnight to midnight, each time of day filled with its picture across its hours and a marker at the time now, and below it each time of day as a small Glasshouse Home: its picture behind the clock in the chosen text colour, so how readable the clock will be shows before it is on the TV. The time of day showing now is marked **Now**.
+
+* Choosing a time of day, on the strip or its preview, or dropping an image on it, sets its picture. JPEG, PNG and WebP images up to 25 MB are taken; the browser scales each to fit 1920 × 1080 as a JPEG before saving it to `/var/lib/tvweb/home-wallpaper-uploads` on the TV.
+* **Replace** and **Remove** under a time of day change or remove its picture alone; one without a picture has the black background.
+* **Remove all** puts the black background back for every time of day.
 
 === "Afternoon wallpaper"
 
@@ -109,7 +112,7 @@ Click **Use Glasshouse Home** (and confirm on the second press) in the web dashb
   * Select the **LG Home** tile at the end of the Apps row.
   * Hold the remote's **Home** button for 1 second (a short press on LG's Home returns to Glasshouse Home).
   * Stop the Glasshouse server: if Glasshouse Home stops answering or the server is stopped/uninstalled, LG's Home automatically takes its place back.
-  * Glasshouse Home not opening: if a short press of **Home** brings nothing from Glasshouse Home within five seconds, LG's Home opens instead. Where the TV's web app manager, which runs Glasshouse Home, has stopped, it is started again first and Glasshouse Home given one more try.
+  * Glasshouse Home not opening: if a short press of **Home** brings nothing from Glasshouse Home, LG's Home opens instead. Where the TV's web app manager, which runs Glasshouse Home, has stopped, this is decided after five seconds, and the web app manager is started again first and Glasshouse Home given one more try. Where it is running, Glasshouse Home may only be slow to load, as on the first press after a reboot, so it is given 20 seconds.
 * **Cold boot & standby:** [Open Home at power-on](#open-home-at-power-on) controls whether the TV opens the Home screen when switched on or stays on the last input (LG's Home Auto Launch). With Quick Start+ (Active Standby) on, Glasshouse Home opens immediately on wake (and on TVs like the C4 on webOS 10.3.1 that start on their last input anyway, Glasshouse Home is opened over it when Open Home at power-on is on). On a cold boot (Quick Start+ off), Glasshouse Home takes over about 25–40 seconds after power-on; pressing Home during startup keeps the TV on the current input with a brief notice until ready.
 * **Hide LG's Home while the TV starts (webOS 9 optional setting):** Replaces LG's Home layout with a blank screen during the first seconds of a cold boot so LG's launcher never flashes on screen.
 

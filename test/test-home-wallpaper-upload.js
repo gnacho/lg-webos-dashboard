@@ -101,6 +101,22 @@ var steps = [
     });
   },
   function (next) {
+    request('POST', '/api/home/wallpapers/upload?slot=evening', jpeg, {}, function (code) {
+      assert.strictEqual(code, 200);
+      request('POST', '/api/home/wallpapers', new Buffer('{"remove":"noon"}'), { 'Content-Type': 'application/json' }, function (badCode) {
+        assert.strictEqual(badCode, 400, 'an unknown time of day is refused');
+        request('POST', '/api/home/wallpapers', new Buffer('{"remove":"morning"}'), { 'Content-Type': 'application/json' }, function (code2, body) {
+          assert.strictEqual(code2, 200);
+          var slots = JSON.parse(body).wallpapers.slots;
+          assert.strictEqual(slots.morning, false, 'Morning\'s picture is removed');
+          assert.strictEqual(slots.evening, true, 'and Evening\'s kept');
+          assert.strictEqual(home.wallpaperPath('morning'), null);
+          next();
+        });
+      });
+    });
+  },
+  function (next) {
     request('POST', '/api/home/wallpapers', new Buffer('{"removeUploads":true}'), { 'Content-Type': 'application/json' }, function (code, body) {
       assert.strictEqual(code, 200);
       assert.strictEqual(JSON.parse(body).wallpapers.available, false);
@@ -118,7 +134,7 @@ server.listen(0, '127.0.0.1', function () {
     server.close(function () {
       fs.rmdirSync(path.join(dir, 'home-wallpaper-uploads'));
       fs.rmdirSync(dir);
-      console.log('Home wallpaper uploads preserve existing images on failure, recover after abort and survive restart.');
+      console.log('Home wallpaper uploads preserve existing images on failure, recover after abort, survive restart, and are removed one time of day at a time or all at once.');
     });
   }
   next();
