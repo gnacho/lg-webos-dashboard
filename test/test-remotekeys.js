@@ -407,6 +407,21 @@ step(function (next) {
 });
 
 step(function (next) {
+  // The microphone button can be set, and says that voice control then no longer starts from it.
+  fs.writeFileSync(path.join(filtersDir, 'voice.js'), 'case WebOS.Key_webOS_Voice:');
+  rk.init({ luna: luna, stateDir: stateDir, filtersDir: filtersDir });
+  rk.getRemoteKeys(guard(function (r) {
+    var mic = r.keys.filter(function (k) { return k.key === 'voice'; })[0];
+    assert.ok(mic, 'the microphone button is offered');
+    assert.strictEqual(mic.title, 'Microphone');
+    assert.strictEqual(mic.replacesVoice, true);
+    fs.unlinkSync(path.join(filtersDir, 'voice.js'));
+    console.log('  ✓ the microphone button is offered, noting that voice control no longer starts from it once set');
+    next();
+  }));
+});
+
+step(function (next) {
   rk.init({ luna: luna, stateDir: stateDir, filtersDir: path.join(dir, 'missing') });
   rk.getRemoteKeys(guard(function (r) {
     assert.strictEqual(r.supported, false);

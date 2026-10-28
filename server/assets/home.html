@@ -45,6 +45,8 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
    which is sized for the digits alone. */
 #mer{font-size:.28em;letter-spacing:0;margin-left:.1em;opacity:.75;font-weight:400}
 #date{margin-top:22px;font-size:28px;color:#a39d93;white-space:nowrap}
+/* Switched off, the clock keeps its space, so the rows and Last watched stay put. */
+.no-clock #when{visibility:hidden}
 #source{-webkit-flex:1 1 auto;flex:1 1 auto;min-width:0;padding-left:24px;border-left:1px solid #2a2825;padding-bottom:2px}
 #source.none{visibility:hidden}
 #srcKind{font-size:23px;color:#e9ad55}
@@ -74,6 +76,31 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 #rows{position:absolute;left:0;right:0;top:296px;bottom:40px;
   display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
 #rows:before,#rows:after{content:"";-webkit-flex:1 1 0;flex:1 1 0}
+/* Along the bottom, as on LG's Home: no space below the rows. */
+.rows-bottom #rows:after{-webkit-flex:0 0 0;flex:0 0 0}
+
+/* Alternative View (#999): a smaller clock on the right, Last watched to its
+   left, and the rows as rounded, translucent tiles, titled only while arranging. */
+.alternative #now{padding:0 90px}
+.alternative #when{-webkit-order:3;order:3;width:420px;text-align:right}
+.alternative #clock{font-size:100px;line-height:1;letter-spacing:-2px}
+.alternative #date{margin-top:8px;font-size:23px}
+.alternative #source{-webkit-order:1;order:1;border-left:0;padding-left:22px}
+.alternative #plate{-webkit-order:2;order:2;margin:0 56px 0 0}
+.alternative:not(.arranging) .row > h2{display:none}
+.alternative .row{margin-bottom:10px}
+.alternative .tile{border-radius:18px;margin-right:12px;background:rgba(20,15,29,.45)}
+.alternative .tile.focus{background:rgba(34,25,48,.86)}
+.alternative .app{width:160px;padding:12px}
+.alternative .app img,.alternative .app .mono{width:100px;height:100px;border-radius:16px}
+.alternative .app .mono{line-height:100px}
+.alternative .app .nm{font-size:18px;margin-top:8px}
+.alternative .app .fold{width:100px;height:100px;padding:9px}
+.alternative .app .fold i,.alternative .app .fold i img{width:37px;height:37px}
+.alternative .app .fold i{line-height:37px;font-size:18px}
+.alternative .dev{width:340px;height:108px}
+.alternative .dev .nm{font-size:26px}
+.alternative .dev .path,.alternative .dev .st{font-size:17px}
 .row{-webkit-flex:0 0 auto;flex:0 0 auto}
 .row.empty{display:none}
 .arranging .row.empty{display:block}
@@ -194,6 +221,29 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 #recents .empty{padding:8px 0 0;font-size:26px;color:#a39d93}
 #recents .empty b{display:block;font-family:'Outfit',sans-serif;font-size:32px;font-weight:300;color:#ece7df;margin-bottom:8px}
 
+/* More apps: the Apps row's folder. Its tile shows the first four icons
+   small; OK opens them all as a grid over the screen, Back closes it. */
+/* white-space: the row's track is nowrap, which would keep the four on one line. */
+.app .fold{display:block;width:112px;height:112px;margin:0 auto;border-radius:14px;background:#2a2825;padding:10px;
+  font-size:0;line-height:0;text-align:left;white-space:normal;overflow:hidden}
+.app .fold i{display:inline-block;width:42px;height:42px;margin:0 8px 8px 0;border-radius:7px;background:#141310;
+  font-style:normal;font-family:'Outfit',sans-serif;font-size:20px;line-height:42px;text-align:center;color:#a39d93;overflow:hidden}
+.app .fold i:nth-child(2n){margin-right:0}
+.app .fold i img{display:block;width:42px;height:42px;border-radius:7px}
+.tile .fld{display:none;position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);
+  font-size:18px;color:#ece7df;background:#000;padding:3px 10px;border-radius:4px;white-space:nowrap}
+.tile.folded .fld{display:block}
+.row .tile.folded{opacity:.45}
+.row .tile.folded.focus{opacity:.75}
+#folder{position:absolute;left:0;right:0;top:0;bottom:0;padding:110px 112px 0;background:rgba(0,0,0,.92);
+  visibility:hidden;opacity:0;-webkit-transition:opacity .2s,visibility 0s .2s;transition:opacity .2s,visibility 0s .2s}
+.folder #folder{visibility:visible;opacity:1;-webkit-transition-delay:0s;transition-delay:0s}
+.folder #rows,.folder #now{opacity:.15}
+#folder h2{font-family:'Outfit',sans-serif;font-size:40px;font-weight:300;letter-spacing:-.3px;color:#ece7df;margin-bottom:26px}
+#folder .gwrap{height:820px;overflow:hidden;padding:6px}
+#folderGrid{width:1584px;-webkit-transition:-webkit-transform .28s cubic-bezier(.2,.7,.2,1);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+#folderGrid .tile{display:inline-block;vertical-align:top;margin:0 8px 14px 0}
+
 #fault{position:absolute;left:112px;top:420px;width:1200px;display:none}
 #fault.show{display:block}
 #fault h1{font-family:'Outfit',sans-serif;font-weight:300;font-size:56px;margin-bottom:18px}
@@ -277,7 +327,7 @@ html.fades.in #stage{-webkit-transition:opacity .3s ease-out;transition:opacity 
 html.faded #stage{opacity:0}
 
 @media (prefers-reduced-motion:reduce){
-  .track,#toast,.tile,#hits,.hit,.chip,#finder,#rail,#rail svg,#ask,html.fades #stage{-webkit-transition:none;transition:none}
+  .track,#toast,.tile,#folder,#folderGrid,#hits,.hit,.chip,#finder,#rail,#rail svg,#ask,html.fades #stage{-webkit-transition:none;transition:none}
   #wall .layer{-webkit-animation:none;animation:none}
 }
 </style>
@@ -316,6 +366,7 @@ html.faded #stage{opacity:0}
     <span><b data-t="home.arrange.title">Arranging</b><span id="bannerState">&mdash;</span></span>
     <span class="keys" data-t="home.arrange.keys">OK picks a tile up or puts it down. Held, the arrows move it or its row, and Back hides or shows it, or removes a channel. Left of a row, OK sets its order.</span>
     <span class="btn" id="btnHide" data-t="home.arrange.hide">Hide or show</span>
+    <span class="btn" id="btnFolder" data-t="home.arrange.folder">Into or out of More apps</span>
     <span class="btn" id="btnReset" data-t="home.arrange.reset">Reset</span>
     <span class="btn" id="btnDone" data-t="home.arrange.done">Done</span>
   </div>
@@ -327,6 +378,11 @@ html.faded #stage{opacity:0}
       <span class="btn" id="btnCloseAll" data-t="home.recents.closeAll">Close all</span>
     </div>
     <div class="wrap"><i class="edge l"></i><i class="edge r"></i><div class="track" id="recentsTrack"></div></div>
+  </section>
+
+  <section id="folder">
+    <h2 data-t="home.folder.title">More apps</h2>
+    <div class="gwrap"><div id="folderGrid"></div></div>
   </section>
 
   <div id="fault">
@@ -352,7 +408,11 @@ html.faded #stage{opacity:0}
   };
   var LG_HOME_TILE = 'lg-home';
   // The remote's keys as webOS reports them to a page.
-  var KEY = { left: 37, up: 38, right: 39, down: 40, ok: 13, back: 461, red: 403, yellow: 405 };
+  var KEY = { left: 37, up: 38, right: 39, down: 40, ok: 13, back: 461, red: 403, green: 404, yellow: 405 };
+  // The More apps tile, last in the Apps row while any app is in the folder.
+  var FOLDER_TILE = 'more-apps';
+  // Tiles per line in the More apps grid: 9 of 176px fill the 1696px between the margins.
+  var FOLDER_COLS = 9;
   // Held this long, OK arranges the tiles rather than opening one.
   var LONG_PRESS_MS = 800;
   var BEAT_MS = 5000;
@@ -364,9 +424,9 @@ html.faded #stage{opacity:0}
   // last: the tile focused last, which the bar's Hide or show acts on. rail:
   // the search mark in the left gutter has the focus.
   var state = { row: 0, col: {}, arranging: false, held: false, bar: -1, last: null, rail: false };
-  var BAR = ['btnHide', 'btnReset', 'btnDone'];
+  var BAR = ['btnHide', 'btnFolder', 'btnReset', 'btnDone'];
   var build = null;
-  var okDownAt = 0, okTimer = null, okLong = false, okInRecents = false, backDown = false;
+  var okDownAt = 0, okTimer = null, okLong = false, okInRecents = false, okInFolder = false, backDown = false;
   var beatFails = 0;
   // The TV's own 12 or 24 hour setting, which the server repeats with each heartbeat.
   var hour12 = false;
@@ -466,15 +526,33 @@ html.faded #stage{opacity:0}
     return null;
   }
   function hidden(kind, id) { return layout.hidden[kind].indexOf(id) !== -1; }
+  function inFolder(kind, id) { return kind === 'app' && (layout.folder || []).indexOf(id) !== -1; }
   // The server puts a Last opened row in that order; the view shows it as sent.
   function byRecent(kind) { return !!(layout.sort && layout.sort[kind] === 'recent'); }
 
-  // A row's items in its saved order; arranging shows the hidden ones too.
+  /*
+   * A row's items in its saved order. Arranging shows the hidden ones and
+   * those in the folder too; otherwise the folder's apps are behind the
+   * More apps tile at the end.
+   */
   function items(kind) {
     var out = [];
     (data.order[kind] || []).forEach(function (id) {
       var it = byId(kind, id);
-      if (it && (state.arranging || !hidden(kind, id)) && !leftOut(kind, it)) out.push(it);
+      if (it && (state.arranging || (!hidden(kind, id) && !inFolder(kind, id))) && !leftOut(kind, it)) out.push(it);
+    });
+    if (kind === 'app' && !state.arranging) {
+      var inside = folderItems();
+      if (inside.length) out.push({ id: FOLDER_TILE, title: t('home.folder.title', 'More apps'), folder: inside });
+    }
+    return out;
+  }
+  // The folder's apps, in the Apps row's order.
+  function folderItems() {
+    var out = [];
+    (data.order.app || []).forEach(function (id) {
+      var it = byId('app', id);
+      if (it && inFolder('app', id) && !hidden('app', id)) out.push(it);
     });
     return out;
   }
@@ -502,7 +580,13 @@ html.faded #stage{opacity:0}
   }
 
   function rowNote(kind, list) {
-    if (kind === 'app') return layout.showAppCount === false ? '' : t('home.row.appsNote', '{n} of {total} shown', { n: items('app').length, total: data.order.app.length });
+    if (kind === 'app') {
+      if (layout.showAppCount === false) return '';
+      var folded = folderItems().length;
+      var onRow = items('app').length - (folded && !state.arranging ? 1 : 0);
+      return folded ? t('home.row.appsNoteFolder', '{n} of {total} shown, {folder} in More apps', { n: onRow, total: data.order.app.length, folder: folded })
+        : t('home.row.appsNote', '{n} of {total} shown', { n: onRow, total: data.order.app.length });
+    }
     if (kind === 'dev') {
       var ports = [];
       items('dev').forEach(function (d) { if (!d.unused && ports.indexOf(d.port) === -1) ports.push(d.port); });
@@ -552,6 +636,7 @@ html.faded #stage{opacity:0}
       var active = document.querySelector('.row.active');
       if (active) scrollTrack(active, active.querySelector('.tile.focus'), !animating);
     }
+    if (folder.open) renderFolder();
   }
   var renderedRows = '', barWidths = [];
 
@@ -564,13 +649,29 @@ html.faded #stage{opacity:0}
   }
 
   var hiddenLabel = '<span class="hid">' + esc(t('home.hidden', 'Hidden')) + '</span>';
+  var folderLabel = '<span class="fld">' + esc(t('home.folder.label', 'In More apps')) + '</span>';
+
+  function appIcon(a) {
+    return a.icon ? '<img src="' + esc(a.icon) + '" alt="">' :
+      '<span class="mono">' + esc(a.lg ? 'LG' : String(a.title).charAt(0)) + '</span>';
+  }
+  // The first four of the folder's icons, as the tile that opens it.
+  function folderIcon(inside) {
+    var html = '';
+    inside.slice(0, 4).forEach(function (a) {
+      html += '<i>' + (a.icon ? '<img src="' + esc(a.icon) + '" alt="">' : esc(a.lg ? 'LG' : String(a.title).charAt(0))) + '</i>';
+    });
+    return '<span class="fold">' + html + '</span>';
+  }
 
   var TILE = {
     app: function (a, i) {
-      var cls = 'tile app' + (hidden('app', a.id) ? ' hidden' : '');
-      var icon = a.icon ? '<img src="' + esc(a.icon) + '" alt="">' :
-        '<span class="mono">' + esc(a.lg ? 'LG' : String(a.title).charAt(0)) + '</span>';
-      return '<div class="' + cls + '" data-c="' + i + '">' + icon + '<div class="nm">' + esc(a.title) + '</div>' + hiddenLabel + '</div>';
+      if (a.folder) {
+        return '<div class="tile app" data-c="' + i + '">' + folderIcon(a.folder) + '<div class="nm">' + esc(a.title) + '</div></div>';
+      }
+      var cls = 'tile app' + (hidden('app', a.id) ? ' hidden' : inFolder('app', a.id) ? ' folded' : '');
+      return '<div class="' + cls + '" data-c="' + i + '">' + appIcon(a) + '<div class="nm">' + esc(a.title) + '</div>' +
+        hiddenLabel + folderLabel + '</div>';
     },
     dev: function (d, i) {
       var last = layout.showLastOn !== false && lastOn.kind === 'input' && lastOn.port === d.port;
@@ -627,7 +728,9 @@ html.faded #stage{opacity:0}
           ? t('home.arrange.sortFocus', '{row}: OK changes the order', { row: ROW_TITLES[rowKey()] })
         : !it ? t('home.arrange.emptyRow', 'This row is empty')
         : state.held ? t('home.arrange.moving', 'Moving {name}', { name: it.title || it.name })
-        : (it.title || it.name) + (hidden(rowKey(), it.id) ? ' ' + t('home.arrange.isHidden', '(hidden)') : '');
+        : hidden(rowKey(), it.id) ? (it.title || it.name) + ' ' + t('home.arrange.isHidden', '(hidden)')
+        : inFolder(rowKey(), it.id) ? t('home.arrange.isInFolder', '{name} (in More apps)', { name: it.title })
+        : (it.title || it.name);
     }
   }
 
@@ -857,7 +960,7 @@ html.faded #stage{opacity:0}
   function aim() {
     glide = null;
     hoverKey = null;
-    if (data && layout && !layoutBusy && !state.held && !finder.open) {
+    if (data && layout && !layoutBusy && !state.held && !finder.open && !folder.open) {
       var list = recents.open ? [$('recents')] : document.querySelectorAll('.row');
       for (var i = 0; i < list.length; i++) {
         var wrap = list[i].querySelector('.wrap');
@@ -895,7 +998,7 @@ html.faded #stage{opacity:0}
    */
   function onWheel(e) {
     e.preventDefault();
-    if (!data || !layout || layoutBusy || state.held) return;
+    if (!data || !layout || layoutBusy || state.held || folder.open) return;
     var d = e.deltaY !== undefined ? e.deltaY : -e.wheelDelta;
     if (e.deltaX && Math.abs(e.deltaX) > Math.abs(d || 0)) d = e.deltaX;
     if (!d) return;
@@ -1092,6 +1195,7 @@ html.faded #stage{opacity:0}
     if (state.rail) return openSearch();
     var kind = rowKey(), it = items(kind)[colOf(kind)];
     if (!it) return;
+    if (it.folder) return openFolder();
     fadeThenOpen(it.overlay === true, function (done) {
       postJson('/api/home/open', { kind: kind, id: it.id }, function (r) {
         done(!!(r && r.ok));
@@ -1132,7 +1236,75 @@ html.faded #stage{opacity:0}
 
   function stageClass() {
     $('stage').className = (state.arranging ? 'arranging' : '') + (recents.open ? ' recents' : '') +
-      (finder.open ? ' finding' : '') + (finder.typing ? ' typing' : '') + (searchOn() ? '' : ' no-search');
+      (finder.open ? ' finding' : '') + (finder.typing ? ' typing' : '') + (searchOn() ? '' : ' no-search') + (folder.open ? ' folder' : '') +
+      (layout && layout.showClock === false ? ' no-clock' : '') + (layout && layout.rowsBottom === true ? ' rows-bottom' : '') +
+      (layout && layout.view === 'alternative' ? ' alternative' : '');
+  }
+
+  // ---------------------------------------------------------------- more apps
+
+  var folder = { open: false, col: 0, apps: [] };
+
+  function openFolder() {
+    folder.open = true;
+    folder.col = 0;
+    renderFolder();
+    stageClass();
+  }
+
+  function closeFolder() {
+    folder.open = false;
+    stageClass();
+  }
+
+  // Also after a reload while it is open: an app gone from the TV leaves the grid.
+  function renderFolder() {
+    folder.apps = folderItems();
+    if (!folder.apps.length) return closeFolder();
+    folder.col = Math.max(0, Math.min(folder.col, folder.apps.length - 1));
+    var html = '';
+    folder.apps.forEach(function (a, i) {
+      html += '<div class="tile app" data-f="' + i + '">' + appIcon(a) + '<div class="nm">' + esc(a.title) + '</div></div>';
+    });
+    $('folderGrid').innerHTML = html;
+    focusFolder();
+  }
+
+  // Keeps the focused line in view by moving the grid, as a row's track moves.
+  function focusFolder() {
+    var tiles = $('folderGrid').querySelectorAll('.tile'), on = tiles[folder.col];
+    for (var i = 0; i < tiles.length; i++) tiles[i].className = 'tile app' + (i === folder.col ? ' focus' : '');
+    if (!on) return;
+    var grid = $('folderGrid'), viewH = grid.parentNode.clientHeight - 12;
+    var y = -(parseFloat(grid.getAttribute('data-y')) || 0);
+    if (on.offsetTop + on.offsetHeight > y + viewH) y = on.offsetTop + on.offsetHeight - viewH;
+    if (on.offsetTop < y) y = on.offsetTop;
+    grid.setAttribute('data-y', -y);
+    grid.style.webkitTransform = grid.style.transform = 'translateY(' + (-y) + 'px)';
+  }
+
+  function openFromFolder(app) {
+    fadeThenOpen(app.overlay === true, function (done) {
+      postJson('/api/home/open', { kind: 'app', id: app.id }, function (r) {
+        done(!!(r && r.ok));
+        if (!r || !r.ok) return toast(t('home.openFailed', 'That did not open'), r && r.error);
+        closeFolder();
+      });
+    });
+  }
+
+  function folderKey(k) {
+    var n = folder.apps.length, c = folder.col;
+    if (k === KEY.back) return closeFolder();
+    if (!n) return;
+    if (k === KEY.ok) return openFromFolder(folder.apps[c]);
+    if (k === KEY.left && c % FOLDER_COLS > 0) c--;
+    else if (k === KEY.right && c % FOLDER_COLS < FOLDER_COLS - 1 && c + 1 < n) c++;
+    else if (k === KEY.up && c - FOLDER_COLS >= 0) c -= FOLDER_COLS;
+    // Down from above a short last line goes to its last tile.
+    else if (k === KEY.down && Math.floor(c / FOLDER_COLS) < Math.floor((n - 1) / FOLDER_COLS)) c = Math.min(n - 1, c + FOLDER_COLS);
+    folder.col = c;
+    focusFolder();
   }
 
   // ---------------------------------------------------------------- recent apps
@@ -1613,7 +1785,7 @@ html.faded #stage{opacity:0}
     layoutBusy = true;
     var order = {};
     for (var kind in movedRows) order[kind] = data.order[kind];
-    var body = { rows: layout.rows, order: order, sort: layout.sort, hidden: layout.hidden };
+    var body = { rows: layout.rows, order: order, sort: layout.sort, hidden: layout.hidden, folder: layout.folder || [] };
     if (channelsChanged) body.channels = layout.channels;
     for (var k in extra) body[k] = extra[k];
     postJson('/api/home/layout', body, function (r) {
@@ -1721,7 +1893,27 @@ html.faded #stage{opacity:0}
       return render();
     }
     var h = layout.hidden[kind], i = h.indexOf(it.id);
-    if (i >= 0) h.splice(i, 1); else h.push(it.id);
+    if (i >= 0) h.splice(i, 1); else { h.push(it.id); leaveFolder(it.id); }
+    render();
+  }
+
+  function leaveFolder(id) {
+    var f = layout.folder || [], i = f.indexOf(id);
+    if (i >= 0) f.splice(i, 1);
+  }
+
+  // Only apps go into More apps. The LG Home tile may, since it is still reached from there.
+  function toggleFolder() {
+    var last = state.last;
+    if (!last || last.kind !== 'app') return toast(t('home.arrange.folderAppsOnly', 'Only apps go into More apps'));
+    if (!byId('app', last.id)) return;
+    if (!layout.folder) layout.folder = [];
+    if (inFolder('app', last.id)) leaveFolder(last.id);
+    else {
+      layout.folder.push(last.id);
+      var h = layout.hidden.app, i = h.indexOf(last.id);
+      if (i >= 0) h.splice(i, 1);
+    }
     render();
   }
 
@@ -1742,8 +1934,9 @@ html.faded #stage{opacity:0}
   }
 
   function pressBar(b) {
-    if (b === 0) { state.bar = -1; toggleHidden(); }
-    else if (b === 1) resetLayout();
+    if (BAR[b] === 'btnHide') { state.bar = -1; toggleHidden(); }
+    else if (BAR[b] === 'btnFolder') { state.bar = -1; toggleFolder(); }
+    else if (BAR[b] === 'btnReset') resetLayout();
     else setArranging(false);
   }
 
@@ -1765,6 +1958,7 @@ html.faded #stage{opacity:0}
     }
     if (k === KEY.ok) return pickUp();
     if (k === KEY.red) return toggleHidden();
+    if (k === KEY.green) return toggleFolder();
     if (k === KEY.yellow) return resetLayout();
   }
 
@@ -1791,7 +1985,8 @@ html.faded #stage{opacity:0}
       okDownAt = Date.now();
       okLong = false;
       okInRecents = recents.open;
-      if (okInRecents) return;
+      okInFolder = folder.open;
+      if (okInRecents || okInFolder) return;
       okTimer = setTimeout(function () {
         okLong = true;
         if (state.held) return;
@@ -1803,11 +1998,13 @@ html.faded #stage{opacity:0}
       e.preventDefault();
       if (backDown) return;
       backDown = true;
+      if (folder.open) return closeFolder();
       if (recents.open || recents.loading) return closeRecents();
       if (state.arranging && state.held) { state.held = false; return toggleHidden(); }
       if (state.arranging) return setArranging(false);
       return openRecents();
     }
+    if (folder.open) { e.preventDefault(); return folderKey(k); }
     if (recents.open) { e.preventDefault(); return recentsKey(k); }
     if (state.arranging) { arrangeKey(k); e.preventDefault(); return; }
     if (k === KEY.left) move(0, -1);
@@ -1827,7 +2024,8 @@ html.faded #stage{opacity:0}
     okDownAt = 0;
     if (okLong || layoutBusy) return;
     if (okInRecents) { if (recents.open) recentsKey(KEY.ok); return; }
-    if (recents.open || recents.loading) return;
+    if (okInFolder) { if (folder.open) folderKey(KEY.ok); return; }
+    if (recents.open || recents.loading || folder.open) return;
     if (state.arranging) arrangeKey(KEY.ok);
     else activate();
   }
@@ -1851,6 +2049,14 @@ html.faded #stage{opacity:0}
   function hoverTile(target) {
     if (layoutBusy || !data || !layout) return;
     if (finder.open) return finderPointer(target);
+    if (folder.open) {
+      var inFolder = tileAt(target);
+      if (inFolder && inFolder.hasAttribute('data-f') && +inFolder.getAttribute('data-f') !== folder.col) {
+        folder.col = +inFolder.getAttribute('data-f');
+        focusFolder();
+      }
+      return;
+    }
     if (!state.arranging && searchOn() && within(target, 'rail')) {
       if (!state.rail) { state.rail = true; state.bar = -1; applyFocus(false, true); }
       return;
@@ -1875,6 +2081,12 @@ html.faded #stage{opacity:0}
   }
   function onClick(e) {
     if (!data || !layout || layoutBusy) return;
+    if (folder.open) {
+      var picked = tileAt(e.target);
+      if (!picked || !picked.hasAttribute('data-f')) return closeFolder();
+      folder.col = +picked.getAttribute('data-f');
+      return openFromFolder(folder.apps[folder.col]);
+    }
     if (recents.open) return recentsClick(e.target);
     if (finder.open) return finderClick(e.target);
     if (!state.arranging && searchOn() && within(e.target, 'rail')) return openSearch();
@@ -2113,6 +2325,7 @@ html.faded #stage{opacity:0}
     clearTimeout(okTimer);
     okDownAt = 0; backDown = false;
     closeRecents();
+    closeFolder();
     keepSearch();
     readLaunchParams();
     updateWall();

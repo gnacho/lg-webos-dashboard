@@ -74,6 +74,9 @@ var HA_ENTITIES = [
   { id: 'remote_ok', type: 'button', name: 'Remote OK', cat: 'controls' },
   { id: 'remote_back', type: 'button', name: 'Remote Back', cat: 'controls' },
   { id: 'remote_home', type: 'button', name: 'Remote Home', cat: 'controls' },
+  { id: 'keyboard_text', type: 'text', name: 'Keyboard Text', cat: 'controls' },
+  { id: 'keyboard_enter', type: 'button', name: 'Keyboard Enter', cat: 'controls' },
+  { id: 'keyboard_backspace', type: 'button', name: 'Keyboard Backspace', cat: 'controls' },
   { id: 'remote_button', type: 'event', name: 'Remote Button', cat: 'controls' },
   { id: 'play', type: 'button', name: 'Play', cat: 'controls' },
   { id: 'pause', type: 'button', name: 'Pause', cat: 'controls' },
@@ -1350,6 +1353,39 @@ function buildEntities(opts) {
           icon: 'mdi:home'
         }
       },
+      // Typing into the focused text field, as LG's phone app does.
+      {
+        type: 'text', id: 'keyboard_text',
+        payload: {
+          name: 'Keyboard Text',
+          command_topic: topic.command('keyboardText'),
+          // A state that is always empty: without a state topic Home Assistant keeps each typed text as the
+          // entity's state, so the recorder and logbook would store whatever was typed (search terms, passwords).
+          state_topic: topic.telemetry,
+          value_template: "{{ '' }}",
+          icon: 'mdi:keyboard-outline',
+          mode: 'text',
+          max: 100 // controls.KEYBOARD_TEXT_MAX, which cuts longer text
+        }
+      },
+      {
+        type: 'button', id: 'keyboard_enter',
+        payload: {
+          name: 'Keyboard Enter',
+          command_topic: topic.command('keyboardKey'),
+          payload_press: 'enter',
+          icon: 'mdi:keyboard-return'
+        }
+      },
+      {
+        type: 'button', id: 'keyboard_backspace',
+        payload: {
+          name: 'Keyboard Backspace',
+          command_topic: topic.command('keyboardKey'),
+          payload_press: 'backspace',
+          icon: 'mdi:backspace-outline'
+        }
+      },
       {
         type: 'event', id: 'remote_button',
         payload: {
@@ -1419,14 +1455,10 @@ function buildEntities(opts) {
     var updatePayload = {
       name: 'Server Update',
       state_topic: topic.update,
-      icon: 'mdi:package-up'
+      icon: 'mdi:package-up',
+      command_topic: topic.command('update'),
+      payload_install: 'install'
     };
-    // Without a command topic Home Assistant shows the release but no Install
-    // button, which is right where the Homebrew Channel does the updating.
-    if (!opts.updatesElsewhere) {
-      updatePayload.command_topic = topic.command('update');
-      updatePayload.payload_install = 'install';
-    }
     entities.push({ type: 'update', id: 'server_update', payload: updatePayload });
 
     if (opts.allowPower) {

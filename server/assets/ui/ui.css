@@ -1481,6 +1481,78 @@ button.tools-jump:active{background:var(--w80)}
   .audio-formats th,.audio-formats td{padding:10px 7px}
 }
 
+/* The Picture tab. The picture mode heads it, large, since every setting
+   below is that mode's own, for the input named under it. */
+.pic-now{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px 32px;
+  padding:6px 0 26px;margin-bottom:clamp(30px,4vw,44px);border-bottom:1px solid var(--w25)}
+.pic-now-main{flex:1 1 360px;min-width:0}
+.pic-mode{font-family:'Outfit';font-weight:200;font-size:clamp(38px,5.6vw,64px);line-height:1;
+  letter-spacing:-.01em;color:var(--w100);overflow-wrap:anywhere}
+.pic-scope{font-size:14px;line-height:1.5;color:var(--w60);max-width:62ch;margin-top:14px}
+.pic-mode-ctl .pill-sel{min-width:200px}
+.pic-sec{margin-top:clamp(34px,4.5vw,48px)}
+#pic-groups>.pic-sec:first-child{margin-top:0}
+.pic-extra{margin:-18px 0 clamp(24px,3vw,34px)}
+#picpane .prot-table{display:grid;column-gap:clamp(30px,4vw,52px);
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,max(340px,calc((100% - clamp(30px,4vw,52px)) / 2))),1fr))}
+#picpane .prot-row{align-items:flex-start;padding:16px 0}
+#picpane .prot-desc{font-size:14px;line-height:1.5;margin-top:4px;max-width:none}
+#picpane .prot-status{padding-top:2px}
+#picpane .lgs-range input{width:150px}
+.pic-fold{margin-top:clamp(34px,4.5vw,48px)}
+.pic-fold-t{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.pic-fold-t .pv-sub{font-family:'Manrope';font-weight:400;margin:0}
+.pic-fold[open]>summary{margin-bottom:10px}
+/* A slider whose track is what it changes: red to green for tint, warm to
+   cool for colour temperature, grey to full colour for colour depth, and a
+   colour's own for white balance. The colour is the setting's meaning. */
+.lgs-track{-webkit-appearance:none;appearance:none;height:22px;background:transparent}
+.lgs-track::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--trk)}
+.lgs-track::-moz-range-track{height:4px;border-radius:2px;background:var(--trk)}
+.lgs-track::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border-radius:50%;
+  background:var(--w100);box-shadow:0 0 0 3px var(--bg)}
+.lgs-track::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:var(--w100);box-shadow:0 0 0 3px var(--bg)}
+.lgs-track:focus-visible{outline:2px solid var(--w100);outline-offset:4px;border-radius:4px}
+.lgs-track[data-track="tint"]{--trk:linear-gradient(90deg,#FF4A3D,var(--w25) 50%,#30DE61)}
+.lgs-track[data-track="temperature"]{--trk:linear-gradient(90deg,var(--cand),var(--warm) 30%,var(--w25) 50%,var(--cool) 70%,#7FA6FF)}
+.lgs-track[data-track="saturation"]{--trk:linear-gradient(90deg,var(--w25),#FF3D7F 60%,#FF7A1A)}
+.lgs-track[data-track="red"]{--trk:linear-gradient(90deg,var(--w12),#FF4A3D)}
+.lgs-track[data-track="green"]{--trk:linear-gradient(90deg,var(--w12),#30DE61)}
+.lgs-track[data-track="blue"]{--trk:linear-gradient(90deg,var(--w12),#4C7DFF)}
+/* Colour management as a table: a colour per row, a property per column. */
+.pic-cms.off{opacity:.45}
+.pic-cms-note{margin:4px 0 12px}
+.pic-cms{display:grid;grid-template-columns:minmax(110px,.7fr) repeat(3,minmax(0,1fr));column-gap:24px;max-width:860px;margin-top:8px}
+.pic-cms>div{padding:13px 0;border-top:1px solid var(--w12);display:flex;align-items:center;min-width:0}
+.pic-cms .hh{font-size:12px;color:var(--w60);border-top:0;padding-top:0}
+.pic-cms .in{gap:10px;font-size:15px;color:var(--w100)}
+.pic-cms .lgs-range{gap:10px;width:100%}
+/* #picpane's fixed slider width would otherwise win, leaving them a third of a phone's width. */
+#picpane .pic-cms .lgs-range input{width:100%;-webkit-flex:1;flex:1;min-width:0}
+.pic-cms .lgs-range .num{min-width:4ch}
+.pic-sw{width:12px;height:12px;border-radius:50%;flex:none}
+.pic-sw[data-colour="red"]{background:#FF3030}
+.pic-sw[data-colour="green"]{background:#30DE61}
+.pic-sw[data-colour="blue"]{background:#3061FF}
+.pic-sw[data-colour="cyan"]{background:#2FD9E8}
+.pic-sw[data-colour="magenta"]{background:#E83BD8}
+.pic-sw[data-colour="yellow"]{background:#F5E52A}
+/* Each colour management slider's own label, for when the columns stack. */
+.pic-part{display:none;font-size:12px;color:var(--w60)}
+/* On a phone a slider takes its own line under its text, full width. */
+@media(max-width:600px){
+  #picpane .prot-row:has(.lgs-range){flex-wrap:wrap}
+  #picpane .prot-status:has(.lgs-range){flex-basis:100%}
+  #picpane .prot-status .lgs-range input{flex:1;width:auto}
+}
+@media(max-width:700px){
+  .pic-cms{grid-template-columns:1fr}
+  .pic-cms .hh{display:none}
+  .pic-cms .in{border-top:1px solid var(--w25);padding-top:18px}
+  .pic-cms>div:not(.in){border-top:0;padding:4px 0;flex-direction:column;align-items:stretch;gap:2px}
+  .pic-part{display:block}
+}
+
 /* The Home tab */
 #home-hero{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px 24px;
   padding:8px 0 0}
@@ -1561,6 +1633,9 @@ button.wall-screen{position:relative;display:block;width:100%;aspect-ratio:16/9;
 button.wall-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),transparent 45%,rgba(0,0,0,.4))}
 button.wall-screen:hover:not(:disabled){border-color:rgba(255,255,255,.45)}
 button.wall-screen:disabled{opacity:1;cursor:default}
+.wall-choice{max-width:560px;margin:14px 0 6px}
+/* A set's or Black's empty time of day is not a place to add a picture. */
+.wall-card.fixed:not(.has) button.wall-screen{border-style:solid;border-color:rgba(255,255,255,.12)}
 .wall-card:not(.has) button.wall-screen{border-style:dashed;border-color:rgba(255,255,255,.22)}
 .wall-card.now button.wall-screen{outline:2px solid var(--look-accent);outline-offset:3px}
 .wall-screen.drop,.wall-day-part.drop{outline:2px dashed var(--look-accent,var(--cand));outline-offset:3px}
@@ -1582,6 +1657,7 @@ button.wall-link{min-height:0;padding:0;border:0;background:none;font-size:12px;
 button.wall-link:hover:not(:disabled){color:var(--w100);text-decoration:underline;text-underline-offset:3px}
 .wall-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;margin-top:24px}
 .wall-foot .sub{max-width:64ch;margin:0}
+.wall-foot-btns{display:flex;gap:10px;flex-wrap:wrap}
 .home-upload{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:16px 0 8px}
 .home-upload input[type=file]{min-width:0;max-width:100%;flex:1 1 220px}
 .home-looks{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0 10px}

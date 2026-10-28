@@ -98,6 +98,67 @@ that answers `no result from DB`.
 `luna://com.webos.service.capture/executeOneShot` with `method: DISPLAY`
 writes a PNG of the screen, web apps included, at the size asked for.
 
+## LG's picture settings (G3, webOS 9.2.2)
+
+`getSystemSettings {category: 'picture'}` without a dimension answers the
+picture on screen, with `dimension: {pictureMode, dynamicRange, input}`, and
+`setSystemSettings` without one writes there; LG's Settings app
+(`com.palm.app.settings`, `main.js`) does the same. With Home on screen the
+input is `default`. `getSystemSettingDesc` describes a number as
+`values.range: {min, max, interval}` (webOS 4's rows used `values.min` and
+`max`), a choice as `values.arrayExt`, each value with `visible` and `active`,
+and the key itself with `ui.visible` and `ui.active`. A list of keys some of
+which have no description answers `returnValue: false` with the others in
+`results`.
+
+LG's app hides a setting whose `ui.visible` is false and greys one whose
+`ui.active` is false, and the G3's own menu matched the flags: in Cinema and
+Filmmaker, with Home on screen, Gamma, Colour Temperature and Colour Gamut
+were inactive in both. Dynamic Tone Mapping, Expression Enhancer, Local
+Dimming and Precision Detail were not visible.
+
+Each write from LG's app also sets `pictureSettingModified`, a map of picture
+mode to true, for the mode on screen when it is not already true; LG's menu
+then shows the mode as "Cinema (User Settings)" and offers Reset.
+
+`blackLevel` (Video Range: `low` Limited, `high` Full, `auto`) is a string on
+an HDMI input and, for `default`, an object with a value per colour system
+(`ntsc`, `pal` and others). `colorTemperature` is -50 (Warm 50) to 50 (Cool
+50) and `tint` -50 (R50) to 50 (G50). `skinColor`, `skyColor` and
+`grassColor` are stored as text, -5 to 5.
+
+A picture mode never adjusted answers its numbers as text (`contrast: '95'`
+in Standard); one adjusted from LG's menu, as numbers. Keys the TV keeps but
+does not describe, such as `edgeEnhancer`, `hSharpness` and `xvycc`, are not
+in its menu, and a write to `edgeEnhancer` answered `ERROR!! sending a request
+to DB`.
+
+On this European G3, setting `energySaving` to any step but `auto`, from
+outside LG's menu, put LG's "may increase energy consumption of this TV"
+prompt on screen. The new value held while the prompt waited (a minute and
+more), OK kept it, and Cancel set `auto`. No other picture setting raised it.
+
+Aspect ratio, Just Scan and TruMotion are kept for each app, an HDMI input
+included (`com.webos.app.hdmi4`). LG's app reads them with the foreground app:
+`{category: 'aspectRatio', app_id, keys: ['arcPerApp', 'justScan']}` and
+`{category: 'picture', app_id, keys: ['truMotionMode']}`, and writes them with
+`current_app: true`. Asked without `app_id`, `aspectRatio` answered only
+`arcMenuBySystem` and `truMotionMode` was an `errorKey`. On HDMI 4 the TV
+offered aspect ratios 16:9, Original, 4:3, Vertical Zoom and 4-Way Zoom, and
+TruMotion Off, Cinematic Movement, Natural, Smooth Movement and User
+Selection. `picture.aspectRatio` reads `16x9` with Home on screen while LG's
+menu shows Original, greyed; it is not what the menu uses.
+
+On a C2 (webOS 9.2.2), `dynamicColor` offers `off`, `low`, `medium`, `high`
+and `user`, and LG's menu calls it Colour adjustment, under Fine Tune. The
+`colorManagement{Saturation,Hue,Luminance}{Colour}` keys, -30 to 30, are kept
+for each input and mode, and LG's menu shows them, for the colour picked in
+`colorManagementColorSystem`, only under User Selection. In Game mode the TV
+describes them as visible and active and keeps written values, yet green at
++30 on all three changed nothing on screen with User Selection on; in ISF
+Expert the same adjustment did. A B8 (webOS 4.4.3) offers `dynamicColor` only
+`off` to `high`.
+
 ## The TV's 12 or 24 hour clock (webOS 4.4, 7.6, 9.2)
 
 `com.webos.service.systemservice/getPreferences` with `keys: ["timeFormat"]`
@@ -172,6 +233,14 @@ Measured on 17 October 2026 by rebooting over SSH with `lastInputApp` naming `co
 - The TV's own `defaultApps.home` is unset after each of these reboots.
 - Home pressed (over SSAP) at about 37 s brought LG's Home to the front: drawn in one run, black for about 6 s in another. The compositor key filter that sends Home to `com.tvweb.home` from the server's start onwards had not done so.
 - `/var/log` holds CRIU dump and restore logs for `com.webos.app.home` and `com.webos.app.inputcommon`, so those two are restored from snapshots at boot; whether that is why the started app is not drawn is not established.
+
+### What the boot hooks wait for (50QNED87T6B, webOS 10.2.2)
+
+Measured from bootd's log and each process's start time in `/proc/<pid>/stat`:
+
+- bootd signals `core-boot-done` at 16.1 s and Live TV is in front at 18 s, but the Homebrew Channel's service, which its `core-boot-done` activity starts, was started only at 27.5 s, and its `startup.sh` at about 29 s. It sleeps 2 s, then runs `init.d` with `run-parts`, one hook after the other.
+- `20-tvweb-services` took 7.2 s, almost all of it `systemctl daemon-reload`. With another hook that sleeps 5 s before its own work, `50-tvweb` started at about 50 s and Glasshouse Home was in front at 53.5 s.
+- With both hooks doing their work in the background, `50-tvweb` started at 32 s, Glasshouse Home was in place at 35 s, and bootd had it in front at 43.7 s.
 
 ## Replacing LG's Home under its id (webOS 9.2.2, G3)
 
@@ -467,6 +536,17 @@ Measured on 18 October 2026 by launching apps over SSH and logging
   is the one the remote's keys reach.
 - All three accept `subscribe: true`. SurfaceManager's replies are formatted
   JSON over several lines even without luna-send's `-f`.
+- LG's on-screen keyboard is the MaliitServer surface
+  `_WEBOS_WINDOW_TYPE_KEYBOARD`. `getForegroundWindowInfo` lists it while it
+  is open, but it never takes focus, so `getFocusedWindowInfo` keeps naming
+  the app typed into. With it up, keys sent through
+  `networkinput/test/sendKeyCode` did not move it; the remote's own input
+  device does.
+- `com.webos.service.ime` has four methods: `registerRemoteKeyboard`
+  (subscribe only; `currentWidget.focus` and the field's content type),
+  `insertText` (`text`, optional `replace` and `replaceLength`),
+  `deleteCharacters` (`count`, optional `mode` `backspace` or `direct`) and
+  `sendEnterKey`. None checks that the caller registered as a remote keyboard.
 
 ## Disconnected input devices (webOS 6.4.0, C1)
 
@@ -820,12 +900,9 @@ app in front. Remote Keys puts its own filter first.
   assistant's app on a press, while the microphone button
   (`Key_webOS_Voice`, RF 436) goes to voice control. The same file names about
   20 regional streaming buttons (Hotstar, Stan, Wavve, U-Next, TVer and others).
-- **The voice assistants' buttons are ordinary hotkeys.** On a C2 (webOS 9.2.2)
-  `appLaunch.js` handles `Key_webOS_ALEXA` (IR 1094) and
-  `Key_webOS_GoogleVoice` (IR 1125) like the streaming buttons, launching the
-  assistant's app on a press, while the microphone button
-  (`Key_webOS_Voice`, RF 436) goes to voice control. The same file names about
-  20 regional streaming buttons (Hotstar, Stan, Wavve, U-Next, TVer and others).
+  On a CX (webOS 5.5), the microphone button set to an app through the filter
+  opened it on a press and on a hold alike, and set back to LG's own it started
+  voice control again (#1034).
 - **Filters get the compositor's timers.** `StarfishKeyFilter.qml` hands every
   filter `genericTimer` (`set(ms, callback)`, `cancel`, `isRunning`), as LG's
   `appLaunch.js` uses it. On a change to the key it cancels every
@@ -1008,6 +1085,13 @@ and others' work on webOS 10
   `com.webos.service.tv.capture/executeOneShot` takes the same payload,
   answers `capturedWidth: 0` and still writes the file, and its picture
   includes the HDMI video, which the C2's leaves black.
+- On a C9 (webOS 4.10.0) with LG Input Hook (`org.webosbrew.inputhook`, 1.5.1)
+  started by its boot script, which injects `libinputhookpp.so` into
+  `tvservice` with `ezinject`, `tv.capture/executeOneShot` answered "Device
+  or resource busy" for every method from the first call after a boot, then
+  stopped answering, through restarts and a power cut; `isLocked` said
+  `false` and no other client called it. With the boot script moved aside and
+  a restart, the same call worked.
 - `luna-send` run from an SSH shell can print nothing for
   `com.webos.applicationManager` calls, while the same call from a node child
   process answers.
@@ -1438,6 +1522,42 @@ Measured on 26 October 2026 on a 50QNED72B6B (43.11.85), Quick Start+ off.
 - **With Quick Start+ on**, a wake by the remote from Active Standby or
   Suspend had Glasshouse Home in front with no Live TV before it.
 
+## What the TV opens as it starts (C9, webOS 4.10.0)
+
+Measured on 27 October 2026 on an OLED65C97LA, Quick Start+ on.
+
+- **bootd takes the first app from its own config.** `/etc/palm/bootd.json`
+  has `common.firstApp.firstAppInNormal` `{LAST_INPUT_APP}`, and
+  `common.firstAppByPowerOnReason` maps reasons to apps: `netflix`,
+  `amazon` and `ivi` to those apps, `remoteKey` and `localKey` to
+  `{LAST_APP}`. A reason not listed takes `firstAppInNormal`. Both
+  placeholders came out as the last input (`utp.externaldevice/getLastInput`,
+  `HDMI_2`, kept in `/var/lib/eim/lastinput`), whatever app was in front at
+  the switch off.
+- **`/var/luna/preferences/bootd.json` replaces it.** bootd's constructor
+  checks it with `access()` and parses it instead of the file in `/etc`, not
+  on top of it, so it must be a whole config. It is read once, as bootd
+  starts: a cold start is needed, and a Quick Start+ wake uses what was read.
+- **An app as the first app.** With `firstAppInNormal`, `remoteKey`,
+  `localKey` and `wakeOnWiFi` set to Luma (`com.ecklf.luma`) and `hdmiCec` to
+  `{LAST_INPUT_APP}`, a Wake-on-LAN from Suspend opened Luma through
+  `com.webos.coverUI/open` 0.34 s after Active, and the last input (HDMI 2,
+  a PS5 woken by it over HDMI-CEC) was not opened at all. The TV closes
+  Luma at each switch off, so this is a fresh start: its window was up 1.3 s
+  after the launch.
+- **A cold start is slow for an app installed in developer mode.** bootd
+  launched Luma 15 s in, got no reply from sam within 5 s three times
+  ("Fail to launch firstApp. Retry") and gave up; sam had its launch points
+  at 45 s (bootd's `listLaunchPoints`), and Luma was in front at 52 s. LG's
+  Home and `com.webos.app.inputcommon` were restored from snapshots at 3.8 s,
+  and with the last input as the first app the input was in front at 15 s.
+- **Writing the settings service's `general.lastInputApp` and
+  `physicalLastInputApp`** to an app changed nothing: bootd still asked
+  `getLastInput`, and the TV wrote HDMI 2 back.
+- **The power-on reasons seen:** `remoteKey`, `wakeOnWiFi` (Wake-on-LAN over
+  Wi-Fi), `micomPower` (a restart or the power cable), and `hdmiCec` among
+  the names `tvpowerd` knows.
+
 ## Muting and pausing (webOS 5.6.2, CX)
 
 - `com.webos.audio/setMuted` only changes audiod's own status: the TV keeps
@@ -1663,3 +1783,36 @@ item with `position: absolute` children and no in-flow height collapses to 0 px.
 CSS transitions and transforms similarly require `-webkit-transition`,
 `-webkit-transform`, and `element.style.webkitTransform` in script (#746).
 
+`height: 100%` on that flex item does not rescue it. Chromium 53 (webOS 4, a
+B8 and a C9) and WebKit 538.2 (the 55UH600V on 0.122.1) both count it as no
+height, so the TV app's row list collapsed to 0 px: on webOS 4 nothing showed
+in 0.121.0 and 0.122.0, and on webOS 2 only the right-hand explainer. The list
+now has no height of its own and is stretched to its row, and the page sets
+it in pixels where an engine still leaves it at 0.
+
+On the B8 the TV app's page, kept in memory, went on showing the old layout
+after the server was updated, until the TV restarted: it came back without the
+`webOSRelaunch` event that reloads it. The page now also reloads when
+`/api/caps` reports a server version other than the one it loaded with.
+
+
+## Installing Glasshouse's own package (G3, webOS 9.2.2)
+
+- `appInstallService/dev/install` with `ipkUrl` set to a local `.ipk` of
+  `io.github.rorygallagher2024.lg-webos-dashboard` replaced the app in about
+  1.5 s, with the server, run from `/var/lib/tvweb`, left running. The package
+  has no services, so nothing lost root.
+- The app was open at the time and the install closed it; the TV went back to
+  Home.
+- Network-input key codes (`networkinput/test/sendKeyCode`) did not reach the
+  Glasshouse app's page; key events written to the remote's input device
+  (`LGE RCU`) did.
+
+## Glasshouse Home's first load after a cold start (C2, webOS 9.2.2)
+
+Opened as the boot hook opens it, 30 s after a reboot, Glasshouse Home's page
+waited for the server, which answered at 41 s, and the view's first heartbeat
+came at 50 s: about 9 s from the server answering to the view drawn. The
+first Home press after a reboot took up to 13 s on a CX (webOS 5.6.2), so a
+fixed wait from the server's start is too short for slower TVs; the page's
+own requests to the server show it is running.

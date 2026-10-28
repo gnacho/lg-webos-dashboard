@@ -11,6 +11,14 @@
     "text": "Diese Reihe ist leer",
     "from": "This row is empty"
   },
+  "home.arrange.folder": {
+    "text": "In „Weitere Apps“ oder heraus",
+    "from": "Into or out of More apps"
+  },
+  "home.arrange.folderAppsOnly": {
+    "text": "Nur Apps kommen in „Weitere Apps“",
+    "from": "Only apps go into More apps"
+  },
   "home.arrange.hide": {
     "text": "Aus- oder einblenden",
     "from": "Hide or show"
@@ -18,6 +26,10 @@
   "home.arrange.isHidden": {
     "text": "(ausgeblendet)",
     "from": "(hidden)"
+  },
+  "home.arrange.isInFolder": {
+    "text": "{name} (in „Weitere Apps“)",
+    "from": "{name} (in More apps)"
   },
   "home.arrange.keys": {
     "text": "OK nimmt eine Kachel auf oder legt sie ab. Gehalten verschieben die Pfeile sie oder ihre Reihe, Zurück blendet sie aus oder ein bzw. entfernt einen Sender. Links von einer Reihe legt OK ihre Reihenfolge fest.",
@@ -255,6 +267,14 @@
     "text": "Glasshouse antwortet nicht",
     "from": "Glasshouse is not answering"
   },
+  "home.folder.label": {
+    "text": "In „Weitere Apps“",
+    "from": "In More apps"
+  },
+  "home.folder.title": {
+    "text": "Weitere Apps",
+    "from": "More apps"
+  },
   "home.hidden": {
     "text": "Ausgeblendet",
     "from": "Hidden"
@@ -354,6 +374,10 @@
   "home.pictureDesc": {
     "text": "Oben rechts auf Glasshouse Home: Auflösung, Bildwiederholrate und HDR des zuletzt Gesehenen sowie Bildmodus und Helligkeit.",
     "from": "In the top right of Glasshouse Home: the resolution, refresh rate and HDR of what was last on, and the picture mode and brightness it gets."
+  },
+  "home.place": {
+    "text": "Wo sie erscheint",
+    "from": "Where it shows"
   },
   "home.plate.allm": {
     "text": "Geringe Latenz",
@@ -455,6 +479,10 @@
     "text": "{n} von {total} sichtbar",
     "from": "{n} of {total} shown"
   },
+  "home.row.appsNoteFolder": {
+    "text": "{n} von {total} sichtbar, {folder} in „Weitere Apps“",
+    "from": "{n} of {total} shown, {folder} in More apps"
+  },
   "home.row.channels": {
     "text": "Sender",
     "from": "Channels"
@@ -531,10 +559,6 @@
     "text": "Auf diesem TV nicht verfügbar",
     "from": "Not available on this TV"
   },
-  "home.wall.black": {
-    "text": "Schwarz",
-    "from": "Black"
-  },
   "home.wall.chooseImage": {
     "text": "Ein Bild als JPEG, PNG oder WebP bis 25 MB wählen.",
     "from": "Choose a JPEG, PNG or WebP image up to 25 MB."
@@ -563,10 +587,6 @@
     "text": "Das aufbereitete Bild ist zu groß. Wähle ein kleineres.",
     "from": "The prepared image is too large. Choose a smaller image."
   },
-  "home.wall.tvHint": {
-    "text": "Bilder für die Tageszeiten werden im Home-Tab des Browser-Dashboards hochgeladen.",
-    "from": "Images for each time of day are uploaded on the browser dashboard’s Home tab."
-  },
   "home.wall.unreadable": {
     "text": "Das Bild konnte nicht geöffnet werden.",
     "from": "The image could not be opened."
@@ -582,10 +602,6 @@
   "home.wall.uploadHelp": {
     "text": "JPEG, PNG oder WebP, bis 25 MB. Bilder werden vor dem Hochladen auf 1920 × 1080 angepasst – die Größe, in der Glasshouse Home gezeichnet wird – und füllen den Bildschirm.",
     "from": "JPEG, PNG or WebP, up to 25 MB. Images are resized to fit 1920 × 1080, the size Glasshouse Home is drawn at, before upload, and fill the screen."
-  },
-  "home.wall.uploadedValue": {
-    "text": "Hochgeladen",
-    "from": "Uploaded"
   },
   "home.wall.uploading": {
     "text": "Wird hochgeladen…",
@@ -611,10 +627,6 @@
     "text": "Alle entfernen",
     "from": "Remove all"
   },
-  "home.wall.intro": {
-    "text": "Ein Bild hinter Glasshouse Home für jede Tageszeit. Wählen Sie eine Tageszeit oder ziehen Sie ein Bild darauf. Eine ohne Bild hat einen schwarzen Hintergrund.",
-    "from": "A picture behind Glasshouse Home for each part of the day. Choose a time of day, or drop an image on it. One without a picture has a black background."
-  },
   "home.wall.now": {
     "text": "Jetzt",
     "from": "Now"
@@ -630,5 +642,9 @@
   "srv.home.wallSlot": {
     "text": "unbekannte Tageszeit für das Hintergrundbild",
     "from": "unknown wallpaper slot"
+  },
+  "home.wall.examplesBusy": {
+    "text": "Wird heruntergeladen…",
+    "from": "Downloading…"
   }
 }

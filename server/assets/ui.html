@@ -70,6 +70,7 @@
     <button type="button" role="tab" data-tab="privacy"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6z"/></svg><span data-t="tab.privacy">Privacy</span></button>
     <button type="button" role="tab" data-tab="oledcare" id="tab-btn-oledcare" hidden><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 8.5v5M9.5 11h5"/></svg><span data-t="tab.oledCare">OLED Care</span></button>
     <button type="button" role="tab" data-tab="game" id="tab-btn-game" hidden><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10a4 4 0 0 1 4 4v1.5a3 3 0 0 1-5.4 1.8L14.5 14h-5l-1.1 1.3A3 3 0 0 1 3 13.5V12a4 4 0 0 1 4-4z"/><path d="M7.5 11v2.5M6.25 12.25h2.5M16 12h.01"/></svg><span data-t="tab.game">Game</span></button>
+    <button type="button" role="tab" data-tab="picture" id="tab-btn-picture" hidden><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12.5" rx="1.5"/><path d="M8 20.5h8"/><path d="M12 7.5v7a3.5 3.5 0 0 0 0-7z" fill="currentColor" stroke="none"/><circle cx="12" cy="11" r="3.5"/></svg><span data-t="tab.picture">Picture</span></button>
     <button type="button" role="tab" data-tab="audio"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span data-t="tab.audio">Audio</span></button>
     <button type="button" role="tab" data-tab="screensaver" id="tab-btn-screensaver"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span data-t="tab.screensaver">Screensaver</span></button>
     <div class="nav-rule" role="presentation"></div>
@@ -511,6 +512,19 @@
       <div id="game-rows" data-reload="loadGame"></div>
     </div>
   </div>
+</section>
+
+<section class="priv panel" id="picpane" role="tabpanel" hidden>
+  <div class="lbl" data-t="tab.picture">Picture</div>
+  <div class="err-note" id="pic-error" role="alert" hidden></div>
+  <div class="pic-now" id="pic-now" hidden>
+    <div class="pic-now-main">
+      <div class="pic-mode" id="pic-mode" role="status">&mdash;</div>
+      <div class="pic-scope" id="pic-scope"></div>
+    </div>
+    <div class="pic-mode-ctl" id="pic-mode-ctl" data-reload="loadPicture"></div>
+  </div>
+  <div id="pic-groups" data-reload="loadPicture"></div>
 </section>
 
 <section class="priv panel" id="audiopane" role="tabpanel" hidden>
@@ -1028,6 +1042,27 @@
     </div>
     <div class="prot-row home-gh-row home-show-row" hidden>
       <div class="prot-main">
+        <div class="prot-title" data-t="home.showClock">Clock and date</div>
+        <div class="prot-desc" data-t="home.showClockDesc">At the top of Glasshouse Home. Switched off, the space stays empty.</div>
+      </div>
+      <div class="prot-status"><button type="button" class="pill idle" id="home-show-clock" onclick="homeShow('showClock')">&mdash;</button></div>
+    </div>
+    <div class="prot-row home-gh-row" id="home-rows-bottom-row" hidden>
+      <div class="prot-main">
+        <div class="prot-title" data-t="home.rowsBottom">Rows along the bottom</div>
+        <div class="prot-desc" data-t="home.rowsBottomDesc">The rows of apps and inputs sit along the bottom of the screen, as on LG’s Home, rather than in the middle.</div>
+      </div>
+      <div class="prot-status"><button type="button" class="pill idle" id="home-rows-bottom" onclick="homeRowsBottom()">&mdash;</button></div>
+    </div>
+    <div class="prot-row home-gh-row" id="home-alternative-row" hidden>
+      <div class="prot-main">
+        <div class="prot-title" data-t="home.alternative">Alternative View</div>
+        <div class="prot-desc" data-t="home.alternativeDesc">A smaller clock on the right, and the rows as rounded, translucent tiles, titled only while arranging.</div>
+      </div>
+      <div class="prot-status"><button type="button" class="pill idle" id="home-alternative" onclick="homeAlternative()">&mdash;</button></div>
+    </div>
+    <div class="prot-row home-gh-row home-show-row" hidden>
+      <div class="prot-main">
         <div class="prot-title" data-t="home.showLast">Last watched</div>
         <div class="prot-desc" data-t="home.showLastDesc">At the top of Glasshouse Home and on the input it was on: what the TV last showed.</div>
       </div>
@@ -1037,6 +1072,7 @@
       <div class="prot-main">
         <div class="prot-title" data-t="home.showAppCount">App count</div>
         <div class="prot-desc" data-t="home.showAppCountDesc">Beside the Apps row: how many of the TV’s apps it shows.</div>
+        <div class="prot-desc" id="home-show-count-alt" hidden data-t="home.showAppCountAlt">Not shown in Alternative View, whose rows have no titles.</div>
       </div>
       <div class="prot-status"><button type="button" class="pill idle" id="home-show-count" onclick="homeShow('showAppCount')">&mdash;</button></div>
     </div>
@@ -1121,14 +1157,17 @@
   </div>
 
   <div class="pv-sec adv-sec" data-t="home.wall.title">Wallpaper</div>
-  <div class="sub" data-t="home.wall.intro">A picture behind Glasshouse Home for each part of the day. Choose a time of day, or drop an image on it. One without a picture has a black background.</div>
+  <div class="sub" data-t="home.wall.introSets">A picture behind Glasshouse Home for each part of the day: none, one of the picture sets, or your own.</div>
+  <div class="btns wall-choice" id="home-wall-choice"></div>
   <!-- The day as Glasshouse Home shows it: each part's picture across its hours, and where the day is now -->
   <div class="wall-day" id="home-wall-day"></div>
   <div class="wall-cards" id="home-walls"></div>
   <input type="file" id="home-wall-file" accept="image/jpeg,image/png,image/webp" hidden onchange="homeWallPicked(this)">
   <div class="wall-foot">
-    <div class="sub" data-t="home.wall.uploadHelp">JPEG, PNG or WebP, up to 25 MB. Images are resized to fit 1920 × 1080, the size Glasshouse Home is drawn at, before upload, and fill the screen.</div>
-    <button type="button" class="pill idle" id="home-wall-clear" onclick="homeClearUploads()" data-t="home.wall.clearAll">Remove all</button>
+    <div class="sub" id="home-wall-help" data-t="home.wall.uploadHelp">JPEG, PNG or WebP, up to 25 MB. Images are resized to fit 1920 × 1080, the size Glasshouse Home is drawn at, before upload, and fill the screen.</div>
+    <div class="wall-foot-btns">
+      <button type="button" class="pill idle" id="home-wall-clear" onclick="homeClearUploads()" data-t="home.wall.clearAll">Remove all</button>
+    </div>
   </div>
   <div class="sub" id="home-wall-upload-note" role="status"></div>
   </div>
@@ -1724,6 +1763,7 @@
 <script src="/assets/ui/install.js"></script>
 <script src="/assets/ui/home.js"></script>
 <script src="/assets/ui/audio.js"></script>
+<script src="/assets/ui/picture.js"></script>
 <script src="/assets/ui/servicemenu.js"></script>
 <script src="/assets/ui/oled.js"></script>
 <script src="/assets/ui/screensavers.js"></script>

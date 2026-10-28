@@ -177,10 +177,12 @@ var KEYS = [
   { key: 'slingtv', symbol: 'WebOS.Key_webOS_SlingTV', title: 'Sling TV', regions: ['us'] },
   // The voice assistants' own buttons on recent Magic Remotes: LG's filters
   // launch Alexa or the Google Assistant on a press, as for a streaming
-  // button. The microphone button (Key_webOS_Voice) is not offered: it
-  // drives voice control itself.
+  // button. The microphone button (Key_webOS_Voice) drives voice control; set
+  // to anything else, a press and a hold both do that instead, and voice
+  // control comes back with LG's own (a CX, webOS 5.5).
   { key: 'alexa', symbol: 'WebOS.Key_webOS_ALEXA', title: 'Alexa' },
   { key: 'googleassistant', symbol: 'WebOS.Key_webOS_GoogleVoice', title: 'Google Assistant' },
+  { key: 'voice', symbol: 'WebOS.Key_webOS_Voice', title: 'Microphone', replacesVoice: true },
   { key: 'apps', symbol: 'WebOS.Key_webOS_Apps', title: 'Apps' },
   // Only webOS 11's native filters let these be changed (NATIVE_ACTIONS,
   // NATIVE_SETTINGS); the JavaScript filter leaves them out, so its file is
@@ -1193,6 +1195,7 @@ function describeKeys(keys, inChain, cb, native) {
         };
         if (k.noNothing) key.noNothing = true;
         if (k.turnsOffVoice) key.turnsOffVoice = true;
+        if (k.replacesVoice) key.replacesVoice = true;
         if (native && NATIVE_BLOCK_KEYS[k.key]) key.blocksApp = true;
         return key;
       });

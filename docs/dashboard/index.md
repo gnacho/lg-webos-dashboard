@@ -48,6 +48,12 @@ On a wide screen the tabs are listed down the left. On a phone, or wherever Pref
 
     Live frame rate, VRR and the Game Optimizer.
 
+-   **[Picture](picture.md)**
+
+    ---
+
+    LG's picture settings for what is on screen.
+
 -   **[Audio](audio.md)**
 
     ---

@@ -189,7 +189,10 @@ vm.runInNewContext(scriptMatch[1] + '\n;' + testPagingSnippet, sandbox);
   assert.ok(/#main\{[^}]*display:-webkit-flex/.test(html), '#main has display:-webkit-flex');
   assert.ok(/#main\{[^}]*-webkit-flex:1 1 auto/.test(html), '#main has -webkit-flex:1 1 auto');
   assert.ok(/#list\{[^}]*-webkit-flex:1 1 62%/.test(html), '#list has -webkit-flex:1 1 62%');
-  assert.ok(/#list\{[^}]*height:100%/.test(html), '#list has explicit height:100%');
+  // A percentage height collapses #list to 0 px on WebKit 538.2 and Chromium 53.
+  assert.ok(!/#list\{[^}]*height:/.test(html), '#list has no height of its own, so it is stretched');
+  assert.ok(/if \(!list\.clientHeight\) list\.style\.height = /.test(html), 'a list still at 0 px is given #main\'s height');
+  assert.ok(/else if \(d\.version !== pageVersion\) return reloadPage\(\);/.test(html), 'the TV app reloads when the server version changes');
   assert.ok(/#hint\{[^}]*-webkit-flex:0 0 31%/.test(html), '#hint has -webkit-flex:0 0 31%');
   assert.ok(/#hint\{[^}]*-webkit-align-self:center/.test(html), '#hint has -webkit-align-self:center');
   assert.ok(/\.row\{[^}]*display:-webkit-flex/.test(html), '.row has display:-webkit-flex');

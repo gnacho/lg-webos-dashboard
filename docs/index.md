@@ -92,65 +92,71 @@ This project is intended to give a rooted webOS TV a useful local control surfac
 
 <div class="grid cards" markdown>
 
+-   **[A cleaner Home screen](dashboard/home.md)**
+
+    ---
+
+    A replacement Home app with full control over what displays, and no ads. This feature is currently only available on webOS 7, 9 and 10 TVs.
+
 -   **[Controlling the TV without the cloud](dashboard/control.md)**
 
     ---
 
-    A D-pad to navigate the TV itself, volume, mute, media playback keys (play, pause, stop, skip), app launcher, picture presets, sound output routing, power and reboot.
+    Remote's keys, volume, inputs, power, sleep timer, comprehensive picture and sound settings, Game Optimizer, and much more.
 
--   **[Seeing what the TV collects, and switching it off](dashboard/privacy.md)**
-
-    ---
-
-    Whether LG's content-recognition engine is sampling the screen, the advertising ID and ad-tracking switch, every recorded data agreement, an on-TV blocker for LG's ad and telemetry endpoints, and switches for diagnostics uploads.
-
--   **[App management, debloating & home screen cleanup](dashboard/apps.md)**
+-   **[Seeing what the TV is configured to collect, and switching it off](dashboard/privacy.md)**
 
     ---
 
-    Install from Homebrew Channel, uninstall apps to reclaim flash storage, disable background services, stop unused preloaded apps, hide built-in system apps, or replace LG's launcher with [Glasshouse Home](dashboard/home.md).
+    One button to turn ads and telemetry off, including LG's content-recognition engine. Every data agreement is recorded in the app, with most of them switchable from the dashboard.
+
+-   **[App management and debloating](dashboard/apps.md)**
+
+    ---
+
+    Install apps from the Homebrew Channel catalog, uninstall apps, disable unnecessary background system services to free up RAM and CPU cycles, stop LG keeping apps loaded in the background that are never used, and hide non-removable built-in LG system apps from LG's Home.
 
 -   **[Remapping the remote's buttons](dashboard/apps.md#remote-keys)**
 
     ---
 
-    Point Netflix, Prime Video, Guide, the color keys and other shortcut buttons at any installed app, an HDMI input or Live TV, or turn them off. Applies immediately and persists across reboots.
+    Point Netflix, Prime Video, Guide, the color keys and the TV's other shortcut buttons at any installed app, an HDMI input or Live TV, or turn them off.
 
 -   **[Replacing the screen saver](dashboard/screen-savers.md)**
 
     ---
 
-    A clock, a starfield, fireworks, or the TV's own readings, each dim or bright, in place of LG's.
+    Over a dozen screensavers to choose from, and customisable brightness settings.
 
 -   **[Integrating the TV with a smart home](HOME-ASSISTANT.md)**
 
     ---
 
-    The MQTT bridge exposes the TV as a single device with its controls, telemetry and remote button press events, with automatic Home Assistant MQTT Discovery.
+    The MQTT bridge exposes the TV as a single device with its controls and telemetry, with Home Assistant support through MQTT Discovery and the same underlying interface available to other MQTT clients. You can also send button press events to Home Assistant to control your smart home from your TV remote.
 
 -   **[Seeing what the TV is actually doing](dashboard/metrics.md)**
 
     ---
 
-    SoC temperature, per-core CPU load, memory, swap, Wi-Fi signal and network throughput.
+    SoC temperature, CPU load, memory, Wi-Fi signal and throughput, storage health, watch time and much more.
 
 -   **[Observing OLED panel wear](dashboard/oled-care.md)**
 
     ---
 
-    Cumulative panel hours, compensation cycle progress, Pixel Refresher countdown with scheduling, completed cycle counters and refresher failure alerts.
+    Track the lifetime use of your TV with cumulative panel hours, compensation cycle progress, Pixel Refresher countdown with scheduling, completed cycle counters and refresher failure alerts.
 
--   **[Controlling OLED burn-in protections](dashboard/oled-care.md)**
-
-    ---
-
-    Screen shift and logo dimming on any OLED, plus ASBL (TPC) and Global Stress Reduction (GSR) without needing a service remote or PIN.
-
--   **[Opening and unlocking the service menu](dashboard/service-menu.md)**
+-   **[Controlling the OLED burn-in protections](dashboard/oled-care.md)**
 
     ---
 
-    Open LG's engineering menu on the TV screen from a browser with no service remote needed, and unlock the full menu on newer firmware.
+    Surfaces all the burn-in protections, explains what each one does and allows you to switch them off. This includes ASBL and Global Stress Reduction which is normally reachable only from a TV's service menu with a service remote and a PIN.
+
+-   **[Opening the service menu, and unlocking it where it is locked](dashboard/service-menu.md)**
+
+    ---
+
+    LG's own engineering menu, put on the TV screen from a browser which means no service remote is needed. Newer firmware shows a cut-down version of it until it is unlocked, which the dashboard can do as well.
 
 -   **[Reading all of it on the TV itself](apps/tv-app.md)**
 
@@ -162,7 +168,7 @@ This project is intended to give a rooted webOS TV a useful local control surfac
 
     ---
 
-    A phone app that keeps a list of TVs, shows which are online, wakes them with Wake-on-LAN, and opens each one's dashboard full screen.
+    A phone app that keeps a list of TVs, shows which are online, wakes them over Wake-on-LAN, and opens each one's dashboard full screen.
 
 </div>
 

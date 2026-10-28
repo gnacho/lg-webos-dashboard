@@ -351,6 +351,25 @@ step('the LG Home tile cannot be hidden, and unknown rows are dropped', function
   });
 });
 
+step('apps in More apps are saved, kept by a layout that does not name them, and never also hidden', function (done) {
+  start(null);
+  home.setLayout({ folder: ['netflix', 'lg-home', 'netflix', 7] }, function (r) {
+    assert.ok(r.ok);
+    assert.deepEqual(r.layout.folder, ['netflix', 'lg-home'], 'the LG Home tile may go in; repeats and non-strings are dropped');
+    // A dashboard's save sends no folder.
+    home.setLayout({ hidden: { dev: ['HDMI_1'] } }, function (r2) {
+      assert.deepEqual(r2.layout.folder, ['netflix', 'lg-home']);
+      home.setLayout({ hidden: { app: ['netflix'] } }, function (r3) {
+        assert.deepEqual(r3.layout.folder, ['lg-home'], 'a hidden app leaves the folder');
+        home.setLayout({ reset: true }, function (r4) {
+          assert.deepEqual(r4.layout.folder, [], 'a reset empties it');
+          done();
+        });
+      });
+    });
+  });
+});
+
 var clock = 0;
 function at(id) { clock += 1000; foreground(id); }
 
@@ -1411,6 +1430,44 @@ step('where WebAppMgr will not start, a short Home press that brings no heartbea
   });
 });
 
+// On a C2 (webOS 9.2.2) an input chosen 2 s after a press, before the view's
+// first beat, had LG's Home open over it.
+step('a short Home press, then an input opened from the view before its first beat, keeps Glasshouse Home', function (done) {
+  start({ enabled: true }, { systemctl: '/bin/systemctl', slowOpenMs: 7000 });
+  home.start();
+  wait(50, function () {
+    foreground('com.webos.app.hdmi2');
+    home.homeKey(true);
+    home.homeKey(false);
+    foreground(LG_HOME);
+    home.open({ kind: 'dev', id: 'hdmi2:playstation-5' }, function () {
+      foreground('com.webos.app.hdmi2');
+      wait(7200, function () {
+        assert.ok(taken(), 'Glasshouse Home keeps the place');
+        assert.strictEqual(tv.samType, 'web');
+        home.disable(function () { done(); });
+      });
+    });
+  });
+});
+
+step('a short Home press, then something else opened with no view behind it, still keeps the input', function (done) {
+  start({ enabled: true }, { systemctl: '/bin/systemctl', slowOpenMs: 7000 });
+  home.start();
+  wait(50, function () {
+    foreground('com.webos.app.hdmi1');
+    home.homeKey(true);
+    home.homeKey(false);
+    wait(1000, function () {
+      foreground('com.webos.app.hdmi2');
+      wait(7200, function () {
+        assert.ok(taken(), 'the input chosen is left in front');
+        home.disable(function () { done(); });
+      });
+    });
+  });
+});
+
 step('a short Home press the view answers with a heartbeat changes nothing', function (done) {
   start({ enabled: true }, { systemctl: '/bin/systemctl' });
   home.start();
@@ -1423,6 +1480,129 @@ step('a short Home press the view answers with a heartbeat changes nothing', fun
     wait(5100, function () {
       assert.ok(taken());
       assert.ok(tv.events.indexOf('systemctl start webapp-mgr.service') === -1);
+      home.disable(function () { done(); });
+    });
+  });
+});
+
+// A G3 (webOS 11.2.0) stayed on its HDMI input after a launch sam accepted (#1042).
+var PAGE = { systemctl: '/bin/systemctl', pageSignMs: 3000, pageLoadMs: 6000 };
+
+function wake(then) {
+  tv.settings.homeAutoLaunch = 'on';
+  tv.settings.quickStartMode = 'off';
+  home.enable(function (r) {
+    assert.ok(r.ok, r.error);
+    foreground('com.webos.app.hdmi1');
+    powerState('Active');
+    powerState('Active Standby');
+    wait(20, function () {
+      tv.launched = [];
+      powerState('Active');
+      wait(1700, function () {
+        assert.deepEqual(tv.launched, [LG_HOME], 'opened after the wake');
+        then();
+      });
+    });
+  });
+}
+
+step('opened after a wake, a view whose page never runs gives LG\'s Home its place', function (done) {
+  start(null, PAGE);
+  wake(function () {
+    assert.ok(taken(), 'waiting');
+    wait(3500, function () {
+      assert.strictEqual(tv.samType, 'native', 'LG\'s Home has its place');
+      home.disable(function () { done(); });
+    });
+  });
+});
+
+step('opened after a wake, a page that runs is given the longer wait to answer', function (done) {
+  start(null, PAGE);
+  wake(function () {
+    home.pageAlive();
+    wait(3500, function () {
+      assert.ok(taken(), 'the page is loading');
+      wait(3000, function () {
+        assert.strictEqual(tv.samType, 'native', 'LG\'s Home once the longer wait is over');
+        home.disable(function () { done(); });
+      });
+    });
+  });
+});
+
+step('opened after a wake, a view that beats, or an input chosen meanwhile, keeps Glasshouse Home', function (done) {
+  start(null, PAGE);
+  wake(function () {
+    foreground(LG_HOME);
+    home.beat();
+    wait(3500, function () {
+      assert.ok(taken(), 'the view beat');
+      foreground('com.webos.app.hdmi1');
+      powerState('Active Standby');
+      wait(20, function () {
+        powerState('Active');
+        wait(1700, function () {
+          foreground('com.webos.app.hdmi2');
+          wait(3500, function () {
+            assert.ok(taken(), 'another input was chosen');
+            home.disable(function () { done(); });
+          });
+        });
+      });
+    });
+  });
+});
+
+function bootStart(opts) {
+  var marker = path.join(dir, 'opened-at-boot');
+  var o = { bootOpenedFile: marker };
+  for (var k in PAGE) o[k] = PAGE[k];
+  for (k in opts || {}) o[k] = opts[k];
+  start({ enabled: true }, o);
+  fs.writeFileSync(marker, '');
+  return marker;
+}
+
+step('opened by the boot hook, a view whose page never runs gives LG\'s Home its place', function (done) {
+  var marker = bootStart();
+  home.start();
+  wait(50, function () {
+    foreground('com.webos.app.hdmi1');
+    wait(3500, function () {
+      assert.strictEqual(tv.samType, 'native', 'LG\'s Home has its place');
+      assert.ok(!fs.existsSync(marker), 'watched once');
+      home.disable(function () { done(); });
+    });
+  });
+});
+
+step('opened by the boot hook, a page that ran before the watch began has the longer wait, and its view keeps Glasshouse Home', function (done) {
+  bootStart();
+  home.pageAlive();
+  home.start();
+  wait(50, function () {
+    foreground(LG_HOME);
+    wait(4000, function () {
+      assert.ok(taken(), 'still loading after the short wait');
+      home.beat();
+      wait(3000, function () {
+        assert.ok(taken(), 'the view answered');
+        home.disable(function () { done(); });
+      });
+    });
+  });
+});
+
+step('opened by the boot hook, a view that beat before the watch keeps Glasshouse Home', function (done) {
+  bootStart();
+  home.beat();
+  home.start();
+  wait(50, function () {
+    foreground(LG_HOME);
+    wait(3500, function () {
+      assert.ok(taken());
       home.disable(function () { done(); });
     });
   });
@@ -1621,6 +1801,41 @@ step('last watched, the app count and CEC addresses show until switched off, one
           assert.deepEqual([r4.layout.showLastOn, r4.layout.showAppCount, r4.layout.showCec], [true, true, true]);
           done();
         });
+      });
+    });
+  });
+});
+
+step('the clock shows until switched off, the rows sit along the bottom only when switched on, and both are saved', function (done) {
+  start(null);
+  var l = home.layout();
+  assert.deepEqual([l.showClock, l.rowsBottom], [true, false]);
+  home.setLayout({ showClock: false, rowsBottom: true }, function (r) {
+    assert.deepEqual([r.layout.showClock, r.layout.rowsBottom], [false, true]);
+    var saved = home.normalise(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')));
+    assert.deepEqual([saved.showClock, saved.rowsBottom], [false, true]);
+    home.setLayout({ showClock: 'no', rowsBottom: 1 }, function (r2) {
+      assert.deepEqual([r2.layout.showClock, r2.layout.rowsBottom], [false, true], 'only true or false changes them');
+      home.setLayout({ showClock: true, rowsBottom: false }, function (r3) {
+        assert.deepEqual([r3.layout.showClock, r3.layout.rowsBottom], [true, false]);
+        done();
+      });
+    });
+  });
+});
+
+step('Alternative View is off until chosen, saved, and anything but alternative is standard', function (done) {
+  start(null);
+  assert.strictEqual(home.layout().view, 'standard');
+  home.setLayout({ view: 'alternative' }, function (r) {
+    assert.strictEqual(r.layout.view, 'alternative');
+    var saved = home.normalise(JSON.parse(fs.readFileSync(path.join(dir, 'home.json'), 'utf8')));
+    assert.strictEqual(saved.view, 'alternative');
+    home.setLayout({ rowsBottom: true }, function (r2) {
+      assert.strictEqual(r2.layout.view, 'alternative', 'kept by a save that does not name it');
+      home.setLayout({ view: 'compact' }, function (r3) {
+        assert.strictEqual(r3.layout.view, 'standard');
+        done();
       });
     });
   });

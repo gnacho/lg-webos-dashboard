@@ -84,7 +84,7 @@
     if (!panel) return null;
     const tabMap = {
       'tab-control': 'control', 'tab-metrics': 'metrics', 'appspane': 'apps',
-      'homepane': 'home', 'oledpane': 'oledcare', 'gamepane': 'game', 'audiopane': 'audio',
+      'homepane': 'home', 'oledpane': 'oledcare', 'gamepane': 'game', 'audiopane': 'audio', 'picpane': 'picture',
       'svcpane': 'servicemenu', 'sspane': 'screensaver', 'privpane': 'privacy',
       'advpane': 'advanced', 'mqttpane': 'mqtt', 'serverpane': 'server', 'toolspane': 'tools'
     };

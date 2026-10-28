@@ -19,6 +19,13 @@ The TV app is operated entirely with the LG remote control:
 * **Back**: Return to the previous view from sub-menus (such as app preview details) or exit the app.
 * **Magic Remote pointer**: Clicking a row selects it and clicking it again acts on it; clicking a tab opens it.
 
+### Picture settings
+
+The **Picture** tab has the same settings as the web dashboard's
+[Picture tab](../dashboard/picture.md), for the picture on screen. OK on a
+slider starts adjusting it: Left and Right change it, faster while held, Up and
+Down take bigger steps, and OK or Back finish.
+
 ### Audio capabilities
 
 The **Audio** tab has the same rows as the web dashboard's

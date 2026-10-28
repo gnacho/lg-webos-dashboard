@@ -142,13 +142,18 @@ function renderHome() {
     pic.disabled = !homeWritable();
   }
   document.querySelectorAll('.home-show-row').forEach(row => { row.hidden = !st.supported.ok; });
+  // Alternative View's rows have no titles, so no app count beside them.
+  const altView = !!st.layout && st.layout.view === 'alternative';
   HOME_SHOW.forEach(([key, id]) => {
     const el = q(id);
     if (!el) return;
     const on = !st.layout || st.layout[key] !== false;
-    updateToggle(el, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
-    el.disabled = !homeWritable();
+    const unused = key === 'showAppCount' && altView;
+    updateToggle(el, { cls: on && !unused ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
+    el.disabled = !homeWritable() || unused;
   });
+  const countAlt = q('home-show-count-alt');
+  if (countAlt) countAlt.hidden = !altView;
   const searchRow = q('home-search-row');
   if (searchRow) searchRow.hidden = !st.supported.ok;
   const searchPill = q('home-search');
@@ -167,7 +172,7 @@ function renderHome() {
       : t('home.searchBlockedLevel', 'Unavailable: the ad blocker\u2019s Everything setting blocks {host}, which LG\u2019s search needs, so the search mark is hidden on Glasshouse Home. Set the ad blocker to Ads & telemetry or off to use it. This switch keeps its setting.', { host: searchBlocked.host });
   }
   // Fading, as Picture details.
-  [['home-fade', 'fade']].forEach(([id, field]) => {
+  [['home-fade', 'fade'], ['home-rows-bottom', 'rowsBottom']].forEach(([id, field]) => {
     const row = q(id + '-row');
     if (row) row.hidden = !st.supported.ok;
     const btn = q(id);
@@ -176,6 +181,14 @@ function renderHome() {
     updateToggle(btn, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
     btn.disabled = !homeWritable();
   });
+  const altRow = q('home-alternative-row');
+  if (altRow) altRow.hidden = !st.supported.ok;
+  const alt = q('home-alternative');
+  if (alt) {
+    const on = !!st.layout && st.layout.view === 'alternative';
+    updateToggle(alt, { cls: on ? 'good' : 'idle', label: on ? t('common.on', 'On') : t('common.off', 'Off') });
+    alt.disabled = !homeWritable();
+  }
   const hide = q('home-hide-lg');
   if (hide) {
     const armed = homeArmed === 'hide';
@@ -295,17 +308,18 @@ function renderHomeRows() {
       const it = homeItem(kind, id);
       if (!it) return '';
       const hidden = kind !== 'ch' && homeLayout.hidden[kind].includes(id);
+      const folded = kind === 'app' && (homeLayout.folder || []).includes(id);
       // Hidden or not, an input with nothing plugged in is left out by the row's switch.
       const leftOut = kind === 'dev' && it.unused && homeLayout.hideUnused === true;
       const icon = it.icon ? `<img class="rk-ico" src="${esc(api(it.icon))}" alt="">` : '';
-      return `<div class="prot-row home-tile${hidden || leftOut ? ' home-hidden' : ''}">
+      return `<div class="prot-row home-tile${hidden || folded || leftOut ? ' home-hidden' : ''}">
         <div class="prot-main"><div class="prot-title">${icon}<span translate="no">${esc(it.title)}</span></div>
           ${it.sub ? `<div class="prot-desc">${esc(it.sub)}</div>` : ''}</div>
         <div class="prot-status">
           ${leftOut ? `<span class="pill idle">${esc(t('home.leftOut', 'Left out'))}</span>` : ''}
           <button type="button" class="pill idle home-move" ${movable && i > 0 ? '' : 'disabled'} onclick="homeMoveTile('${kind}', ${i}, -1)" aria-label="${esc(t('home.earlier', 'Earlier'))}">↑</button>
           <button type="button" class="pill idle home-move" ${movable && i < order.length - 1 ? '' : 'disabled'} onclick="homeMoveTile('${kind}', ${i}, 1)" aria-label="${esc(t('home.later', 'Later'))}">↓</button>
-          ${it.lg ? `<span class="pill idle home-fixed-pill">${esc(t('home.alwaysShown', 'Always shown'))}</span>` :
+          ${kind === 'app' ? homePlaceSelect(id, it, hidden, folded, usable) :
             kind === 'ch' ? `<button type="button" class="pill idle" ${usable ? '' : 'disabled'} onclick="homeToggleChannel('${jsq(id)}')">${esc(t('home.ch.remove', 'Remove'))}</button>` :
             renderToggle({ cls: hidden ? 'idle' : 'good', label: hidden ? t('home.hidden', 'Hidden') : t('home.shown', 'Shown'),
               disabled: !usable, onclick: `homeToggleTile('${kind}', '${jsq(id)}')` })}
@@ -398,6 +412,29 @@ function homeToggleTile(kind, id) {
   homeSaveLayout({ hidden });
 }
 
+/*
+ * An app is on the Apps row, in its More apps tile, or hidden. The LG Home
+ * tile is the way back to LG's Home, so it is never hidden, but it may go in
+ * the folder, where it is still reached.
+ */
+function homePlaceSelect(id, it, hidden, folded, usable) {
+  const place = hidden ? 'hidden' : folded ? 'folder' : 'row';
+  const opt = (value, label) => `<option value="${value}"${place === value ? ' selected' : ''}>${esc(label)}</option>`;
+  return `<select class="pill-sel" ${usable ? '' : 'disabled'} aria-label="${esc(t('home.place', 'Where it shows'))}"
+      onchange="homeSetPlace('${jsq(id)}', this.value)">
+    ${opt('row', t('home.shown', 'Shown'))}${opt('folder', t('home.folder.label', 'In More apps'))}${it.lg ? '' : opt('hidden', t('home.hidden', 'Hidden'))}
+  </select>`;
+}
+
+function homeSetPlace(id, place) {
+  const hidden = Object.assign({}, homeLayout.hidden);
+  hidden.app = hidden.app.filter(x => x !== id);
+  const folder = (homeLayout.folder || []).filter(x => x !== id);
+  if (place === 'hidden') hidden.app.push(id);
+  if (place === 'folder') folder.push(id);
+  homeSaveLayout({ hidden, folder });
+}
+
 function homeResetLayout() { homeSaveLayout({ reset: true }); }
 
 function homeChooseMode(wantOn) {
@@ -460,7 +497,7 @@ function homePicture() {
 }
 
 // The details Glasshouse Home shows unless switched off, and their toggles.
-const HOME_SHOW = [['showLastOn', 'home-show-last'], ['showAppCount', 'home-show-count'], ['showCec', 'home-show-cec']];
+const HOME_SHOW = [['showClock', 'home-show-clock'], ['showLastOn', 'home-show-last'], ['showAppCount', 'home-show-count'], ['showCec', 'home-show-cec']];
 
 function homeShow(key) {
   homeSaveLayout({ [key]: homeLayout[key] === false });
@@ -468,6 +505,14 @@ function homeShow(key) {
 
 function homeSearch() {
   homeSaveLayout({ search: homeLayout.search !== true });
+}
+
+function homeAlternative() {
+  homeSaveLayout({ view: homeLayout.view === 'alternative' ? 'standard' : 'alternative' });
+}
+
+function homeRowsBottom() {
+  homeSaveLayout({ rowsBottom: homeLayout.rowsBottom !== true });
 }
 
 function homeFade() {
@@ -576,6 +621,20 @@ function renderHomeWalls() {
   const names = HOME_WALL_NAMES();
   const now = homeWallNow();
   const c = (homeLayout && homeLayout.colours) || ((homeStatus.colourPresets || [])[0]) || { text: '#ece7df', accent: '#e9ad55' };
+  // The owner's own pictures are uploaded to the times of day; a set's are shown as they are.
+  const choice = walls.choice || 'own';
+  const own = choice === 'own';
+  const getting = walls.fetching || (/^set:/.test(homeWallUploading || '') ? homeWallUploading.slice(4) : '');
+  const choiceBox = q('home-wall-choice');
+  if (choiceBox) {
+    const label = { black: t('home.wall.setBlack', 'Black'), landscape: t('home.wall.setLandscape', 'Landscape'),
+      abstract: t('home.wall.setAbstract', 'Abstract'), own: t('home.wall.setOwn', 'Your own') };
+    choiceBox.innerHTML = (walls.choices || ['black', 'landscape', 'abstract', 'own']).map(name =>
+      `<button type="button" class="${name === choice ? 'on' : ''}${name === getting ? ' busy' : ''}" ${busy ? 'disabled' : ''}
+        aria-pressed="${name === choice}" onclick="homeWallSet('${name}')">${esc(name === getting ? t('home.wall.examplesBusy', 'Downloading…') : label[name] || name)}</button>`).join('');
+  }
+  q('home-wall-help').hidden = !own;
+  q('home-wall-clear').hidden = !own;
   q('home-wall-clear').disabled = busy || !walls.available;
   clearTimeout(homeWallTimer);
   if (walls.uploading) homeWallTimer = setTimeout(() => { if (activeTab === 'home') loadHome(); }, 2000);
@@ -588,7 +647,7 @@ function renderHomeWalls() {
     const at = (d.getHours() + d.getMinutes() / 60) / 24 * 100;
     day.innerHTML = `<div class="wall-day-bar">${parts.map(([key, from, to]) => `<button type="button" class="wall-day-part${has[key] ? ' has' : ''}${key === now ? ' now' : ''}" data-slot="${key}"
         style="flex:${to - from}${has[key] ? `;background-image:url('${esc(homeWallUrl(key, walls))}')` : ''}"
-        onclick="homeWallChoose('${key}')" ${busy ? 'disabled' : ''} title="${esc(names[key])}" aria-label="${esc(names[key])}"></button>`).join('')}
+        ${own ? `onclick="homeWallChoose('${key}')"` : 'tabindex="-1"'} ${busy || !own ? 'disabled' : ''} title="${esc(names[key])}" aria-label="${esc(names[key])}"></button>`).join('')}
       <span class="wall-day-needle" style="left:${at.toFixed(2)}%"><b>${esc(t('home.wall.now', 'Now'))}</b></span></div>
       <div class="wall-day-scale">${[0, 6, 12, 18, 24].map(h => `<span style="left:${h / 24 * 100}%">${esc(homeWallTime(h, 0))}</span>`).join('')}</div>`;
   }
@@ -597,22 +656,23 @@ function renderHomeWalls() {
   box.style.setProperty('--look-accent', c.accent);
   box.innerHTML = HOME_WALL_SLOTS.map(w => {
     const key = w.key, set = !!has[key];
-    const sending = homeWallUploading === key || (walls.uploading && !homeWallUploading);
-    return `<div class="wall-card${set ? ' has' : ''}${key === now ? ' now' : ''}${sending ? ' busy' : ''}" data-slot="${key}">
-      <button type="button" class="wall-screen" onclick="homeWallChoose('${key}')" ${busy ? 'disabled' : ''}
+    const fetching = !!getting;
+    const sending = homeWallUploading === key || fetching || (walls.uploading && !homeWallUploading);
+    return `<div class="wall-card${set ? ' has' : ''}${key === now ? ' now' : ''}${sending ? ' busy' : ''}${own ? '' : ' fixed'}" data-slot="${key}">
+      <button type="button" class="wall-screen" ${own ? `onclick="homeWallChoose('${key}')"` : 'tabindex="-1"'} ${busy || !own ? 'disabled' : ''}
           aria-label="${esc(t('home.wall.choose', 'Choose a picture for {name}', { name: names[key] }))}"
           ${set ? `style="background-image:url('${esc(homeWallUrl(key, walls))}')"` : ''}>
         <span class="wall-clock">${esc(homeWallTime(w.sample[0], w.sample[1]))}</span>
         <span class="wall-row">${esc(t('home.row.apps', 'Apps'))}</span><i></i>
-        ${set ? '' : `<span class="wall-add">${esc(t('home.wall.add', 'Add a picture'))}</span>`}
+        ${set || !own ? '' : `<span class="wall-add">${esc(t('home.wall.add', 'Add a picture'))}</span>`}
         ${key === now ? `<span class="wall-badge">${esc(t('home.wall.now', 'Now'))}</span>` : ''}
-        ${sending ? `<span class="wall-sending">${esc(t('home.wall.uploading', 'Uploading…'))}</span>` : ''}
+        ${sending ? `<span class="wall-sending">${esc(fetching ? t('home.wall.examplesBusy', 'Downloading…') : t('home.wall.uploading', 'Uploading…'))}</span>` : ''}
       </button>
       <div class="wall-meta">
         <span class="wall-name">${esc(names[key])}</span>
         <span class="wall-hours">${esc(homeWallTime(w.from, 0))} – ${esc(homeWallTime(w.to, 0))}</span>
       </div>
-      <div class="wall-actions">${set ? `<button type="button" class="wall-link" onclick="homeWallChoose('${key}')" ${busy ? 'disabled' : ''}>${esc(t('home.wall.replace', 'Replace'))}</button>
+      <div class="wall-actions">${set && own ? `<button type="button" class="wall-link" onclick="homeWallChoose('${key}')" ${busy ? 'disabled' : ''}>${esc(t('home.wall.replace', 'Replace'))}</button>
         <button type="button" class="wall-link" onclick="homeWallRemove('${key}')" ${busy ? 'disabled' : ''}>${esc(t('home.wall.remove', 'Remove'))}</button>`
         : ''}</div>
     </div>`;
@@ -620,13 +680,13 @@ function renderHomeWalls() {
   // An image dropped on a time of day, or on its part of the strip, is its picture.
   document.querySelectorAll('#home-walls .wall-screen, #home-wall-day .wall-day-part').forEach(el => {
     const slot = el.closest('[data-slot]').dataset.slot;
-    el.addEventListener('dragover', e => { if (busy) return; e.preventDefault(); el.classList.add('drop'); });
+    el.addEventListener('dragover', e => { if (busy || !own) return; e.preventDefault(); el.classList.add('drop'); });
     el.addEventListener('dragleave', () => el.classList.remove('drop'));
     el.addEventListener('drop', e => {
       e.preventDefault();
       el.classList.remove('drop');
       const file = e.dataTransfer && e.dataTransfer.files[0];
-      if (file && !busy) homeUploadWall(slot, file);
+      if (file && !busy && own) homeUploadWall(slot, file);
     });
   });
 }
@@ -695,6 +755,23 @@ async function homeWallRemove(key) {
   try { await homePost('/api/home/wallpapers', { remove: key }); }
   catch (e) { q('home-wall-upload-note').textContent = e.message; }
   await loadHome();
+}
+
+// Black, a picture set, or the owner's own pictures; a set is downloaded to the
+// TV the first time it is chosen.
+async function homeWallSet(name) {
+  if (!homeWritable() || homeWallUploading) return;
+  const note = q('home-wall-upload-note');
+  note.textContent = '';
+  homeWallUploading = 'set:' + name;
+  renderHomeWalls();
+  try { await homePost('/api/home/wallpapers', { choose: name }); }
+  catch (e) { note.textContent = e.message; }
+  finally {
+    homeWallUploading = false;
+    await loadHome();
+    renderHomeWalls();
+  }
 }
 
 async function homeClearUploads() {

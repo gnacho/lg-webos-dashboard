@@ -8,7 +8,7 @@ ssh root@<tv-ip> /var/lib/tvweb/tvwebctl status    # start | stop | restart | st
 
 How depends on the install. One with a **Server** tab in its dashboard updates itself; an older one is updated by deploying again, after which it has the tab.
 
-**With the Server tab.** Opening it looks for a newer release, and **Check now** looks again. **Install** puts it on and restarts the server, and **Roll back** returns to the version it replaced.
+**With the Server tab.** Opening it looks for a newer release, and **Check now** looks again. **Install** puts it on and restarts the server, and, for installs made with `deploy.sh`, **Roll back** returns to the version it replaced.
 
 Home Assistant can offer the same install while the [daily check](managing.md#checking-automatically) is on.
 
@@ -20,7 +20,7 @@ ssh root@<tv-ip> /var/lib/tvweb/tvwebctl update --check   # report without insta
 ssh root@<tv-ip> /var/lib/tvweb/tvwebctl rollback         # put the previous version back
 ```
 
-**Installed from the Homebrew Channel or as an `.ipk`.** Updates come through the Homebrew Channel. While the package awaits approval in the official repository ([webosbrew/apps-repo#261](https://github.com/webosbrew/apps-repo/pull/261)), install the newer `.ipk` from [GitHub releases](https://github.com/rorygallagher2024/glasshouse/releases) over the existing one (with webOS Dev Manager, Homebrew Channel sideload, or `ares-install`). The server follows the updated app on launch or reboot, preserving settings.
+**Installed from the Homebrew Channel or as an `.ipk`.** **Install** on the Server tab, the TV app's Updates tab, Home Assistant's update entity and `tvwebctl update` install the release's `.ipk` with the TV's app installer, check it against the release's sha256, and run the app's installer, which moves the server over and restarts it with its settings. The Glasshouse app closes while its package is replaced. Package updates keep no rollback copy. Glasshouse is not yet in the Homebrew Channel's catalog ([webosbrew/apps-repo#261](https://github.com/webosbrew/apps-repo/pull/261)), so the Homebrew Channel does not offer the update itself; installing the newer `.ipk` from [GitHub releases](https://github.com/rorygallagher2024/glasshouse/releases) by hand (webOS Dev Manager, Homebrew Channel sideload or `ares-install`) works as well. Versions up to 0.121.0 only point to the Homebrew Channel, so a TV on one of those takes the `.ipk` by hand once.
 
 To force an in-place server update over SSH on an IPK install:
 
@@ -40,7 +40,7 @@ Only the server's own files are replaced; settings are kept.
 
 A server deployed from a git clone shows the commit it was built from after its version, as `0.80.1+55e51e5`, with `.dirty` added when files under `server/` had uncommitted changes. A release installed later shows its plain version.
 
-Previous versions are saved to allow instant rollback via `tvwebctl rollback`.
+On installs made with `deploy.sh`, previous versions are saved to allow instant rollback via `tvwebctl rollback`.
 
 See [docs/IMPLEMENTATION.md](IMPLEMENTATION.md#in-place-updater-and-binary-probing) for client probing order and manual rollback details.
 
