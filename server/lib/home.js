@@ -86,6 +86,13 @@ var WAKE_SETTLE_MS = 4500;
 // How long after opening it Home is opened once more if the input comes back in front.
 var WAKE_REOPEN_MS = 4000;
 /*
+ * Where giving LG's Home its place back restarts sam (webOS 5 and 6), the TV's
+ * last-input handler puts the input or app back over LG's Home about 3 s later
+ * (a C1, webOS 6.4.0): that once is part of the restart, not a choice.
+ */
+var ESCAPE_REOPEN_MS = 8000;
+var escapeReopen = null;
+/*
  * Colours for Glasshouse Home's text and accent, chosen by both dashboards.
  * The first is the view's own, used while none is chosen. Every pair keeps
  * light text on black. The accent marks what was last on and arranging and,
@@ -940,6 +947,7 @@ function toLgHome(why, cb) {
       console.error('home: ' + r.error);
       return cb(r);
     }
+    escapeReopen = takeover.restartedSam() ? { until: nowMs() + ESCAPE_REOPEN_MS } : null;
     // Where the view was in front, the TV is opening LG's Home already.
     launch(LG_HOME, null, cb);
   });
@@ -990,6 +998,8 @@ function readSettings(keys, cb) {
     // A C1 (webOS 6.5.3) also answers this way, for defaultApps.
     var partial = r && r.returnValue === false && r.settings &&
       (isArray(r.errorKey) ? r.errorKey.length < keys.length : typeof r.errorKey === 'string');
+    // A C1 on webOS 6.4.0 keeps no defaultApps at all, and says so this way.
+    if (r && r.returnValue === false && !r.settings && /no matched result/i.test(String(r.errorText || ''))) return cb({});
     cb(r && (r.returnValue !== false || partial) && r.settings ? r.settings : null);
   });
 }
@@ -1540,9 +1550,30 @@ function watchBeat(ms) {
     beatTimer = null;
     // Switched off into standby the view stops beating; nothing is on screen to replace.
     if (!viewInFront() || !powerActive) return;
-    console.error('home: the Glasshouse Home view is not answering');
-    recoverView('view not answering', false);
+    function hung() {
+      console.error('home: the Glasshouse Home view is not answering');
+      recoverView('view not answering', false);
+    }
+    if (webAppMgrRunning() !== true) return hung();
+    behindAnother(function (app) {
+      if (!app) return hung();
+      console.log('home: the view is behind ' + app + ', not hung');
+    });
   }, ms);
+}
+
+/*
+ * The app whose window is in front where the view's is not, or null. A C1
+ * (webOS 6.4.0) brought an app back from Recent apps without sam naming it in
+ * front, so the hidden view, beating no more, looked hung.
+ */
+function behindAnother(cb) {
+  luna('com.webos.surfacemanager/getForegroundWindowInfo', {}, function (r) {
+    var windows = r && r.returnValue !== false && isArray(r.windows) ? r.windows : null;
+    if (!windows || windows.some(function (w) { return w && w.appId === LG_HOME; })) return cb(null);
+    var other = windows.filter(function (w) { return w && w.appId && w.windowType === '_WEBOS_WINDOW_TYPE_CARD'; })[0];
+    cb(other ? other.appId : null);
+  });
 }
 
 function beat() {
@@ -1573,6 +1604,14 @@ function foregroundChanged(id) {
   stopBeatWatch();
   // sam names nothing in front for a moment between apps.
   if (!id || !escaped) return;
+  var reopen = escapeReopen;
+  escapeReopen = null;
+  if (reopen && nowMs() <= reopen.until) {
+    console.log('home: opening LG\'s Home again, ' + id + ' took the screen back after sam restarted');
+    return launch(LG_HOME, null, function (res) {
+      if (!res.ok) console.error('home: could not open LG\'s Home again');
+    });
+  }
   escaped = false;
   switchTo(true, function (r) {
     if (!r.ok) console.error('home: could not take LG\'s Home\'s place again: ' + r.error);

@@ -155,6 +155,8 @@ function luna(uri, p, cb) {
   var r = { returnValue: true };
   if (uri === 'com.webos.service.settings/getSystemSettings') {
     if (tv.settingsReadFails) return process.nextTick(function () { cb({ returnValue: false }); });
+    // As a C1 on webOS 6.4.0 answers for defaultApps, which it does not keep at all.
+    if (tv.noMatchedSettings && p.keys.join() === 'defaultApps') return process.nextTick(function () { cb({ returnValue: false, errorText: 'There is no matched result from DB' }); });
     r.settings = {};
     // As webOS 7.6.0 and 6.5.3 answer for a key they do not have: the rest, and a failure naming it.
     var absent = p.keys.filter(function (k) { return (tv.missingSettings || []).indexOf(k) !== -1; });
@@ -211,6 +213,8 @@ function luna(uri, p, cb) {
     ];
   } else if (uri === 'com.webos.service.apiadapter/tv/getChannelList') {
     r.channelList = (tv.channels || []).map(function (id) { return { channelId: id, channelNumber: id, channelName: id }; });
+  } else if (uri === 'com.webos.surfacemanager/getForegroundWindowInfo') {
+    if (tv.windows) r.windows = copy(tv.windows);
   } else if (uri === 'com.webos.service.utp.boot/getLastChannelId') {
     r.channelId = tv.lastChannel;
   }
@@ -1043,6 +1047,56 @@ step('webOS 6 shows the same limits, so it is offered and restarts sam too', fun
   });
 });
 
+// A C1 (webOS 6.4.0): the last-input handler put the input back about 3 s
+// after the restart that gave LG's Home its place.
+step('held on webOS 6, an input put back after sam restarts gets LG\'s Home opened again, once', function (done) {
+  start({ enabled: true }, { webosVersion: '6.5.3', allowExperimental: function () { return true; } });
+  tv.rescanAbsent = true;
+  home.start();
+  wait(50, function () {
+    foreground(LG_HOME);
+    home.homeKey(true);
+    wait(1300, function () {
+      home.homeKey(false);
+      wait(50, function () {
+        assert.strictEqual(tv.samType, 'native', 'held: LG\'s Home has its place');
+        assert.ok(tv.events.indexOf('restart') !== -1, 'by a restart of sam');
+        foreground(LG_HOME);
+        tv.launched = [];
+        foreground('com.webos.app.hdmi1');
+        wait(50, function () {
+          assert.deepEqual(tv.launched, [LG_HOME], 'LG\'s Home opened over the input');
+          assert.strictEqual(tv.samType, 'native', 'and keeps its place');
+          foreground(LG_HOME);
+          foreground('com.webos.app.hdmi1');
+          wait(50, function () {
+            assert.deepEqual(tv.launched, [LG_HOME], 'an input chosen after that is left in front');
+            assert.ok(taken(), 'and Glasshouse Home takes the place again');
+            home.disable(function () { done(); });
+          });
+        });
+      });
+    });
+  });
+});
+
+step('on webOS 6.4.0, which keeps no defaultApps, switching on reads that as unset', function (done) {
+  start(null, { webosVersion: '6.4.0', allowExperimental: function () { return true; } });
+  tv.rescanAbsent = true;
+  tv.noMatchedSettings = true;
+  var errors = [];
+  var error = console.error;
+  console.error = function (m) { if (/Home key/.test(String(m))) errors.push(String(m)); };
+  home.enable(function (r) {
+    wait(50, function () {
+      console.error = error;
+      assert.ok(r.ok, r.error);
+      assert.deepEqual(errors, [], 'the Home key\'s target read without an error');
+      home.disable(function () { done(); });
+    });
+  });
+});
+
 step('webOS 10 is offered without the setting, with LG\'s Flutter Home stopped and no start-up layout', function (done) {
   start(null, { webosVersion: '10.3.1' });
   home.status(function (st0) {
@@ -1369,6 +1423,28 @@ step('a view that stops beating with WebAppMgr stopped gets WebAppMgr started, n
       assert.deepEqual(tv.launched, [LG_HOME], 'and the view opened again');
       assert.ok(taken(), 'Glasshouse Home keeps the place');
       home.disable(function () { done(); });
+    });
+  });
+});
+
+// A C1 (webOS 6.4.0) brought an app back from Recent apps with sam still naming the view in front.
+step('a view that stops beating behind another app\'s window is left alone; in front it is recovered', function (done) {
+  start({ enabled: true });
+  home.start();
+  wait(50, function () {
+    foreground(LG_HOME);
+    tv.windows = [{ appId: 'netflix', windowType: '_WEBOS_WINDOW_TYPE_CARD' }];
+    home.beat();
+    tv.launched = [];
+    wait(10100, function () {
+      assert.deepEqual(tv.launched, [], 'nothing opened over the app');
+      assert.ok(taken(), 'Glasshouse Home keeps the place');
+      tv.windows = [{ appId: LG_HOME, windowType: '_WEBOS_WINDOW_TYPE_CARD' }];
+      home.beat();
+      wait(10100, function () {
+        assert.strictEqual(tv.samType, 'native', 'the view\'s own window in front: LG\'s Home given its place');
+        home.disable(function () { done(); });
+      });
     });
   });
 });
